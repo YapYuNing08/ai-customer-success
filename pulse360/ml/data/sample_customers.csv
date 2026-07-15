@@ -1,0 +1,21 @@
+customer_id,name,subscription_plan,signup_date,login_frequency,feature_usage,monthly_usage_pct,payment_status,support_ticket_count,feedback_score,churn_status
+cus_001,Northwind Traders,Enterprise,2023-02-11,1.2,0.30,34,active,7,5.5,1
+cus_002,Acme Robotics,Growth,2023-06-02,3.4,0.55,61,active,2,7.1,0
+cus_003,Blue Harbor Health,Enterprise,2022-09-19,6.8,0.88,92,active,1,9.2,0
+cus_004,Cedar & Co.,Starter,2024-01-07,2.1,0.40,45,past_due,4,6.0,1
+cus_005,Summit Analytics,Growth,2023-11-23,4.0,0.62,70,active,2,7.8,0
+cus_006,Ironclad Legal,Enterprise,2022-05-30,5.9,0.79,84,active,1,8.7,0
+cus_007,Maple Retail,Starter,2024-03-14,1.0,0.22,28,past_due,6,4.8,1
+cus_008,Zephyr Media,Growth,2023-08-08,2.8,0.48,53,active,3,6.5,0
+cus_009,Bright Path Edu,Starter,2024-02-01,1.5,0.35,39,active,5,5.9,1
+cus_010,Quantum Freight,Enterprise,2022-11-11,7.2,0.91,95,active,0,9.5,0
+cus_011,Harbor Foods,Growth,2023-04-19,3.1,0.51,58,active,2,7.0,0
+cus_012,Nova Fitness,Starter,2024-04-22,0.8,0.18,24,past_due,8,4.2,1
+cus_013,Pinnacle Bank,Enterprise,2022-07-07,6.1,0.83,88,active,1,9.0,0
+cus_014,Terra Logistics,Growth,2023-09-30,2.5,0.44,49,active,4,6.1,0
+cus_015,Solstice Travel,Starter,2024-01-25,1.3,0.28,31,past_due,5,5.2,1
+cus_016,Vertex Software,Enterprise,2022-10-03,6.5,0.86,90,active,1,9.1,0
+cus_017,Meadow Health,Growth,2023-07-14,3.6,0.57,64,active,2,7.4,0
+cus_018,Copper Canyon Co,Starter,2024-05-09,0.9,0.20,26,past_due,7,4.5,1
+cus_019,Atlas Insurance,Enterprise,2022-08-21,5.7,0.77,82,active,2,8.5,0
+cus_020,Lumen Design,Growth,2023-10-17,2.9,0.49,55,active,3,6.7,0
