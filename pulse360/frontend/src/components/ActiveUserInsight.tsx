@@ -198,6 +198,17 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               <span className="bg-earth-sage/20 border console-border console-text-primary text-xs px-2.5 py-0.5 rounded-full font-bold">
                 {user.plan} Plan
               </span>
+              <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold border uppercase tracking-wider ${
+                user.state === 'active' 
+                  ? 'bg-earth-sage/20 border-earth-sage/30 text-earth-sage'
+                  : user.state === 'frustrated'
+                  ? 'bg-earth-clay/20 border-earth-clay/30 text-earth-clay animate-pulse'
+                  : user.state === 'disengaged'
+                  ? 'bg-earth-bg/10 border-earth-bg/20 text-earth-bg/80'
+                  : 'bg-black/20 border-black/40 text-black/50'
+              }`}>
+                {user.state}
+              </span>
             </div>
             <p className="console-text-secondary text-sm mt-1">{user.email}</p>
             <p className="console-text-primary/65 text-xs mt-0.5">{user.location} &bull; Onboarded {user.metrics.daysSinceOnboarding} days ago</p>
@@ -560,10 +571,10 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               <select
                 value={simLevers.payment_status}
                 onChange={(e) => setSimLevers({...simLevers, payment_status: e.target.value})}
-                className="bg-earth-bg border console-border rounded-lg p-1.5 text-xs console-text-primary font-bold outline-none cursor-pointer focus:border-earth-clay w-full"
+                className="bg-earth-cocoa border console-border rounded-lg p-1.5 text-xs console-text-primary font-bold outline-none cursor-pointer focus:border-earth-clay w-full"
               >
-                <option value="active">Active (Good Standing)</option>
-                <option value="past_due">Past Due (Declined Cards / Invoices)</option>
+                <option value="active" className="bg-earth-cocoa console-text-primary">Active (Good Standing)</option>
+                <option value="past_due" className="bg-earth-cocoa console-text-primary">Past Due (Declined Cards / Invoices)</option>
               </select>
             </div>
 

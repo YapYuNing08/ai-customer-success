@@ -4,4 +4,8 @@ sqlalchemy
 psycopg2-binary
 pandas
 numpy
+scikit-learn
+xgboost
+shap
 python-dotenv
+google-generativeai
