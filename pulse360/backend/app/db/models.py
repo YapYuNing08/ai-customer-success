@@ -3,7 +3,7 @@
 Mirrors backend/app/db/init.sql. Kept in sync with the pydantic contract in
 app/models/customer.py, plus the raw signal columns used by the ML pipeline.
 """
-from sqlalchemy import Column, Date, Float, Integer, String
+from sqlalchemy import JSON, Column, Date, Float, Integer, String
 
 from app.db.session import Base
 
@@ -21,6 +21,7 @@ class Customer(Base):
     risk_tier = Column(String)
     recommended_action = Column(String)
     monthly_usage_pct = Column(Float)
+    shap_reasons = Column(JSON)  # top-5 [{feature, contribution}], precomputed at train time
 
     # Raw signals (model inputs / feature engineering)
     signup_date = Column(Date)
@@ -30,3 +31,7 @@ class Customer(Base):
     support_ticket_count = Column(Integer)
     feedback_score = Column(Float)
     churn_status = Column(Integer)  # 0 = active, 1 = churned (training label)
+
+    # Raw Telco fields kept for the demo narrative / subscription optimizer
+    monthly_charges = Column(Float)
+    contract = Column(String)  # Month-to-month / One year / Two year
