@@ -5,13 +5,24 @@ import { type ActiveUser, mockUsers } from '../utils/mockData';
 interface GlobeProps {
   onSelectUser: (user: ActiveUser) => void;
   selectedUser: ActiveUser | null;
+  users?: ActiveUser[];
+  pulseTrigger?: number;
 }
 
-export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser }) => {
+export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users = [], pulseTrigger = 0 }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const [hoveredUser, setHoveredUser] = useState<ActiveUser | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
   const [activeUserPin, setActiveUserPin] = useState<ActiveUser | null>(null);
+
+  const activeUsersList = users.length > 0 ? users : mockUsers;
+  const pulseIntensityRef = useRef(0);
+
+  useEffect(() => {
+    if (pulseTrigger && pulseTrigger > 0) {
+      pulseIntensityRef.current = 4.0;
+    }
+  }, [pulseTrigger]);
 
   // Keep references to access in events
   const stateRef = useRef({
@@ -113,7 +124,7 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser }) => {
       return new THREE.Vector3(x, y, z);
     };
 
-    mockUsers.forEach((user) => {
+    activeUsersList.forEach((user) => {
       const position = latLngToVector3(user.lat, user.lng, 2.41);
 
       let color = 0xb0ba99;
@@ -175,7 +186,7 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser }) => {
 
         if (stateRef.current.hoveredUserId !== userId) {
           stateRef.current.hoveredUserId = userId;
-          const user = mockUsers.find((u) => u.id === userId) || null;
+          const user = activeUsersList.find((u) => u.id === userId) || null;
           setHoveredUser(user);
           document.body.style.cursor = 'pointer';
         }
@@ -217,7 +228,7 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser }) => {
         if (intersects.length > 0) {
           const hitMesh = intersects[0].object as THREE.Mesh;
           const userId = hitMesh.userData.userId;
-          const user = mockUsers.find((u) => u.id === userId) || null;
+          const user = activeUsersList.find((u) => u.id === userId) || null;
           
           stateRef.current.toggledUserId = userId;
           setActiveUserPin(user);
@@ -290,9 +301,27 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser }) => {
       globeGroup.rotation.y = stateRef.current.currentRotationY;
       globeGroup.rotation.x = stateRef.current.currentRotationX;
 
+      // Handle manual sweep pulse decay
+      if (pulseIntensityRef.current > 0) {
+        pulseIntensityRef.current -= 0.08;
+      }
+      const currentManualPulse = Math.max(0, pulseIntensityRef.current);
+
       userDots.forEach((dot, index) => {
-        const pulse = 1.0 + Math.sin(elapsedTime * 4 + index) * 0.25;
-        dot.pulseRing.scale.set(pulse, pulse, 1);
+        const basePulse = 1.0 + Math.sin(elapsedTime * 4 + index) * 0.25;
+        // Sweeping ripple pulse expanding outward from each dot
+        const sweepPulse = currentManualPulse * (1.5 + Math.sin(elapsedTime * 8 - index * 0.8) * 0.5);
+        const finalScale = basePulse + sweepPulse;
+        
+        dot.pulseRing.scale.set(finalScale, finalScale, 1);
+        
+        const ringMaterial = dot.pulseRing.material as THREE.MeshBasicMaterial;
+        if (currentManualPulse > 0) {
+          ringMaterial.opacity = Math.max(0.1, 0.4 * (1.0 - (currentManualPulse / 4.0)));
+        } else {
+          ringMaterial.opacity = 0.4;
+        }
+        
         dot.pulseRing.lookAt(new THREE.Vector3(0, 0, 0));
       });
 
@@ -327,7 +356,7 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser }) => {
       }
       renderer.dispose();
     };
-  }, [hoveredUser, activeUserPin]);
+  }, [hoveredUser, activeUserPin, activeUsersList]);
 
   // If selectedUser is updated from outside, align active pin
   useEffect(() => {
