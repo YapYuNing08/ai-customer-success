@@ -48,3 +48,45 @@
 .animate-pulse-glow-earth {
   animation: pulse-glow-earth 2.5s infinite ease-in-out;
 }
+
+/* Console Dark-Mode Utilities */
+.console-bg-dark {
+  background-color: #4E220F;
+  color: #F7F1DE;
+}
+
+.console-card-dark {
+  background-color: rgba(247, 241, 222, 0.05);
+  border: 1px solid rgba(176, 186, 153, 0.25);
+  color: #F7F1DE;
+}
+
+.console-card-dark-hover {
+  transition: all 0.2s ease-in-out;
+}
+.console-card-dark-hover:hover {
+  background-color: rgba(247, 241, 222, 0.09);
+  border-color: rgba(176, 186, 153, 0.4);
+}
+
+.console-card-dark-inner {
+  background-color: rgba(247, 241, 222, 0.08);
+  border: 1px solid rgba(176, 186, 153, 0.15);
+  color: #F7F1DE;
+}
+
+.console-text-muted {
+  color: rgba(247, 241, 222, 0.55);
+}
+
+.console-text-secondary {
+  color: rgba(247, 241, 222, 0.8);
+}
+
+.console-text-primary {
+  color: #F7F1DE;
+}
+
+.console-border {
+  border-color: rgba(247, 241, 222, 0.15);
+}
