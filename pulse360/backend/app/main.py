@@ -27,6 +27,11 @@ app.include_router(recommendation.router)
 app.include_router(simulate.router)
 
 
+@app.get("/")
+def read_root():
+    return {"message": "Welcome to Pulse360 API. Go to /docs for Swagger API documentation."}
+
+
 @app.get("/health", tags=["meta"])
 def health():
     return {"status": "ok", "service": "pulse360"}
