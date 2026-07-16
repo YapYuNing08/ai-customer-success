@@ -1,68 +1,111 @@
-"""Model loading + SHAP explanation logic.
+"""Model loading + scoring logic for the serving layer.
 
-Kept separate from the route handlers so the serving layer stays thin. Until a
-real artifact exists in ml/models/, these functions fall back to the
-placeholder dataset so the API stays fully functional during early build days.
+Kept separate from the route handlers so the serving layer stays thin.
+
+SHAP reasons are NOT computed here at request time — they are precomputed by
+ml/train.py and stored in the customers table (deterministic and fast for
+live judging). This module only loads the XGBoost model + training metadata
+for the /simulate endpoint, which needs live re-scoring of a modified
+feature vector.
 """
+import json
+import pickle
+from datetime import date
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
-from app import data
-
-# ml/models/ lives at the repo root, two levels above backend/app/ml/.
-_MODELS_DIR = Path(__file__).resolve().parents[4] / "ml" / "models"
+# pulse360/ml/models — three levels above backend/app/ml/.
+_MODELS_DIR = Path(__file__).resolve().parents[3] / "ml" / "models"
 _MODEL_PATH = _MODELS_DIR / "churn_model.json"
-_EXPLAINER_PATH = _MODELS_DIR / "shap_explainer.pkl"
+_FEATURES_PATH = _MODELS_DIR / "feature_cols.pkl"
+_METADATA_PATH = _MODELS_DIR / "metadata.json"
 
 _model = None
-_explainer = None
+_feature_cols: Optional[list] = None
+_metadata: Optional[dict] = None
 
 
 def _artifacts_available() -> bool:
-    return _MODEL_PATH.exists() and _EXPLAINER_PATH.exists()
+    return (
+        _MODEL_PATH.exists()
+        and _FEATURES_PATH.exists()
+        and _METADATA_PATH.exists()
+    )
 
 
-def load_artifacts() -> None:
-    """Lazy-load the trained model + SHAP explainer if present.
+def load_artifacts() -> bool:
+    """Lazy-load the trained model + metadata. Returns True when ready.
 
-    No-op (and no crash) when artifacts haven't been trained yet.
+    No-op (and no crash) when artifacts haven't been trained yet — callers
+    fall back to heuristics so the API keeps working.
     """
-    global _model, _explainer
-    if not _artifacts_available():
-        return
+    global _model, _feature_cols, _metadata
     if _model is not None:
-        return
-    import pickle
+        return True
+    if not _artifacts_available():
+        return False
 
     import xgboost as xgb
 
-    _model = xgb.XGBClassifier()
-    _model.load_model(str(_MODEL_PATH))
-    with open(_EXPLAINER_PATH, "rb") as fh:
-        _explainer = pickle.load(fh)
+    model = xgb.XGBClassifier()
+    model.load_model(str(_MODEL_PATH))
+    with open(_FEATURES_PATH, "rb") as fh:
+        _feature_cols = pickle.load(fh)
+    with open(_METADATA_PATH) as fh:
+        _metadata = json.load(fh)
+    _model = model
+    return True
 
 
-def explain_customer(customer_id: str) -> Optional[List[dict]]:
-    """Return SHAP-style reasons for a customer.
+def build_feature_dict(customer: dict, overrides: dict) -> dict:
+    """Assemble the model's feature dict from a customer row + what-if overrides.
 
-    Falls back to the placeholder dataset's reasons until a real model exists.
+    Derived features (payment_active, tenure_days) are recomputed exactly as
+    in ml/train.py, using the training reference date from metadata.
     """
-    load_artifacts()
-    if _model is None:
-        cust = data.get_customer(customer_id)
-        return cust["shap_reasons"] if cust else None
+    merged = {**customer, **overrides}
 
-    # TODO: once trained, pull the customer's feature vector from the DB,
-    # run _explainer(feature_vector), and map SHAP values -> shap_reasons.
-    cust = data.get_customer(customer_id)
-    return cust["shap_reasons"] if cust else None
+    reference = date.fromisoformat(_metadata["reference_date"])
+    signup = merged.get("signup_date")
+    if isinstance(signup, str):
+        signup = date.fromisoformat(signup)
+    tenure_days = (reference - signup).days if signup else 0
+
+    return {
+        "login_frequency": float(merged["login_frequency"]),
+        "feature_usage": float(merged["feature_usage"]),
+        "monthly_usage_pct": float(merged["monthly_usage_pct"]),
+        "support_ticket_count": float(merged["support_ticket_count"]),
+        "feedback_score": float(merged["feedback_score"]),
+        "payment_active": 1.0 if merged.get("payment_status") == "active" else 0.0,
+        "tenure_days": float(tenure_days),
+    }
 
 
 def predict_churn(features: dict) -> Optional[float]:
-    """Score a feature dict. Returns None until a model is trained."""
-    load_artifacts()
-    if _model is None:
+    """Score a feature dict with the trained model. None until trained."""
+    if not load_artifacts():
         return None
-    # TODO: assemble the feature vector in training order and return
-    # _model.predict_proba(...)[0, 1].
-    return None
+    import numpy as np
+
+    vector = np.array([[features[c] for c in _feature_cols]])
+    return float(_model.predict_proba(vector)[0, 1])
+
+
+def compute_health_score(features: dict) -> Optional[float]:
+    """Recompute the composite health score exactly as ml/train.py does,
+    using the normalization bounds captured at train time."""
+    if not load_artifacts():
+        return None
+
+    weights = _metadata["health_weights"]
+    bounds = _metadata["normalization_bounds"]
+    components = _metadata["health_components"]  # {component: [col, invert]}
+
+    score = weights["payment"] * features["payment_active"]
+    for component, (col, invert) in components.items():
+        lo, hi = bounds[col]
+        scaled = (features[col] - lo) / (hi - lo) if hi > lo else 0.5
+        scaled = max(0.0, min(1.0, scaled))
+        score += weights[component] * ((1 - scaled) if invert else scaled)
+    return round(score * 100, 1)

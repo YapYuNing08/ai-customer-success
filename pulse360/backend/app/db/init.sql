@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS customers (
     risk_tier            TEXT CHECK (risk_tier IN ('low', 'medium', 'high')),
     recommended_action   TEXT,
     monthly_usage_pct    DOUBLE PRECISION,
+    shap_reasons         JSONB,
 
     -- Raw signals (model inputs / feature engineering)
     signup_date          DATE,
@@ -20,7 +21,11 @@ CREATE TABLE IF NOT EXISTS customers (
     payment_status       TEXT,
     support_ticket_count INTEGER DEFAULT 0,
     feedback_score       DOUBLE PRECISION,
-    churn_status         INTEGER DEFAULT 0   -- 0 = active, 1 = churned
+    churn_status         INTEGER DEFAULT 0,  -- 0 = active, 1 = churned
+
+    -- Raw Telco fields (demo narrative / subscription optimizer)
+    monthly_charges      DOUBLE PRECISION,
+    contract             TEXT
 );
 
 -- A few seed rows so the API has data the moment Postgres comes up.
