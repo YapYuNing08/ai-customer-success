@@ -44,6 +44,7 @@ function App() {
     'Synced 8 active enterprise connections globally.',
   ]);
   const [pulseTrigger, setPulseTrigger] = useState(0);
+  const [showModelModal, setShowModelModal] = useState(false);
 
   const consoleRef = useRef<HTMLDivElement>(null);
 
@@ -65,9 +66,17 @@ function App() {
   };
 
   const handleUpdateUser = (updatedUser: ActiveUser) => {
-    setUsers(prev => prev.map(u => u.id === updatedUser.id ? updatedUser : u));
-    setSelectedUser(updatedUser);
-    addTelemetry(`CSM action applied on ${updatedUser.name}: Risk reduced to ${updatedUser.churnProbability}%`);
+    // Transition customer back to ACTIVE state and resolve warning flags when CSM acts
+    const recoveredUser: ActiveUser = {
+      ...updatedUser,
+      state: 'active',
+      healthScore: Math.min(98, updatedUser.healthScore + 20),
+      churnProbability: Math.max(5, updatedUser.churnProbability - 30),
+      warningFlags: updatedUser.warningFlags.filter(f => f !== 'Usage Decay' && f !== 'Failed Payment')
+    };
+    setUsers(prev => prev.map(u => u.id === recoveredUser.id ? recoveredUser : u));
+    setSelectedUser(recoveredUser);
+    addTelemetry(`[CSM Intervention] Saved ${recoveredUser.name}: State restored to ACTIVE. Churn risk reduced to ${recoveredUser.churnProbability}%.`);
   };
 
   const addTelemetry = (msg: string) => {
@@ -75,90 +84,148 @@ function App() {
     setTelemetryFeed(prev => [`[${time}] ${msg}`, ...prev.slice(0, 15)]);
   };
 
-  // Run Real-Time Telemetry Simulation
+  // Keep users list in ref to prevent stale closure in simulation interval
+  const usersRef = useRef(users);
+  useEffect(() => {
+    usersRef.current = users;
+  }, [users]);
+
+  // Run Real-Time State Machine Telemetry Simulation
   useEffect(() => {
     if (!isSimulating) return;
 
     const interval = setInterval(() => {
-      // 1. Roll probability for an API failure (Outage Rate)
-      if (Math.random() * 100 < outageRate) {
-        const targetUserIdx = Math.floor(Math.random() * users.length);
-        const targetUser = { ...users[targetUserIdx] };
-        
-        // Degrade health
-        targetUser.healthScore = Math.max(10, targetUser.healthScore - 8);
-        targetUser.metrics.usageVelocity = Math.max(0.1, Number((targetUser.metrics.usageVelocity - 0.1).toFixed(2)));
-        targetUser.metrics.frictionIndex = Math.min(10, Number((targetUser.metrics.frictionIndex + 0.8).toFixed(1)));
-        
-        // Add flags
-        if (!targetUser.warningFlags.includes('Usage Decay')) {
-          targetUser.warningFlags.push('Usage Decay');
-        }
-        
-        // Recalculate Churn Risk (Simulated XGBoost output)
-        const currentRisk = targetUser.churnProbability;
-        targetUser.churnProbability = Math.min(99, targetUser.churnProbability + 12);
-        
-        // Add activity log
-        targetUser.activityLogs.unshift({
-          date: new Date().toISOString().split('T')[0],
-          type: 'support_open',
-          details: 'ALERT: Automated sensor detected API connection timeout (HTTP 504).'
-        });
+      const currentUsers = [...usersRef.current];
+      if (currentUsers.length === 0) return;
 
-        // Add SHAP adjustments
-        const trendFactor = targetUser.churnFactors.find(f => f.name === 'Usage Trend');
-        if (trendFactor) {
-          trendFactor.impact = Math.min(45, trendFactor.impact + 8);
-        }
+      let updatedList = [...currentUsers];
+      let didChange = false;
 
-        setUsers(prev => prev.map(u => u.id === targetUser.id ? targetUser : u));
-        addTelemetry(`API Latency Alert: ${targetUser.name} (${targetUser.location}) reported connectivity errors. Churn risk: ${currentRisk}% -> ${targetUser.churnProbability}%`);
-      }
+      // 1. Process State Transitions (Markov Chain) for existing distressed users
+      for (let i = 0; i < updatedList.length; i++) {
+        const u = { ...updatedList[i] };
+        
+        // Skip already churned users
+        if (u.state === 'churned') continue;
 
-      // 2. Roll probability for credit card / renewal failure (Billing failure Rate)
-      if (Math.random() * 100 < billingFailureRate) {
-        const targetUserIdx = Math.floor(Math.random() * users.length);
-        const targetUser = { ...users[targetUserIdx] };
-
-        if (targetUser.metrics.failedPayments === 0) {
-          targetUser.metrics.failedPayments = 1;
-          targetUser.healthScore = Math.max(15, targetUser.healthScore - 15);
-          targetUser.churnProbability = Math.min(98, targetUser.churnProbability + 20);
-          
-          if (!targetUser.warningFlags.includes('Failed Payment')) {
-            targetUser.warningFlags.push('Failed Payment');
+        // Transition 1: FRUSTRATED -> DISENGAGED (Quiet Churn due to unresolved bugs)
+        if (u.state === 'frustrated' && Math.random() < 0.25) {
+          u.state = 'disengaged';
+          u.healthScore = Math.max(15, u.healthScore - 15);
+          u.churnProbability = Math.min(85, u.churnProbability + 15);
+          if (!u.warningFlags.includes('Usage Decay')) {
+            u.warningFlags.push('Usage Decay');
           }
+          u.activityLogs.unshift({
+            date: new Date().toISOString().split('T')[0],
+            type: 'login',
+            details: 'WARNING: Telemetry heartbeat showing zero session logins over 72 hours.'
+          });
+          updatedList[i] = u;
+          didChange = true;
+          addTelemetry(`[State Transition] ${u.name} decayed from FRUSTRATED to DISENGAGED (Quiet Churn). Churn risk: ${u.churnProbability}%.`);
+          break; // Process one state transition per tick to keep feed clean
+        }
 
-          targetUser.activityLogs.unshift({
+        // Transition 2: DISENGAGED -> CHURNED (Subscription Canceled)
+        if (u.state === 'disengaged' && Math.random() < 0.15) {
+          u.state = 'churned';
+          u.healthScore = 0;
+          u.churnProbability = 100;
+          u.warningFlags = ['Subscription Terminated'];
+          u.activityLogs.unshift({
             date: new Date().toISOString().split('T')[0],
             type: 'payment_fail',
-            details: 'Invoice renewal payment failed: CARD_DECLINED (Incorrect Expiry / Bounces).'
+            details: 'TERMINATED: Account subscription cancelled. Final bill settled.'
+          });
+          updatedList[i] = u;
+          didChange = true;
+          addTelemetry(`[CHURN EVENT] ⚠️ Lost Account: ${u.name} transitioned to CHURNED. Lost MRR: $${u.mrr}/mo.`);
+          break;
+        }
+      }
+
+      if (didChange) {
+        setUsers(updatedList);
+        return; // Skip new random events on this tick to avoid clogging feed
+      }
+
+      // 2. Roll probability for an API failure (Outage Rate) -> Transitions ACTIVE to FRUSTRATED
+      if (Math.random() * 100 < outageRate) {
+        const activeUsers = updatedList.filter(u => u.state === 'active');
+        if (activeUsers.length > 0) {
+          const target = activeUsers[Math.floor(Math.random() * activeUsers.length)];
+          const u = { ...target };
+          
+          u.state = 'frustrated';
+          u.healthScore = Math.max(10, u.healthScore - 12);
+          u.churnProbability = Math.min(95, u.churnProbability + 18);
+          if (!u.warningFlags.includes('Usage Decay')) {
+            u.warningFlags.push('Usage Decay');
+          }
+          u.activityLogs.unshift({
+            date: new Date().toISOString().split('T')[0],
+            type: 'support_open',
+            details: 'ALERT: Automated sensor detected API connection timeout (HTTP 504).'
           });
 
-          // Add SHAP adjustments
-          const billFactor = targetUser.churnFactors.find(f => f.name === 'Failed Invoices');
+          const trendFactor = u.churnFactors.find(f => f.name === 'Usage Trend');
+          if (trendFactor) {
+            trendFactor.impact = Math.min(45, trendFactor.impact + 10);
+          }
+
+          setUsers(prev => prev.map(item => item.id === u.id ? u : item));
+          addTelemetry(`[State Transition] API Outage: ${u.name} transitioned from ACTIVE to FRUSTRATED. Churn risk spiked to ${u.churnProbability}%.`);
+          return;
+        }
+      }
+
+      // 3. Roll probability for credit card / renewal failure (Billing failure Rate) -> Transitions ACTIVE to FRUSTRATED
+      if (Math.random() * 100 < billingFailureRate) {
+        const activeUsers = updatedList.filter(u => u.state === 'active');
+        if (activeUsers.length > 0) {
+          const target = activeUsers[Math.floor(Math.random() * activeUsers.length)];
+          const u = { ...target };
+
+          u.state = 'frustrated';
+          u.metrics.failedPayments = 1;
+          u.healthScore = Math.max(15, u.healthScore - 18);
+          u.churnProbability = Math.min(90, u.churnProbability + 22);
+          if (!u.warningFlags.includes('Failed Payment')) {
+            u.warningFlags.push('Failed Payment');
+          }
+          u.activityLogs.unshift({
+            date: new Date().toISOString().split('T')[0],
+            type: 'payment_fail',
+            details: 'Invoice renewal payment failed: CARD_DECLINED (Declined by Bank).'
+          });
+
+          const billFactor = u.churnFactors.find(f => f.name === 'Failed Invoices');
           if (billFactor) {
             billFactor.impact = Math.min(40, billFactor.impact + 20);
           } else {
-            targetUser.churnFactors.push({ name: 'Failed Invoices', impact: 20 });
+            u.churnFactors.push({ name: 'Failed Invoices', impact: 20 });
           }
 
-          setUsers(prev => prev.map(u => u.id === targetUser.id ? targetUser : u));
-          addTelemetry(`Billing Warning: Renewal failed for ${targetUser.name}. SubSentry triggered grace-period dunning.`);
+          setUsers(prev => prev.map(item => item.id === u.id ? u : item));
+          addTelemetry(`[State Transition] Billing Issue: ${u.name} transitioned from ACTIVE to FRUSTRATED. Grace-period active.`);
+          return;
         }
       }
 
-      // 3. Regular login simulation
-      if (Math.random() > 0.5) {
-        const targetUser = users[Math.floor(Math.random() * users.length)];
-        addTelemetry(`Telemetry Ping: Heartbeat received from ${targetUser.name} (${targetUser.plan})`);
+      // 4. Regular login simulation heartbeat
+      if (Math.random() > 0.4) {
+        const activeUsers = updatedList.filter(u => u.state === 'active');
+        if (activeUsers.length > 0) {
+          const target = activeUsers[Math.floor(Math.random() * activeUsers.length)];
+          addTelemetry(`Telemetry Ping: Heartbeat received from active node ${target.name} (${target.location})`);
+        }
       }
 
     }, 4500);
 
     return () => clearInterval(interval);
-  }, [isSimulating, outageRate, billingFailureRate, users]);
+  }, [isSimulating, outageRate, billingFailureRate]);
 
   const avgHealth = Math.round(users.reduce((acc, u) => acc + u.healthScore, 0) / users.length);
   const totalMRR = users.reduce((acc, u) => acc + u.mrr, 0);
@@ -393,6 +460,18 @@ function App() {
                     <span className={`text-[9px] font-bold ${textMuted}`}>Critical Alert</span>
                     <span className="font-bold text-earth-clay mt-0.5">{criticalCount} Accounts</span>
                   </div>
+                  
+                  <button 
+                    onClick={() => setShowModelModal(true)}
+                    className={`ml-4 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all duration-200 cursor-pointer ${
+                      isDark 
+                        ? 'bg-earth-bg/10 border-earth-bg/25 text-earth-bg hover:bg-earth-bg/20' 
+                        : 'bg-earth-cocoa border-earth-cocoa/20 text-earth-bg hover:bg-earth-clay'
+                    }`}
+                  >
+                    <Cpu className="w-3.5 h-3.5 text-earth-clay animate-pulse" />
+                    <span>ML Insights</span>
+                  </button>
                 </div>
               </div>
 
@@ -517,7 +596,20 @@ function App() {
                           <td className="py-3 px-4 flex items-center gap-3">
                             <img src={u.avatar} alt={u.name} className={`w-8 h-8 rounded-full object-cover border ${isDark ? 'border-earth-bg/25' : 'border-earth-sage/40'}`} />
                             <div>
-                              <span className={`font-bold block ${textPrimary}`}>{u.name}</span>
+                              <div className="flex items-center gap-2">
+                                <span className={`font-bold block ${textPrimary}`}>{u.name}</span>
+                                <span className={`text-[8px] px-1.5 py-0.2 rounded font-bold uppercase tracking-wider ${
+                                  u.state === 'active' 
+                                    ? 'bg-earth-sage/20 border border-earth-sage/35 text-earth-sage'
+                                    : u.state === 'frustrated'
+                                    ? 'bg-earth-clay/20 border border-earth-clay/35 text-earth-clay animate-pulse'
+                                    : u.state === 'disengaged'
+                                    ? (isDark ? 'bg-earth-bg/10 border border-earth-bg/25 text-earth-bg/85' : 'bg-earth-cocoa/10 border border-earth-cocoa/25 text-earth-cocoa/85')
+                                    : 'bg-black/10 border border-black/20 text-black/50'
+                                }`}>
+                                  {u.state}
+                                </span>
+                              </div>
                               <span className={`text-[10px] ${textMuted}`}>{u.email}</span>
                             </div>
                           </td>
@@ -596,6 +688,78 @@ function App() {
       <footer className="bg-earth-bg border-t border-earth-sage/35 py-6 text-center text-earth-cocoa/50 text-[10px] select-none mt-auto">
         <p>&copy; 2026 SubSentry Platform. Built for Subscription Health & Churn Optimization. Real-time RAG Pipeline Active.</p>
       </footer>
+
+      {/* 4. Machine Learning Model Analytics Modal Overlay */}
+      {showModelModal && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300"
+          onClick={() => setShowModelModal(false)}
+        >
+          <div 
+            className="bg-[#4E220F] border border-earth-sage/30 rounded-3xl max-w-4xl w-full p-6 text-left relative shadow-2xl flex flex-col gap-4 animate-scaleUp max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex justify-between items-center border-b border-earth-sage/20 pb-4">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-earth-sage tracking-wider">SubSentry Analytics Engine</span>
+                <h2 className="text-lg font-bold text-earth-bg mt-0.5">XGBoost & Random Forest Model Analytics</h2>
+              </div>
+              <button 
+                onClick={() => setShowModelModal(false)}
+                className="text-earth-bg/60 hover:text-earth-bg text-sm font-bold cursor-pointer bg-earth-bg/5 hover:bg-earth-bg/10 px-3 py-1.5 rounded-xl transition-all"
+              >
+                Close
+              </button>
+            </div>
+
+            {/* Model Overview Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-2">
+              <div className="bg-earth-bg/5 border border-earth-sage/15 p-4 rounded-2xl">
+                <span className="text-[9px] font-bold text-earth-sage/75 block">TRAINING DATASET</span>
+                <span className="text-base font-extrabold text-earth-bg mt-1 block">IBM Telco Churn</span>
+                <span className="text-[10px] text-earth-bg/50 mt-0.5 block">7,043 Customer Profiles</span>
+              </div>
+              <div className="bg-earth-bg/5 border border-earth-sage/15 p-4 rounded-2xl">
+                <span className="text-[9px] font-bold text-earth-sage/75 block">CLASSIFIER MODEL</span>
+                <span className="text-base font-extrabold text-earth-bg mt-1 block">Random Forest</span>
+                <span className="text-[10px] text-earth-bg/50 mt-0.5 block">n_estimators=100, max_depth=10</span>
+              </div>
+              <div className="bg-earth-bg/5 border border-earth-sage/15 p-4 rounded-2xl">
+                <span className="text-[9px] font-bold text-earth-sage/75 block">ROC-AUC SCORE</span>
+                <span className="text-base font-extrabold text-earth-sage mt-1 block">0.834 / 1.0</span>
+                <span className="text-[10px] text-earth-bg/50 mt-0.5 block">Strong predictive separation</span>
+              </div>
+              <div className="bg-earth-bg/5 border border-earth-sage/15 p-4 rounded-2xl">
+                <span className="text-[9px] font-bold text-earth-sage/75 block">TEST ACCURACY</span>
+                <span className="text-base font-extrabold text-earth-bg mt-1 block">80.5%</span>
+                <span className="text-[10px] text-earth-bg/50 mt-0.5 block">Stratified 20% validation split</span>
+              </div>
+            </div>
+
+            {/* Plot Evaluation Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+              {/* Confusion Matrix Card */}
+              <div className="bg-earth-bg/5 border border-earth-sage/15 p-5 rounded-2xl flex flex-col gap-3">
+                <h4 className="text-xs font-bold text-earth-bg uppercase tracking-wider">Confusion Matrix (Validation)</h4>
+                <img src="/confusion_matrix.png" alt="Confusion Matrix" className="w-full h-auto rounded-xl border border-earth-sage/20 object-cover bg-white" />
+                <p className="text-[10px] text-earth-bg/60 leading-normal">
+                  <strong>Interpretation</strong>: Out of 1,359 test cases, the model accurately flags <strong>168 actual churn accounts</strong> (True Positives) and <strong>968 retained accounts</strong> (True Negatives). The precision-recall profile helps CSMs act proactively without flooding the feed with false warnings.
+                </p>
+              </div>
+
+              {/* ROC Curve Card */}
+              <div className="bg-earth-bg/5 border border-earth-sage/15 p-5 rounded-2xl flex flex-col gap-3">
+                <h4 className="text-xs font-bold text-earth-bg uppercase tracking-wider">Receiver Operating Characteristic (ROC)</h4>
+                <img src="/roc_auc_curve.png" alt="ROC Curve" className="w-full h-auto rounded-xl border border-earth-sage/20 object-cover bg-white" />
+                <p className="text-[10px] text-earth-bg/60 leading-normal">
+                  <strong>Interpretation</strong>: The Area Under Curve (<strong>AUC = 0.834</strong>) validates that SubSentry's ML classifier successfully distinguishes low-risk accounts from true churn risk. This metrics profile ensures the scoring engine scales reliably across enterprise portfolios.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

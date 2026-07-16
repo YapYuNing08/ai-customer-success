@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+@theme {
+  --color-earth-bg: #F7F1DE;
+  --color-earth-sage: #B0BA99;
+  --color-earth-clay: #9D6638;
+  --color-earth-cocoa: #4E220F;
+}
+
+/* Custom scrollbar utilities for the Earthy theme */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(247, 241, 222, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(78, 34, 15, 0.2);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(78, 34, 15, 0.4);
+}
+
+/* Smooth transitions */
+.transition-all-300 {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes pulse-glow-earth {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+    box-shadow: 0 0 10px rgba(176, 186, 153, 0.4);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15);
+    box-shadow: 0 0 20px rgba(176, 186, 153, 0.8), 0 0 30px rgba(176, 186, 153, 0.4);
+  }
+}
+
+.animate-pulse-glow-earth {
+  animation: pulse-glow-earth 2.5s infinite ease-in-out;
+}

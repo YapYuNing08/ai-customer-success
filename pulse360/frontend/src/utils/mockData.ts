@@ -41,6 +41,7 @@ export interface ActiveUser {
   churnFactors: ChurnFactor[];
   activityLogs: UserActivityLog[];
   pastJourneys: PastJourney[];
+  state: 'active' | 'frustrated' | 'disengaged' | 'churned';
 }
 
 export interface CoordinateMap {
@@ -380,7 +381,12 @@ export const mergeBackendCustomer = (backendCust: any): ActiveUser => {
       impact: Math.round(r.contribution * 100)
     })),
     activityLogs: meta.activityLogs,
-    pastJourneys: meta.pastJourneys
+    pastJourneys: meta.pastJourneys,
+    state: backendCust.state || (
+      backendCust.health_score < 40 ? 'frustrated' :
+      backendCust.health_score < 70 ? 'disengaged' :
+      'active'
+    )
   };
 };
 
