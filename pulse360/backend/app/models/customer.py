@@ -24,6 +24,7 @@ class CustomerSummary(BaseModel):
     churn_probability: float
     risk_tier: RiskTier
     monthly_usage_pct: float
+    payment_status: Optional[str] = None
 
 
 class Customer(BaseModel):
@@ -38,6 +39,7 @@ class Customer(BaseModel):
     shap_reasons: List[ShapReason]
     recommended_action: str
     monthly_usage_pct: float
+    payment_status: Optional[str] = None
 
 
 class Recommendation(BaseModel):

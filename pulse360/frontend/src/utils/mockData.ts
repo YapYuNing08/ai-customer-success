@@ -64,7 +64,7 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     lat: 37.7749,
     lng: -122.4194,
     mrr: 4500,
-    warningFlags: ['Usage Decay'],
+    warningFlags: ['Using It Less'],
     activityLogs: [
       { date: '2026-07-15', type: 'feature_use', details: 'Used Advanced Analytics dashboard' },
       { date: '2026-07-14', type: 'login', details: 'Logged in from desktop browser' },
@@ -79,7 +79,7 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     lat: 35.6762,
     lng: 139.6503,
     mrr: 1500,
-    warningFlags: ['Low Feature Adoption'],
+    warningFlags: ['Not Using Key Features'],
     activityLogs: [
       { date: '2026-07-12', type: 'login', details: 'Logged in for 2 minutes' }
     ],
@@ -144,7 +144,7 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     lat: -1.2921,
     lng: 36.8219,
     mrr: 1200,
-    warningFlags: ['Low Feature Adoption'],
+    warningFlags: ['Not Using Key Features'],
     activityLogs: [
       { date: '2026-07-15', type: 'login', details: 'Unusual low session login (30s)' }
     ],
@@ -157,7 +157,7 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     lat: 1.3521,
     lng: 103.8198,
     mrr: 5000,
-    warningFlags: ['High Churn Risk'],
+    warningFlags: ['Likely to Leave'],
     activityLogs: [
       { date: '2026-07-16', type: 'support_open', details: 'Opened critical bug report on API latency' }
     ],
@@ -343,13 +343,84 @@ const offlineUsage: Record<string, number> = {
   "cus_016": 91.0, "cus_017": 65.0, "cus_018": 48.0, "cus_019": 94.0, "cus_020": 32.0
 };
 
+// The Telco dataset has no geography, so backend customers outside the static
+// metadata map get a deterministic pseudo-location: hash of the customer ID
+// picks a city, plus a small jitter so same-city dots don't stack on the globe.
+const GLOBE_CITIES: { city: string; lat: number; lng: number }[] = [
+  { city: 'San Francisco, USA', lat: 37.7749, lng: -122.4194 },
+  { city: 'New York, USA', lat: 40.7128, lng: -74.006 },
+  { city: 'Austin, USA', lat: 30.2672, lng: -97.7431 },
+  { city: 'Chicago, USA', lat: 41.8781, lng: -87.6298 },
+  { city: 'Seattle, USA', lat: 47.6062, lng: -122.3321 },
+  { city: 'Toronto, Canada', lat: 43.6532, lng: -79.3832 },
+  { city: 'Vancouver, Canada', lat: 49.2827, lng: -123.1207 },
+  { city: 'Mexico City, Mexico', lat: 19.4326, lng: -99.1332 },
+  { city: 'São Paulo, Brazil', lat: -23.5505, lng: -46.6333 },
+  { city: 'Buenos Aires, Argentina', lat: -34.6037, lng: -58.3816 },
+  { city: 'Santiago, Chile', lat: -33.4489, lng: -70.6693 },
+  { city: 'Bogotá, Colombia', lat: 4.711, lng: -74.0721 },
+  { city: 'London, UK', lat: 51.5074, lng: -0.1278 },
+  { city: 'Manchester, UK', lat: 53.4808, lng: -2.2426 },
+  { city: 'Paris, France', lat: 48.8566, lng: 2.3522 },
+  { city: 'Berlin, Germany', lat: 52.52, lng: 13.405 },
+  { city: 'Munich, Germany', lat: 48.1351, lng: 11.582 },
+  { city: 'Amsterdam, Netherlands', lat: 52.3676, lng: 4.9041 },
+  { city: 'Madrid, Spain', lat: 40.4168, lng: -3.7038 },
+  { city: 'Lisbon, Portugal', lat: 38.7223, lng: -9.1393 },
+  { city: 'Milan, Italy', lat: 45.4642, lng: 9.19 },
+  { city: 'Stockholm, Sweden', lat: 59.3293, lng: 18.0686 },
+  { city: 'Warsaw, Poland', lat: 52.2297, lng: 21.0122 },
+  { city: 'Dublin, Ireland', lat: 53.3498, lng: -6.2603 },
+  { city: 'Zurich, Switzerland', lat: 47.3769, lng: 8.5417 },
+  { city: 'Lagos, Nigeria', lat: 6.5244, lng: 3.3792 },
+  { city: 'Nairobi, Kenya', lat: -1.2921, lng: 36.8219 },
+  { city: 'Cape Town, South Africa', lat: -33.9249, lng: 18.4241 },
+  { city: 'Cairo, Egypt', lat: 30.0444, lng: 31.2357 },
+  { city: 'Dubai, UAE', lat: 25.2048, lng: 55.2708 },
+  { city: 'Tel Aviv, Israel', lat: 32.0853, lng: 34.7818 },
+  { city: 'Istanbul, Turkey', lat: 41.0082, lng: 28.9784 },
+  { city: 'Mumbai, India', lat: 19.076, lng: 72.8777 },
+  { city: 'Bengaluru, India', lat: 12.9716, lng: 77.5946 },
+  { city: 'Delhi, India', lat: 28.7041, lng: 77.1025 },
+  { city: 'Singapore', lat: 1.3521, lng: 103.8198 },
+  { city: 'Kuala Lumpur, Malaysia', lat: 3.139, lng: 101.6869 },
+  { city: 'Jakarta, Indonesia', lat: -6.2088, lng: 106.8456 },
+  { city: 'Bangkok, Thailand', lat: 13.7563, lng: 100.5018 },
+  { city: 'Manila, Philippines', lat: 14.5995, lng: 120.9842 },
+  { city: 'Ho Chi Minh City, Vietnam', lat: 10.8231, lng: 106.6297 },
+  { city: 'Hong Kong', lat: 22.3193, lng: 114.1694 },
+  { city: 'Taipei, Taiwan', lat: 25.033, lng: 121.5654 },
+  { city: 'Seoul, South Korea', lat: 37.5665, lng: 126.978 },
+  { city: 'Tokyo, Japan', lat: 35.6762, lng: 139.6503 },
+  { city: 'Osaka, Japan', lat: 34.6937, lng: 135.5023 },
+  { city: 'Sydney, Australia', lat: -33.8688, lng: 151.2093 },
+  { city: 'Melbourne, Australia', lat: -37.8136, lng: 144.9631 },
+  { city: 'Auckland, New Zealand', lat: -36.8485, lng: 174.7633 },
+];
+
+const hashId = (s: string): number => {
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h;
+};
+
+const pseudoGeo = (customerId: string) => {
+  const h = hashId(customerId);
+  const city = GLOBE_CITIES[h % GLOBE_CITIES.length];
+  // Jitter of up to ±1.5° (~165 km) keeps dots near their city but distinct.
+  const jitterLat = (((h >> 8) % 100) / 100) * 3 - 1.5;
+  const jitterLng = (((h >> 16) % 100) / 100) * 3 - 1.5;
+  return { location: city.city, lat: city.lat + jitterLat, lng: city.lng + jitterLng };
+};
+
 export const mergeBackendCustomer = (backendCust: any): ActiveUser => {
+  const geo = pseudoGeo(backendCust.customer_id);
   const meta = staticCustomerMetadata[backendCust.customer_id] || {
     email: `${backendCust.customer_id}@example.com`,
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
-    location: 'Unknown Location',
-    lat: 0,
-    lng: 0,
+    location: geo.location,
+    lat: geo.lat,
+    lng: geo.lng,
     mrr: backendCust.subscription_plan === 'Enterprise' ? 4000 : backendCust.subscription_plan === 'Pro' ? 1200 : 400,
     warningFlags: [],
     activityLogs: [],
@@ -368,7 +439,7 @@ export const mergeBackendCustomer = (backendCust: any): ActiveUser => {
     mrr: meta.mrr,
     healthScore: Math.round(backendCust.health_score),
     churnProbability: Math.round(backendCust.churn_probability * 100),
-    warningFlags: backendCust.risk_tier === 'high' ? [...new Set([...meta.warningFlags, 'High Churn Risk'])] : meta.warningFlags,
+    warningFlags: backendCust.risk_tier === 'high' ? [...new Set([...meta.warningFlags, 'Likely to Leave'])] : meta.warningFlags,
     metrics: {
       usageVelocity: backendCust.monthly_usage_pct ? Number((backendCust.monthly_usage_pct / 100).toFixed(2)) : 0.8,
       featureAdoption: 0.5,
