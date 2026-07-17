@@ -45,6 +45,8 @@ function App() {
   ]);
   const [pulseTrigger, setPulseTrigger] = useState(0);
   const [showModelModal, setShowModelModal] = useState(false);
+  const [workspaceTab, setWorkspaceTab] = useState<'admin' | 'customer'>('admin');
+  const [customerPortalUserId, setCustomerPortalUserId] = useState<string>('cus_001');
 
   const consoleRef = useRef<HTMLDivElement>(null);
 
@@ -82,6 +84,46 @@ function App() {
   const addTelemetry = (msg: string) => {
     const time = new Date().toLocaleTimeString();
     setTelemetryFeed(prev => [`[${time}] ${msg}`, ...prev.slice(0, 15)]);
+  };
+
+  const handleCustomerSelfAction = (customerId: string, action: string) => {
+    setUsers(prev => prev.map(u => {
+      if (u.id !== customerId) return u;
+      const updated = { ...u };
+      if (action === 'downgrade') {
+        updated.plan = 'Starter';
+        updated.mrr = 150;
+        updated.state = 'active';
+        updated.healthScore = Math.min(96, updated.healthScore + 25);
+        updated.churnProbability = Math.max(3, updated.churnProbability - 35);
+        updated.warningFlags = updated.warningFlags.filter(f => f !== 'Usage Decay' && f !== 'Failed Payment');
+        updated.activityLogs = [
+          {
+            date: new Date().toISOString().split('T')[0],
+            details: 'CUSTOMER OPTIMIZATION: Self-downgraded subscription to Starter Plan ($150/mo) to match actual limits.'
+          },
+          ...updated.activityLogs
+        ];
+        addTelemetry(`[Customer Action] ${updated.name} self-downgraded subscription to Starter Plan ($150/mo). Active customer trust score maximized!`);
+      } else if (action === 'extend_grace') {
+        updated.state = 'active';
+        updated.metrics.failedPayments = 0;
+        updated.healthScore = Math.min(90, updated.healthScore + 20);
+        updated.churnProbability = Math.max(10, updated.churnProbability - 25);
+        updated.warningFlags = updated.warningFlags.filter(f => f !== 'Failed Payment');
+        updated.activityLogs = [
+          {
+            date: new Date().toISOString().split('T')[0],
+            details: 'BILLING REPAIR: Requested 7-day payment grace extension. Services restored to fully active.'
+          },
+          ...updated.activityLogs
+        ];
+        addTelemetry(`[Customer Action] ${updated.name} requested 7-day billing grace period. Cancellation risk resolved.`);
+      } else if (action === 'refresh') {
+        addTelemetry(`[Customer Activity] ${updated.name} executed automated value health check. System operating normally.`);
+      }
+      return updated;
+    }));
   };
 
   // Keep users list in ref to prevent stale closure in simulation interval
@@ -237,6 +279,8 @@ function App() {
   const textPrimary = isDark ? 'console-text-primary' : 'text-earth-cocoa';
   const textHeading = isDark ? 'text-earth-bg/75' : 'text-earth-cocoa/70';
 
+  const customerUser = users.find(u => u.id === customerPortalUserId) || users[0];
+
   return (
     <div className={`min-h-screen font-sans flex flex-col antialiased transition-colors duration-300 ${isDark ? 'console-bg-dark' : 'bg-earth-bg text-earth-cocoa'}`}>
       {/* 1. Navigation Bar */}
@@ -265,7 +309,7 @@ function App() {
             onClick={() => setCurrentPage('console')} 
             className={`hover:text-earth-clay transition-colors cursor-pointer ${currentPage === 'console' ? 'text-earth-clay underline decoration-2 font-black' : (isDark ? 'text-earth-bg/70' : 'text-earth-cocoa/75')}`}
           >
-            Admin Console
+            Workspace Console
           </button>
         </nav>
 
@@ -309,7 +353,7 @@ function App() {
                 
                 {/* Glowing Badge */}
                 <div className="self-start bg-earth-sage/20 border border-earth-sage/40 text-earth-cocoa text-[10px] px-3 py-1 rounded-full font-extrabold uppercase tracking-widest shadow-sm">
-                  ⚡ Explainable Churn ML & RAG Playbooks
+                  ⚡ Smart Customer Retention Assistant
                 </div>
 
                 {/* Hero Heading */}
@@ -319,7 +363,7 @@ function App() {
 
                 {/* Hero Description */}
                 <p className="text-sm md:text-base text-earth-cocoa/80 leading-relaxed">
-                  SubSentry analyzes real-time customer telemetries, maps live global sessions, explains customer friction points using **SHAP (Explainable AI)**, and retrieves past retention journeys using **semantic RAG** to draft personalized win-back playbooks.
+                  SubSentry is an intelligent customer success copilot that prevents client cancellations (churn) before they happen. By tracking customer satisfaction, billing status, and platform usage, we predict which accounts are at risk and automatically recommend simple playbooks to win them back.
                 </p>
 
                 {/* Hero CTAs */}
@@ -328,7 +372,7 @@ function App() {
                     onClick={scrollToConsole}
                     className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg px-6 py-3.5 rounded-2xl text-sm font-bold shadow-lg shadow-earth-cocoa/25 transition-all duration-200 flex items-center gap-2 group cursor-pointer"
                   >
-                    <span>Launch Admin Console</span>
+                    <span>Launch Workspace Console</span>
                     <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </button>
                   
@@ -347,19 +391,19 @@ function App() {
                 <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-earth-sage/20 text-xs text-earth-cocoa/70 font-semibold">
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-earth-clay" />
-                    <span>Real-time Telemetries</span>
+                    <span>Live Activity Tracking</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-earth-sage" />
-                    <span>SHAP Explanations</span>
+                    <span>Smart Risk Forecasting</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-earth-clay" />
-                    <span>RAG Playbook Assistant</span>
+                    <span>Recommended Playbooks</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-earth-sage" />
-                    <span>Failed Billing Grace-Periods</span>
+                    <span>Billing Issue Alerts</span>
                   </div>
                 </div>
               </div>
@@ -391,8 +435,8 @@ function App() {
                 <div className="text-center max-w-xl mx-auto flex flex-col gap-2">
                   <span className="text-[10px] uppercase font-extrabold tracking-widest text-earth-clay">Advanced Engine Features</span>
                   <h2 className="text-2xl font-extrabold text-earth-cocoa">Optimized Retention, Grounded in Data.</h2>
-                  <p className="text-xs text-earth-cocoa/75 leading-relaxed">
-                    SaaS churn is often a black box. SubSentry leverages interpretability algorithms and conversational RAG models to give your Customer Success Team clear, actionable intervention playbooks.
+                  <p className="text-sm text-earth-cocoa/80 leading-relaxed max-w-2xl mx-auto">
+                    Client cancellations are often hard to anticipate. SubSentry combines smart risk forecasts with historical customer case resolution histories to give your account managers clear, immediate playbooks to retain users.
                   </p>
                 </div>
 
@@ -402,9 +446,9 @@ function App() {
                     <div className="bg-earth-sage/20 text-earth-cocoa p-2.5 rounded-xl w-fit">
                       <Cpu className="w-5 h-5 text-earth-clay" />
                     </div>
-                    <h3 className="font-bold text-earth-cocoa text-sm">Explainable Machine Learning</h3>
+                    <h3 className="font-bold text-earth-cocoa text-sm">AI Churn Predictor</h3>
                     <p className="text-xs text-earth-cocoa/70 leading-relaxed">
-                      We go beyond binary churn prediction. We compute Shapley additive values for every client, mapping the specific metrics driving risks up or down.
+                      We analyze user activity, billing issues, and support logs to flag at-risk accounts. SubSentry explains exactly why a customer is unhappy, so you can address the root cause.
                     </p>
                   </div>
 
@@ -413,9 +457,9 @@ function App() {
                     <div className="bg-earth-sage/20 text-earth-cocoa p-2.5 rounded-xl w-fit">
                       <MessageSquare className="w-5 h-5 text-earth-clay" />
                     </div>
-                    <h3 className="font-bold text-earth-cocoa text-sm">RAG Journeys Search</h3>
+                    <h3 className="font-bold text-earth-cocoa text-sm">Smart Resolution Finder</h3>
                     <p className="text-xs text-earth-cocoa/70 leading-relaxed">
-                      Semantic vector lookup maps your current at-risk users against similar past customer support histories, identifying which strategies successfully retained them.
+                      SubSentry searches historical support logs and resolutions to find the exact strategies that worked for similar customer issues in the past.
                     </p>
                   </div>
 
@@ -424,9 +468,9 @@ function App() {
                     <div className="bg-earth-sage/20 text-earth-cocoa p-2.5 rounded-xl w-fit">
                       <HeartHandshake className="w-5 h-5 text-earth-clay" />
                     </div>
-                    <h3 className="font-bold text-earth-cocoa text-sm">In-App Value Injections</h3>
+                    <h3 className="font-bold text-earth-cocoa text-sm">One-Click Customer Rescue</h3>
                     <p className="text-xs text-earth-cocoa/70 leading-relaxed">
-                      Equip your account managers with one-click actions: extend grace periods, send dynamic feature tutorials, or schedule feedback sessions to drop risk in real-time.
+                      Equip customer success agents with instant remedies—like extending billing grace periods, triggering guided walkthroughs, or scheduling calls—to restore client health in seconds.
                     </p>
                   </div>
                 </div>
@@ -475,8 +519,10 @@ function App() {
                 </div>
               </div>
 
-              {/* Grid: Simulation Controls & Telemetry Feed */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch animate-fadeIn">
+              {workspaceTab === 'admin' && (
+                <>
+                  {/* Grid: Simulation Controls & Telemetry Feed */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch animate-fadeIn">
                 
                 {/* Sandbox controls (Span 5) */}
                 <div className={`lg:col-span-5 border rounded-2xl p-5 flex flex-col gap-4 shadow-sm transition-all duration-300 ${isDark ? 'console-card-dark' : 'bg-[#efe9d2]/30 border-earth-sage/30'}`}>
@@ -678,10 +724,205 @@ function App() {
                 </div>
               </div>
 
-            </div>
+            </>
+          )}
 
-          </div>
-        )}
+          {workspaceTab === 'customer' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fadeIn w-full">
+              {/* Left side (Span 4): Account Summary & Profile Switcher */}
+              <div className="lg:col-span-4 flex flex-col gap-6 w-full">
+                {/* Profile Switcher */}
+                <div className="console-card-dark p-5 rounded-2xl flex flex-col gap-3">
+                  <span className="console-text-muted text-[10px] font-bold uppercase tracking-wider">CSM Sandbox Switcher</span>
+                  <label className="text-xs text-earth-bg/60 font-semibold leading-relaxed">
+                    Switch customer profile to test different customer-facing scenarios (low usage optimization or payment failures).
+                  </label>
+                  <select
+                    value={customerPortalUserId}
+                    onChange={(e) => setCustomerPortalUserId(e.target.value)}
+                    className="bg-earth-cocoa border console-border rounded-xl p-2.5 text-xs console-text-primary font-bold outline-none cursor-pointer focus:border-earth-clay w-full"
+                  >
+                    {users.map(u => (
+                      <option key={u.id} value={u.id} className="bg-earth-cocoa console-text-primary">
+                        {u.name} ({u.state.toUpperCase()})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Client Profile Summary Card */}
+                <div className="console-card-dark p-6 rounded-2xl flex flex-col gap-4">
+                  <div className="flex items-center gap-3">
+                    <img src={customerUser.avatar} alt={customerUser.name} className="w-12 h-12 rounded-full object-cover border-2 border-earth-sage" />
+                    <div className="text-left">
+                      <h3 className="text-base font-extrabold text-earth-bg">{customerUser.name}</h3>
+                      <span className="text-[10px] text-earth-bg/60 font-medium block mt-0.5">{customerUser.email}</span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-earth-sage/15 pt-4 flex flex-col gap-3 text-xs text-earth-bg/85">
+                    <div className="flex justify-between">
+                      <span className="console-text-muted font-bold">Subscription Plan</span>
+                      <span className="font-bold text-earth-sage">{customerUser.plan}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="console-text-muted font-bold">Monthly Value</span>
+                      <span className="font-extrabold text-earth-bg">${customerUser.mrr}/mo</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="console-text-muted font-bold">Status Code</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                        customerUser.state === 'active' 
+                          ? 'bg-earth-sage/20 text-earth-sage border border-earth-sage/40' 
+                          : customerUser.state === 'frustrated'
+                          ? 'bg-earth-clay/20 text-earth-clay border border-earth-clay/40 animate-pulse'
+                          : 'bg-earth-bg/10 text-earth-bg/85 border border-earth-bg/20'
+                      }`}>
+                        {customerUser.state}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right side (Span 8): Self-Service Value Dashboard */}
+              <div className="lg:col-span-8 flex flex-col gap-6 w-full">
+                {/* Main value area */}
+                <div className="console-card-dark p-6 rounded-3xl flex flex-col gap-6">
+                  <div className="flex flex-col gap-1 border-b border-earth-sage/15 pb-4 text-left">
+                    <span className="text-[10px] uppercase font-bold text-earth-sage tracking-wider">Client Self-Service Hub</span>
+                    <h3 className="text-lg font-bold text-earth-bg">Your Subscription Health & Resource Value</h3>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {/* Gauge 1: Usage Limits */}
+                    <div className="bg-earth-bg/5 border border-earth-sage/15 p-5 rounded-2xl flex flex-col gap-3 text-left">
+                      <span className="text-[10px] font-bold text-earth-sage/75">PACKAGE LIMITS UTILIZATION</span>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <span className="text-3xl font-extrabold text-earth-bg">{Math.round(customerUser.metrics.monthlyUsage * 100)}%</span>
+                        <span className="text-xs text-earth-bg/50">of monthly quota used</span>
+                      </div>
+                      <div className="w-full bg-earth-bg/10 rounded-full h-2 mt-2">
+                        <div 
+                          className={`h-2 rounded-full ${
+                            customerUser.metrics.monthlyUsage < 0.35 ? 'bg-earth-clay' : 'bg-earth-sage'
+                          }`}
+                          style={{ width: `${customerUser.metrics.monthlyUsage * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-earth-bg/60 mt-1 leading-normal">
+                        Based on your login sessions, data throughput, and active seat allocation.
+                      </span>
+                    </div>
+
+                    {/* SLA health score (customer perspective of platform health) */}
+                    <div className="bg-earth-bg/5 border border-earth-sage/15 p-5 rounded-2xl flex flex-col gap-3 text-left">
+                      <span className="text-[10px] font-bold text-earth-sage/75">YOUR SERVICE HEALTH SCORE</span>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <span className="text-3xl font-extrabold text-earth-sage">{customerUser.healthScore}/100</span>
+                        <span className="text-xs text-earth-bg/50">Optimal platform health</span>
+                      </div>
+                      <div className="w-full bg-earth-bg/10 rounded-full h-2 mt-2">
+                        <div 
+                          className="h-2 rounded-full bg-earth-sage"
+                          style={{ width: `${customerUser.healthScore}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-earth-bg/60 mt-1 leading-normal">
+                        We track service uptime and response times to ensure your subscription remains stable.
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* DYNAMIC WOW FACTOR INTERVENTIONS SECTION */}
+                  <div className="mt-4 border-t border-earth-sage/15 pt-6 flex flex-col gap-4">
+                    <h4 className="text-xs font-bold text-earth-bg uppercase tracking-wider text-left">SubSentry Active Value Guard recommendations</h4>
+
+                    {/* Case A: Underutilization -> Trust-Building Downgrade Option */}
+                    {customerUser.metrics.monthlyUsage < 0.35 && customerUser.plan !== 'Starter' && (
+                      <div className="bg-earth-sage/10 border border-earth-sage/35 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all duration-300 animate-slideDown">
+                        <div className="flex-1 text-left">
+                          <h5 className="text-xs font-bold text-earth-sage uppercase tracking-wider flex items-center gap-1.5">
+                            <Cpu className="w-3.5 h-3.5 text-earth-sage" />
+                            Recommended Saving Action
+                          </h5>
+                          <p className="text-xs text-earth-bg mt-1.5 leading-relaxed">
+                            We noticed you are only using <strong>{Math.round(customerUser.metrics.monthlyUsage * 100)}%</strong> of your package limits. 
+                            Downgrade to the <strong>Starter Plan</strong> to save <strong>$1,500/mo</strong> while retaining your core features. We value your trust over empty spend!
+                          </p>
+                        </div>
+                        <button 
+                          onClick={() => handleCustomerSelfAction(customerUser.id, 'downgrade')}
+                          className="bg-earth-sage hover:bg-earth-sage/80 text-earth-cocoa font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer whitespace-nowrap"
+                        >
+                          Execute 1-Click Downgrade
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Case B: Payment Issue -> Request Grace-Extension Option */}
+                    {customerUser.state === 'frustrated' && customerUser.warningFlags.includes('Failed Payment') && (
+                      <div className="bg-earth-clay/10 border border-earth-clay/35 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all duration-300 animate-slideDown">
+                        <div className="flex-1 text-left">
+                          <h5 className="text-xs font-bold text-earth-clay uppercase tracking-wider flex items-center gap-1.5">
+                            ⚠️ Payment Delinquency Grace Alert
+                          </h5>
+                          <p className="text-xs text-earth-bg mt-1.5 leading-relaxed">
+                            Your invoice payment renewal failed (declined bank transaction). 
+                            Request an automatic <strong>7-day grace extension</strong> to keep services fully active while you contact your bank.
+                          </p>
+                        </div>
+                        <button 
+                          onClick={() => handleCustomerSelfAction(customerUser.id, 'extend_grace')}
+                          className="bg-earth-clay hover:bg-earth-clay/80 text-earth-bg font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer whitespace-nowrap"
+                        >
+                          Request 7-Day Extension
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Default State: Healthy Account -> Customer satisfaction and support center */}
+                    {!(customerUser.metrics.monthlyUsage < 0.35 && customerUser.plan !== 'Starter') && !(customerUser.state === 'frustrated' && customerUser.warningFlags.includes('Failed Payment')) && (
+                      <div className="bg-earth-bg/5 border border-earth-sage/15 p-5 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                        <div className="flex-1 text-left">
+                          <h5 className="text-xs font-bold text-earth-bg/75 uppercase tracking-wider">
+                            Subscription Status: Healthy
+                          </h5>
+                          <p className="text-xs text-earth-bg/60 mt-1.5 leading-relaxed">
+                            Your services are fully configured and functional. Uptime SLA is currently operating at 99.98% across all active regions.
+                          </p>
+                        </div>
+                        <button 
+                          onClick={() => handleCustomerSelfAction(customerUser.id, 'refresh')}
+                          className="border border-earth-sage/30 text-earth-bg/80 hover:bg-earth-bg/5 font-bold text-xs px-4 py-2.5 rounded-xl transition-all cursor-pointer whitespace-nowrap"
+                        >
+                          Run Value Health Check
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Service SLA log ticker */}
+                <div className="console-card-dark p-5 rounded-2xl flex flex-col gap-3">
+                  <span className="console-text-muted text-[10px] font-bold uppercase tracking-wider text-left">YOUR RECENT ACCOUNT HISTORY LOG</span>
+                  <div className="flex flex-col gap-2 max-h-[140px] overflow-y-auto">
+                    {customerUser.activityLogs.map((log, idx) => (
+                      <div key={idx} className="flex gap-2 text-[10px] text-earth-bg/75 items-start">
+                        <span className="font-bold text-earth-sage shrink-0">{log.date}</span>
+                        <span className="console-text-muted shrink-0">|</span>
+                        <span className="text-left flex-1 leading-normal">{log.details}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+        </div>
+      </div>
+    )}
       </main>
 
       {/* 3. Global Footer */}
