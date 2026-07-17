@@ -39,4 +39,13 @@ export function simulate(customerId, levers) {
   });
 }
 
+// POST /customers/{id}/simulate/explain — Gemini-written retention plan for
+// the same scenario (deterministic fallback text if the LLM is unavailable)
+export function explainSimulation(customerId, levers) {
+  return request(`/customers/${customerId}/simulate/explain`, {
+    method: "POST",
+    body: JSON.stringify(levers),
+  });
+}
+
 export { API_BASE_URL };

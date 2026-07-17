@@ -436,7 +436,9 @@ export const mergeBackendCustomer = (backendCust: any): ActiveUser => {
     lat: meta.lat,
     lng: meta.lng,
     plan: backendCust.subscription_plan,
-    mrr: meta.mrr,
+    // Prefer the customer's real monthly charges (Telco data) so revenue
+    // figures match the what-if simulator's revenue delta exactly.
+    mrr: backendCust.monthly_charges != null ? Math.round(backendCust.monthly_charges) : meta.mrr,
     healthScore: Math.round(backendCust.health_score),
     churnProbability: Math.round(backendCust.churn_probability * 100),
     warningFlags: backendCust.risk_tier === 'high' ? [...new Set([...meta.warningFlags, 'Likely to Leave'])] : meta.warningFlags,
