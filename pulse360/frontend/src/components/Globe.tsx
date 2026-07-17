@@ -127,9 +127,10 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users 
     activeUsersList.forEach((user) => {
       const position = latLngToVector3(user.lat, user.lng, 2.41);
 
-      let color = 0xb0ba99;
-      if (user.healthScore < 40) color = 0x4e220f;
-      else if (user.healthScore < 70) color = 0x9d6638;
+      // Status colors (deep variants — dots render over the light cream globe)
+      let color = 0x276b2b; // healthy
+      if (user.healthScore < 40) color = 0xa81e17; // critical
+      else if (user.healthScore < 70) color = 0xd97706; // at-risk
 
       // Core dot
       const dotGeometry = new THREE.SphereGeometry(0.08, 12, 12);
@@ -428,24 +429,24 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users 
               <span
                 className={`font-bold text-sm ${
                   activeUserPin.healthScore > 70
-                    ? 'text-earth-sage'
+                    ? 'text-status-healthy-deep'
                     : activeUserPin.healthScore > 40
-                    ? 'text-earth-clay'
-                    : 'text-earth-cocoa'
+                    ? 'text-status-risk-deep'
+                    : 'text-status-critical-deep'
                 }`}
               >
                 {activeUserPin.healthScore}/100
               </span>
             </div>
             <div className="bg-[#efe9d2]/60 p-2 rounded-xl border border-earth-sage/20">
-              <span className="text-earth-cocoa/60 block mb-0.5">Churn Prob.</span>
+              <span className="text-earth-cocoa/60 block mb-0.5">Risk of Leaving</span>
               <span
                 className={`font-bold text-sm ${
                   activeUserPin.churnProbability < 15
-                    ? 'text-earth-sage'
+                    ? 'text-status-healthy-deep'
                     : activeUserPin.churnProbability < 50
-                    ? 'text-earth-clay'
-                    : 'text-earth-cocoa'
+                    ? 'text-status-risk-deep'
+                    : 'text-status-critical-deep'
                 }`}
               >
                 {activeUserPin.churnProbability}%
@@ -459,7 +460,7 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users 
               {activeUserPin.warningFlags.map((flag) => (
                 <span
                   key={flag}
-                  className="bg-earth-clay/10 border border-earth-clay/30 text-earth-clay px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider"
+                  className="bg-status-risk-deep/10 border border-status-risk-deep/35 text-status-risk-deep px-1.5 py-0.5 rounded text-[9px] uppercase font-bold tracking-wider"
                 >
                   {flag}
                 </span>
@@ -472,7 +473,7 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users 
             onClick={() => onSelectUser(activeUserPin)}
             className="w-full bg-earth-cocoa hover:bg-earth-clay text-earth-bg rounded-xl py-2.5 text-xs font-bold shadow-lg shadow-earth-cocoa/20 transition-all duration-200 cursor-pointer"
           >
-            Open Active User Insight
+            View Customer Details
           </button>
         </div>
       )}
@@ -480,15 +481,15 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users 
       {/* Floating controls legend overlay */}
       <div className="absolute bottom-4 left-4 bg-[#F7F1DE]/90 backdrop-blur-md border border-earth-sage/30 rounded-xl p-3 text-[10px] text-earth-cocoa/80 flex flex-col gap-1.5 pointer-events-none shadow-md">
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-earth-sage animate-pulse" />
+          <span className="w-2.5 h-2.5 rounded-full bg-status-healthy-deep animate-pulse" />
           <span className="font-medium">Healthy Account (&gt;70)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-earth-clay animate-pulse" />
+          <span className="w-2.5 h-2.5 rounded-full bg-status-risk-deep animate-pulse" />
           <span className="font-medium">At-Risk Monitor (40-70)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-full bg-earth-cocoa animate-pulse" />
+          <span className="w-2.5 h-2.5 rounded-full bg-status-critical-deep animate-pulse" />
           <span className="font-medium">Critical Warning (&lt;40)</span>
         </div>
         <div className="mt-1 pt-1.5 border-t border-earth-sage/20 text-earth-cocoa/50">

@@ -64,7 +64,7 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     lat: 37.7749,
     lng: -122.4194,
     mrr: 4500,
-    warningFlags: ['Usage Decay'],
+    warningFlags: ['Using It Less'],
     activityLogs: [
       { date: '2026-07-15', type: 'feature_use', details: 'Used Advanced Analytics dashboard' },
       { date: '2026-07-14', type: 'login', details: 'Logged in from desktop browser' },
@@ -79,7 +79,7 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     lat: 35.6762,
     lng: 139.6503,
     mrr: 1500,
-    warningFlags: ['Low Feature Adoption'],
+    warningFlags: ['Not Using Key Features'],
     activityLogs: [
       { date: '2026-07-12', type: 'login', details: 'Logged in for 2 minutes' }
     ],
@@ -144,7 +144,7 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     lat: -1.2921,
     lng: 36.8219,
     mrr: 1200,
-    warningFlags: ['Low Feature Adoption'],
+    warningFlags: ['Not Using Key Features'],
     activityLogs: [
       { date: '2026-07-15', type: 'login', details: 'Unusual low session login (30s)' }
     ],
@@ -157,7 +157,7 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     lat: 1.3521,
     lng: 103.8198,
     mrr: 5000,
-    warningFlags: ['High Churn Risk'],
+    warningFlags: ['Likely to Leave'],
     activityLogs: [
       { date: '2026-07-16', type: 'support_open', details: 'Opened critical bug report on API latency' }
     ],
@@ -439,7 +439,7 @@ export const mergeBackendCustomer = (backendCust: any): ActiveUser => {
     mrr: meta.mrr,
     healthScore: Math.round(backendCust.health_score),
     churnProbability: Math.round(backendCust.churn_probability * 100),
-    warningFlags: backendCust.risk_tier === 'high' ? [...new Set([...meta.warningFlags, 'High Churn Risk'])] : meta.warningFlags,
+    warningFlags: backendCust.risk_tier === 'high' ? [...new Set([...meta.warningFlags, 'Likely to Leave'])] : meta.warningFlags,
     metrics: {
       usageVelocity: backendCust.monthly_usage_pct ? Number((backendCust.monthly_usage_pct / 100).toFixed(2)) : 0.8,
       featureAdoption: 0.5,
