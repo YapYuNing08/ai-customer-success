@@ -25,6 +25,7 @@ class CustomerSummary(BaseModel):
     risk_tier: RiskTier
     monthly_usage_pct: float
     payment_status: Optional[str] = None
+    monthly_charges: Optional[float] = None
 
 
 class Customer(BaseModel):
@@ -40,6 +41,13 @@ class Customer(BaseModel):
     recommended_action: str
     monthly_usage_pct: float
     payment_status: Optional[str] = None
+    monthly_charges: Optional[float] = None
+    # Current raw signal values — the what-if simulator initializes its levers
+    # from these so an untouched run shows a zero delta.
+    login_frequency: Optional[float] = None
+    feature_usage: Optional[float] = None
+    support_ticket_count: Optional[int] = None
+    feedback_score: Optional[float] = None
 
 
 class Recommendation(BaseModel):
@@ -70,3 +78,16 @@ class SimulationResult(BaseModel):
     delta_churn: float
     delta_health: float
     changed_fields: dict
+    # Revenue framing: expected revenue kept = churn-risk reduction x charges.
+    # Positive = revenue protected, negative = revenue put at risk.
+    monthly_charges: Optional[float] = None
+    projected_monthly_revenue_saved: Optional[float] = None
+    projected_annual_revenue_saved: Optional[float] = None
+
+
+class SimulationNarrative(BaseModel):
+    """AI-written retention plan for a simulation scenario."""
+
+    customer_id: str
+    narrative: str
+    source: Literal["gemini", "fallback"]

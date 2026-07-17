@@ -3,6 +3,7 @@ from .customer import (  # noqa: F401
     CustomerSummary,
     ShapReason,
     Recommendation,
+    SimulationNarrative,
     SimulationRequest,
     SimulationResult,
 )
