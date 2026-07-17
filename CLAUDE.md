@@ -70,7 +70,7 @@ Endpoints:
 6. What-If Retention Simulator ✅ DONE (2026-07-17) — POST /simulate runs the real model with per-customer deltas; UI sliders initialize from the customer's real DB values with a "Reset to Today's Values" button; results show revenue impact ((baseline churn − simulated churn) × monthly_charges × 12) plus a Gemini-written retention plan with deterministic fallback
 
 **Fake it, don't build it:**
-7. Onboarding Agent — do NOT build real dwell-time/click-tracking ML. Deterministic scripted trigger only: `time_on_page > 10min AND same_button_clicked >= 3 → show popup`, run against a scripted demo customer.
+7. Onboarding Agent — do NOT build real dwell-time/click-tracking ML. Deterministic scripted trigger only: `time_on_page > 2min AND same_button_clicked >= 3 → show popup`, run against a scripted demo customer.
 8. Copilot — do NOT build live RAG during the judged demo. Pre-generate answers for 3-4 rehearsed questions, route those exact queries to a real Gemini call with retrieved context. Everything outside the rehearsed set falls back to a canned response — do not risk a live LLM call failing on stage.
 
 **Drop entirely for the hackathon:**
