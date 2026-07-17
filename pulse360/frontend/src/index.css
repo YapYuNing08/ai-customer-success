@@ -5,6 +5,16 @@
   --color-earth-sage: #B0BA99;
   --color-earth-clay: #9D6638;
   --color-earth-cocoa: #4E220F;
+
+  /* Semantic status colors — CVD-validated against both surfaces.
+     Bright set: for the dark cocoa console surface (#4E220F).
+     Deep set: for the light cream surface (#F7F1DE). */
+  --color-status-healthy: #67B173;
+  --color-status-risk: #F4B942;
+  --color-status-critical: #E2574B;
+  --color-status-healthy-deep: #276B2B;
+  --color-status-risk-deep: #D97706;
+  --color-status-critical-deep: #A81E17;
 }
 
 /* Custom scrollbar utilities for the Earthy theme */

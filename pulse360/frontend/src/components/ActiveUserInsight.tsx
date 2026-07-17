@@ -59,7 +59,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
         setSimResult(res);
       })
       .catch((err) => {
-        setSimError('Failed to calculate simulation on backend FastAPI.');
+        setSimError('Could not run the simulation right now. Please try again.');
         console.error(err);
       })
       .finally(() => {
@@ -82,21 +82,21 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
         updatedUser.activityLogs.unshift({
           date: new Date().toISOString().split('T')[0],
           type: 'payment_success',
-          details: 'Manual 14-day billing grace period extended by CSM.'
+          details: 'Gave the customer an extra 14 days to sort out their payment.'
         });
-        message = 'Applied 14-day billing grace period. Lock-out disabled.';
+        message = 'Gave 14 extra days to pay. The account stays active.';
         break;
       case 'training':
         updatedUser.metrics.featureAdoption = Math.min(1.0, updatedUser.metrics.featureAdoption + 0.3);
-        updatedUser.warningFlags = updatedUser.warningFlags.filter(f => f !== 'Low Feature Adoption');
+        updatedUser.warningFlags = updatedUser.warningFlags.filter(f => f !== 'Not Using Key Features');
         updatedUser.churnProbability = Math.max(0, updatedUser.churnProbability - 15);
         updatedUser.healthScore = Math.min(100, updatedUser.healthScore + 15);
         updatedUser.activityLogs.unshift({
           date: new Date().toISOString().split('T')[0],
           type: 'feature_use',
-          details: 'Guided video tutorials and feature docs package sent to customer.'
+          details: 'Sent the customer video tutorials and how-to guides.'
         });
-        message = 'Emailed guided feature tutorials. Feature adoption updated (+30%).';
+        message = 'Emailed helpful tutorials. The customer is now using more of the product (+30%).';
         break;
       case 'discount':
         updatedUser.churnProbability = Math.max(0, updatedUser.churnProbability - 20);
@@ -106,19 +106,19 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           type: 'support_resolve',
           details: 'Offered 20% loyalty discount for the next 3 months.'
         });
-        message = 'Offered 20% loyalty discount for 3 months to prevent churn.';
+        message = 'Offered a 20% loyalty discount for 3 months to keep this customer.';
         break;
       case 'csm_call':
         updatedUser.metrics.frictionIndex = Math.max(0, updatedUser.metrics.frictionIndex - 3.5);
-        updatedUser.warningFlags = updatedUser.warningFlags.filter(f => f !== 'Unresolved Tickets');
+        updatedUser.warningFlags = updatedUser.warningFlags.filter(f => f !== 'Open Support Issues');
         updatedUser.churnProbability = Math.max(0, updatedUser.churnProbability - 18);
         updatedUser.healthScore = Math.min(100, updatedUser.healthScore + 15);
         updatedUser.activityLogs.unshift({
           date: new Date().toISOString().split('T')[0],
           type: 'support_resolve',
-          details: 'Direct CSM feedback sync call scheduled.'
+          details: 'Check-in call scheduled with the customer.'
         });
-        message = 'Urgent CSM outreach call scheduled. Support tickets flagged for priority review.';
+        message = 'Check-in call scheduled. Their support requests are now marked top priority.';
         break;
     }
 
@@ -130,7 +130,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
   // Generate Email Text based on Churn Indicators
   const generateEmailDraft = () => {
     const isBillingFail = user.warningFlags.includes('Failed Payment');
-    const isLowUsage = user.warningFlags.includes('Usage Decay') || user.warningFlags.includes('Low Feature Adoption');
+    const isLowUsage = user.warningFlags.includes('Using It Less') || user.warningFlags.includes('Not Using Key Features');
     
     let subject = `Optimizing your experience with SubSentry`;
     let body = `Hi ${user.name.split(' ')[0]},\n\nI'm checking in from the SubSentry team. We noticed you've been working with our platform for the past ${user.metrics.daysSinceOnboarding} days. `;
@@ -156,10 +156,23 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
     setTimeout(() => setCopied(false), 2000);
   };
 
-  // Bridge real backend SHAP indicators if recommendation API has loaded
+  // Friendly display names for backend risk factors (raw DB column names otherwise)
+  const FACTOR_LABELS: Record<string, string> = {
+    monthly_usage_pct: 'Monthly Usage',
+    login_frequency: 'How Often They Log In',
+    feature_usage: 'Features They Use',
+    support_ticket_count: 'Support Requests',
+    feedback_score: 'Feedback Score',
+    payment_status: 'Payment Status',
+    tenure: 'Time as a Customer',
+    contract: 'Contract Type',
+    monthly_charges: 'Monthly Bill',
+    total_charges: 'Total Spent'
+  };
+
   const activeFactors = recommendation?.shap_reasons
     ? recommendation.shap_reasons.map((r: any) => ({
-        name: r.feature.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+        name: FACTOR_LABELS[r.feature] ?? r.feature.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
         impact: Math.round(r.contribution * 100)
       }))
     : user.churnFactors;
@@ -173,13 +186,13 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           className="flex items-center gap-2 console-text-muted hover:text-earth-bg transition-colors duration-200 text-sm group font-semibold cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
-          <span>Back to Global System Map</span>
+          <span>Back to Dashboard</span>
         </button>
 
         <div className="flex items-center gap-3">
           <div className="bg-earth-sage/20 border console-border rounded-full px-3 py-1 text-xs console-text-primary font-medium flex items-center gap-1.5 animate-pulse-glow-earth">
             <span className="w-2 h-2 rounded-full bg-earth-sage" />
-            <span>Active Session Tracked</span>
+            <span>Customer Is Online Now</span>
           </div>
         </div>
       </div>
@@ -199,13 +212,13 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                 {user.plan} Plan
               </span>
               <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold border uppercase tracking-wider ${
-                user.state === 'active' 
-                  ? 'bg-earth-sage/20 border-earth-sage/30 text-earth-sage'
+                user.state === 'active'
+                  ? 'bg-status-healthy/15 border-status-healthy/40 text-status-healthy'
                   : user.state === 'frustrated'
-                  ? 'bg-earth-clay/20 border-earth-clay/30 text-earth-clay animate-pulse'
+                  ? 'bg-status-risk/15 border-status-risk/40 text-status-risk animate-pulse'
                   : user.state === 'disengaged'
-                  ? 'bg-earth-bg/10 border-earth-bg/20 text-earth-bg/80'
-                  : 'bg-black/20 border-black/40 text-black/50'
+                  ? 'bg-status-critical/15 border-status-critical/40 text-status-critical'
+                  : 'bg-earth-bg/10 border-earth-bg/25 text-earth-bg/50'
               }`}>
                 {user.state}
               </span>
@@ -251,12 +264,12 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               <circle 
                 cx="56" cy="56" r="48" 
                 className={`transition-all duration-500 ${
-                  user.healthScore > 70 
-                    ? 'stroke-earth-sage' 
-                    : user.healthScore > 40 
-                    ? 'stroke-earth-clay' 
-                    : 'stroke-earth-cocoa'
-                }`} 
+                  user.healthScore > 70
+                    ? 'stroke-status-healthy'
+                    : user.healthScore > 40
+                    ? 'stroke-status-risk'
+                    : 'stroke-status-critical'
+                }`}
                 strokeWidth="8" 
                 fill="transparent" 
                 strokeDasharray={2 * Math.PI * 48}
@@ -271,11 +284,11 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           </div>
 
           <span className={`text-xs px-2.5 py-0.5 rounded font-bold ${
-            user.healthScore > 70 
-              ? 'bg-earth-sage/20 console-text-primary border console-border' 
-              : user.healthScore > 40 
-              ? 'bg-earth-clay/20 console-text-primary border border-earth-clay/30' 
-              : 'bg-earth-cocoa/10 console-text-primary border border-earth-cocoa/20'
+            user.healthScore > 70
+              ? 'bg-status-healthy/15 text-status-healthy border border-status-healthy/40'
+              : user.healthScore > 40
+              ? 'bg-status-risk/15 text-status-risk border border-status-risk/40'
+              : 'bg-status-critical/15 text-status-critical border border-status-critical/40'
           }`}>
             {user.healthScore > 70 ? 'HEALTHY' : user.healthScore > 40 ? 'MONITOR' : 'CRITICAL'}
           </span>
@@ -286,33 +299,33 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           <div className="absolute top-0 right-0 p-3 text-earth-sage/20 group-hover:text-earth-sage/30 transition-colors pointer-events-none">
             <ShieldAlert className="w-16 h-16" />
           </div>
-          <span className="console-text-muted text-xs font-bold">CHURN PROBABILITY (XGBOOST)</span>
+          <span className="console-text-muted text-xs font-bold">RISK OF LEAVING</span>
           
           <div className="my-4">
             <span className={`text-4xl font-extrabold tracking-tight ${
-              user.churnProbability > 50 ? 'console-text-primary' : user.churnProbability > 15 ? 'text-earth-clay' : 'text-earth-sage'
+              user.churnProbability > 50 ? 'text-status-critical' : user.churnProbability > 15 ? 'text-status-risk' : 'text-status-healthy'
             }`}>
               {user.churnProbability}%
             </span>
             <div className="flex items-center gap-1 mt-2 text-xs console-text-secondary">
               {user.churnProbability > 50 ? (
                 <>
-                  <TrendingUp className="w-3.5 h-3.5 text-earth-clay" />
-                  <span className="text-earth-clay font-bold">High Risk of cancellation</span>
+                  <TrendingUp className="w-3.5 h-3.5 text-status-critical" />
+                  <span className="text-status-critical font-bold">High risk of cancelling</span>
                 </>
               ) : (
                 <>
-                  <TrendingDown className="w-3.5 h-3.5 text-earth-sage" />
-                  <span className="text-earth-sage font-bold">Stable Account</span>
+                  <TrendingDown className="w-3.5 h-3.5 text-status-healthy" />
+                  <span className="text-status-healthy font-bold">Stable Account</span>
                 </>
               )}
             </div>
           </div>
 
           <div className="w-full bg-earth-bg/10 rounded-full h-2">
-            <div 
+            <div
               className={`h-2 rounded-full ${
-                user.churnProbability > 50 ? 'bg-earth-cocoa' : user.churnProbability > 15 ? 'bg-earth-clay' : 'bg-earth-sage'
+                user.churnProbability > 50 ? 'bg-status-critical' : user.churnProbability > 15 ? 'bg-status-risk' : 'bg-status-healthy'
               }`}
               style={{ width: `${user.churnProbability}%` }}
             />
@@ -321,51 +334,51 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
 
         {/* Usage Velocity */}
         <div className="console-card-dark p-5 rounded-2xl flex flex-col justify-between items-start relative shadow-sm">
-          <span className="console-text-muted text-xs font-bold">USAGE VELOCITY (7D VS PRIOR)</span>
+          <span className="console-text-muted text-xs font-bold">USAGE TREND (THIS WEEK VS LAST)</span>
           
           <div className="my-4">
             <span className={`text-4xl font-extrabold tracking-tight ${
-              user.metrics.usageVelocity < 0.5 ? 'console-text-primary' : user.metrics.usageVelocity < 0.9 ? 'text-earth-clay' : 'text-earth-sage'
+              user.metrics.usageVelocity < 0.5 ? 'text-status-critical' : user.metrics.usageVelocity < 0.9 ? 'text-status-risk' : 'text-status-healthy'
             }`}>
               {user.metrics.usageVelocity}x
             </span>
             <div className="flex items-center gap-1 mt-2 text-xs console-text-secondary">
               {user.metrics.usageVelocity < 0.8 ? (
-                <span className="text-earth-clay font-bold">
-                  {Math.round((1 - user.metrics.usageVelocity) * 100)}% activity decay
+                <span className="text-status-risk font-bold">
+                  Using the product {Math.round((1 - user.metrics.usageVelocity) * 100)}% less than before
                 </span>
               ) : (
-                <span className="text-earth-sage font-bold">Stable or rising usage</span>
+                <span className="text-status-healthy font-bold">Stable or rising usage</span>
               )}
             </div>
           </div>
 
           <div className="text-[10px] console-text-muted leading-normal">
-            Normal range: 0.9x - 1.2x. Below 0.8x indicates users are phasing out daily logins.
+            1.0x means steady usage. Below 0.8x means this customer is logging in noticeably less than usual.
           </div>
         </div>
 
         {/* Friction & Invoices */}
         <div className="console-card-dark p-5 rounded-2xl flex flex-col justify-between items-start relative shadow-sm">
-          <span className="console-text-muted text-xs font-bold">SUPPORT FRICTION & BILLING</span>
+          <span className="console-text-muted text-xs font-bold">SUPPORT & BILLING ISSUES</span>
           
           <div className="my-4 flex flex-col gap-2 w-full">
             <div className="flex justify-between items-center w-full">
-              <span className="text-xs console-text-muted">Support Friction Index</span>
-              <span className={`font-bold ${user.metrics.frictionIndex > 5 ? 'text-earth-clay' : 'console-text-primary'}`}>
+              <span className="text-xs console-text-muted">Support Trouble Level</span>
+              <span className={`font-bold ${user.metrics.frictionIndex > 5 ? 'text-status-risk' : 'console-text-primary'}`}>
                 {user.metrics.frictionIndex} / 10
               </span>
             </div>
             <div className="flex justify-between items-center w-full">
-              <span className="text-xs console-text-muted">Failed Invoices (30d)</span>
-              <span className={`font-bold ${user.metrics.failedPayments > 0 ? 'console-text-primary animate-pulse' : 'console-text-primary'}`}>
+              <span className="text-xs console-text-muted">Failed Payments (last 30 days)</span>
+              <span className={`font-bold ${user.metrics.failedPayments > 0 ? 'text-status-critical animate-pulse' : 'text-status-healthy'}`}>
                 {user.metrics.failedPayments} Failed
               </span>
             </div>
           </div>
 
           <div className="text-[10px] console-text-muted leading-normal">
-            Failed credit cards or unresolved critical bugs contribute directly to involuntary churn.
+            Declined cards and unresolved problems are common reasons customers leave without meaning to.
           </div>
         </div>
       </div>
@@ -377,14 +390,14 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           <div className="flex justify-between items-center">
             <h3 className="text-base font-bold console-text-primary flex items-center gap-2">
               <ShieldAlert className="w-4 h-4 text-earth-clay" />
-              Explainable AI: Churn Contribution (SHAP)
+              Why Is This Customer At Risk?
             </h3>
             <span className="text-[10px] bg-earth-sage/20 border console-border console-text-primary px-2 py-0.5 rounded font-bold">
-              Model: XGBoost Classifier
+              AI-Powered
             </span>
           </div>
           <p className="text-xs console-text-secondary leading-relaxed">
-            Shapley values show how much each behavioral metric pushes the churn risk up (+) or down (-) relative to the average baseline risk (15%).
+            Each factor below shows how much it is pushing this customer toward leaving (red) or helping keep them around (green), compared with a typical customer.
           </p>
 
           <div className="flex flex-col gap-4 my-2">
@@ -394,14 +407,14 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                 <div key={factor.name} className="flex flex-col gap-1.5">
                   <div className="flex justify-between text-xs">
                     <span className="console-text-secondary font-bold">{factor.name}</span>
-                    <span className={isPositive ? 'text-earth-clay font-bold' : 'text-earth-sage font-bold'}>
-                      {isPositive ? `+${factor.impact}% Churn Risk` : `${factor.impact}% Retention Strength`}
+                    <span className={isPositive ? 'text-status-critical font-bold' : 'text-status-healthy font-bold'}>
+                      {isPositive ? `Raises risk by ${factor.impact}%` : `Lowers risk by ${Math.abs(factor.impact)}%`}
                     </span>
                   </div>
                   {/* Slider bar */}
                   <div className="w-full h-2 bg-earth-bg/10/80 rounded-full relative overflow-hidden">
-                    <div 
-                      className={`h-full absolute rounded-full ${isPositive ? 'bg-earth-clay right-1/2 left-auto' : 'bg-earth-sage left-1/2 right-auto'}`}
+                    <div
+                      className={`h-full absolute rounded-full ${isPositive ? 'bg-status-critical right-1/2 left-auto' : 'bg-status-healthy left-1/2 right-auto'}`}
                       style={
                         isPositive 
                           ? { left: '50%', width: `${factor.impact * 2}%` } 
@@ -416,8 +429,8 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           </div>
 
           <div className="console-card-dark-inner rounded-lg p-3 text-[10px] console-text-muted flex justify-between">
-            <span>&larr; Pulls down churn (Retained)</span>
-            <span>Pushes up churn (At Risk) &rarr;</span>
+            <span>&larr; Helping keep this customer</span>
+            <span>Pushing them toward leaving &rarr;</span>
           </div>
         </div>
 
@@ -425,7 +438,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
         <div className="console-card-dark rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
           <h3 className="text-base font-bold console-text-primary flex items-center gap-2">
             <Clock className="w-4 h-4 text-earth-clay" />
-            Active User Timeline logs
+            Recent Activity
           </h3>
 
           <div className="flex flex-col gap-4 max-h-[300px] overflow-y-auto pr-2">
@@ -433,9 +446,9 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               <div key={idx} className="flex gap-3 border-l console-border pb-3 pl-4 relative last:pb-0">
                 <span className={`w-3.5 h-3.5 rounded-full absolute -left-1.5 border-4 border-earth-bg flex items-center justify-center ${
                   log.type === 'payment_fail' || log.type === 'support_open'
-                    ? 'bg-earth-clay animate-pulse'
+                    ? 'bg-status-critical animate-pulse'
                     : log.type === 'payment_success' || log.type === 'support_resolve'
-                    ? 'bg-earth-sage'
+                    ? 'bg-status-healthy'
                     : 'bg-earth-cocoa/60'
                 }`} />
                 <div className="flex-1">
@@ -459,10 +472,10 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           <div className="flex flex-col gap-1">
             <h3 className="text-base font-bold console-text-primary flex items-center gap-2">
               <Cpu className="w-4.5 h-4.5 text-earth-clay" />
-              Real-Time Tree Model "What-If" Simulator
+              "What-If" Simulator
             </h3>
             <p className="text-xs console-text-secondary leading-normal">
-              Adjust behavioral parameters and renewal status below to request real-time churn predictions from your XGBoost classifier.
+              Try changing this customer's situation below to see how their risk of leaving would change.
             </p>
           </div>
           <button
@@ -470,7 +483,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             disabled={simLoading}
             className="self-start md:self-auto bg-earth-cocoa hover:bg-earth-clay text-earth-bg px-5 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-earth-cocoa/20 transition-all duration-200 cursor-pointer disabled:opacity-50"
           >
-            {simLoading ? 'Calculating Levers...' : 'Run Prediction Lever Simulation'}
+            {simLoading ? 'Calculating...' : 'See What Would Happen'}
           </button>
         </div>
 
@@ -500,7 +513,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             {/* Feature Usage Rate */}
             <div className="flex flex-col gap-2 console-card-dark-inner p-3.5 rounded-xl">
               <div className="flex justify-between text-xs">
-                <span className="console-text-secondary font-bold">Feature Adoption Rate</span>
+                <span className="console-text-secondary font-bold">Features They Use</span>
                 <span className="font-bold text-earth-clay">{Math.round(simLevers.feature_usage * 100)}%</span>
               </div>
               <input 
@@ -517,7 +530,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             {/* Monthly Usage Volume */}
             <div className="flex flex-col gap-2 console-card-dark-inner p-3.5 rounded-xl">
               <div className="flex justify-between text-xs">
-                <span className="console-text-secondary font-bold">Monthly Usage Volume</span>
+                <span className="console-text-secondary font-bold">Monthly Usage</span>
                 <span className="font-bold text-earth-clay">{Math.round(simLevers.monthly_usage_pct)}%</span>
               </div>
               <input 
@@ -551,7 +564,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             {/* Feedback Score */}
             <div className="flex flex-col gap-2 console-card-dark-inner p-3.5 rounded-xl">
               <div className="flex justify-between text-xs">
-                <span className="console-text-secondary font-bold">NPS Feedback Score</span>
+                <span className="console-text-secondary font-bold">Customer Feedback Score</span>
                 <span className="font-bold text-earth-clay">{simLevers.feedback_score} / 10</span>
               </div>
               <input 
@@ -567,14 +580,14 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
 
             {/* Payment Status Dropdown */}
             <div className="flex flex-col gap-2 console-card-dark-inner p-3.5 rounded-xl">
-              <label className="text-xs console-text-secondary font-bold">Account Payment Status</label>
+              <label className="text-xs console-text-secondary font-bold">Payment Status</label>
               <select
                 value={simLevers.payment_status}
                 onChange={(e) => setSimLevers({...simLevers, payment_status: e.target.value})}
                 className="bg-earth-cocoa border console-border rounded-lg p-1.5 text-xs console-text-primary font-bold outline-none cursor-pointer focus:border-earth-clay w-full"
               >
-                <option value="active" className="bg-earth-cocoa console-text-primary">Active (Good Standing)</option>
-                <option value="past_due" className="bg-earth-cocoa console-text-primary">Past Due (Declined Cards / Invoices)</option>
+                <option value="active" className="bg-earth-cocoa console-text-primary">Paid Up (Good Standing)</option>
+                <option value="past_due" className="bg-earth-cocoa console-text-primary">Behind on Payments</option>
               </select>
             </div>
 
@@ -583,7 +596,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           {/* Simulation Output results (Right Column: Span 5) */}
           <div className="lg:col-span-5 console-card-dark-inner rounded-2xl p-5 flex flex-col gap-4 shadow-inner min-h-[220px] justify-center text-center">
             {simError && (
-              <div className="text-earth-clay text-xs font-bold leading-normal">
+              <div className="text-status-critical text-xs font-bold leading-normal">
                 ⚠️ {simError}
               </div>
             )}
@@ -592,7 +605,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               <div className="flex flex-col items-center justify-center gap-2 py-4">
                 <Cpu className="w-8 h-8 console-text-primary/25 animate-pulse" />
                 <span className="text-xs console-text-muted font-bold">
-                  Adjust sliders and click "Run Prediction Lever Simulation" to query Digital Twin outputs.
+                  Adjust the sliders, then click "See What Would Happen" to preview the change.
                 </span>
               </div>
             )}
@@ -600,39 +613,39 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             {simResult && !simError && (
               <div className="flex flex-col gap-4 select-none text-left">
                 <div className="flex justify-between items-baseline">
-                  <span className="text-[10px] uppercase font-bold console-text-primary/65 tracking-wider">Simulation Output</span>
+                  <span className="text-[10px] uppercase font-bold console-text-primary/65 tracking-wider">Predicted Outcome</span>
                   <span className="text-[9px] bg-earth-sage/20 border console-border console-text-primary px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">Computed</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   {/* Churn Risk Change */}
                   <div className="console-card-dark-inner p-3.5 rounded-xl flex flex-col gap-1">
-                    <span className="text-[10px] console-text-muted font-semibold block">CHURN RISK DELTA</span>
+                    <span className="text-[10px] console-text-muted font-semibold block">RISK OF LEAVING</span>
                     <div className="flex items-baseline gap-1 mt-1">
                       <span className="text-lg font-bold console-text-muted line-through">
                         {Math.round(simResult.baseline_churn_probability * 100)}%
                       </span>
-                      <span className="text-2xl font-extrabold text-earth-clay">
+                      <span className={`text-2xl font-extrabold ${simResult.delta_churn < 0 ? 'text-status-healthy' : simResult.delta_churn > 0 ? 'text-status-critical' : 'console-text-primary'}`}>
                         &rarr; {Math.round(simResult.simulated_churn_probability * 100)}%
                       </span>
                     </div>
-                    <span className={`text-[10px] font-bold mt-1.5 block ${simResult.delta_churn < 0 ? 'text-earth-sage' : simResult.delta_churn > 0 ? 'text-earth-clay' : 'console-text-muted'}`}>
+                    <span className={`text-[10px] font-bold mt-1.5 block ${simResult.delta_churn < 0 ? 'text-status-healthy' : simResult.delta_churn > 0 ? 'text-status-critical' : 'console-text-muted'}`}>
                       {simResult.delta_churn < 0 ? `Reduced risk by ${Math.round(Math.abs(simResult.delta_churn) * 100)}%` : simResult.delta_churn > 0 ? `Increased risk by ${Math.round(simResult.delta_churn * 100)}%` : 'No risk changes'}
                     </span>
                   </div>
 
                   {/* Health Score Change */}
                   <div className="console-card-dark-inner p-3.5 rounded-xl flex flex-col gap-1">
-                    <span className="text-[10px] console-text-muted font-semibold block">HEALTH SCORE DELTA</span>
+                    <span className="text-[10px] console-text-muted font-semibold block">HEALTH SCORE</span>
                     <div className="flex items-baseline gap-1 mt-1">
                       <span className="text-lg font-bold console-text-muted line-through">
                         {Math.round(simResult.baseline_health_score)}
                       </span>
-                      <span className="text-2xl font-extrabold text-earth-sage">
+                      <span className={`text-2xl font-extrabold ${simResult.delta_health > 0 ? 'text-status-healthy' : simResult.delta_health < 0 ? 'text-status-critical' : 'console-text-primary'}`}>
                         &rarr; {Math.round(simResult.simulated_health_score)}
                       </span>
                     </div>
-                    <span className={`text-[10px] font-bold mt-1.5 block ${simResult.delta_health > 0 ? 'text-earth-sage' : simResult.delta_health < 0 ? 'text-earth-clay' : 'console-text-muted'}`}>
+                    <span className={`text-[10px] font-bold mt-1.5 block ${simResult.delta_health > 0 ? 'text-status-healthy' : simResult.delta_health < 0 ? 'text-status-critical' : 'console-text-muted'}`}>
                       {simResult.delta_health > 0 ? `Health improved (+${Math.round(simResult.delta_health)})` : simResult.delta_health < 0 ? `Health degraded (${Math.round(simResult.delta_health)})` : 'No health change'}
                     </span>
                   </div>
@@ -640,7 +653,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
 
                 {/* Summary sentence */}
                 <p className="text-[11px] console-text-secondary leading-relaxed console-card-dark-inner p-2 rounded-lg mt-1 italic">
-                  * Tree-model says: Churn is simulated at {Math.round(simResult.simulated_churn_probability * 100)}% risk level with the proposed behavioral profile change.
+                  * With these changes, this customer's risk of leaving is predicted to be {Math.round(simResult.simulated_churn_probability * 100)}%.
                 </p>
               </div>
             )}
@@ -657,41 +670,41 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           <div className="flex justify-between items-center">
             <h3 className="text-base font-bold console-text-primary flex items-center gap-2">
               <Zap className="w-4 h-4 text-earth-clay" />
-              SubSentry RAG Retention Copilot
+              Retention Assistant
             </h3>
             <span className="bg-earth-sage/20 console-text-primary text-[10px] px-2 py-0.5 border console-border rounded font-bold">
-              RAG Engine Active
+              AI Assistant
             </span>
           </div>
 
           {/* Similar past cases */}
           <div className="flex flex-col gap-2">
             <span className="text-[10px] uppercase font-extrabold console-text-muted tracking-wider">
-              Semantic Search: Similar Historical Cases Found
+              Similar Customers From The Past
             </span>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               {user.pastJourneys.map((j, i) => (
                 <div 
                   key={i} 
                   className={`border rounded-xl p-3 flex flex-col gap-2 ${
-                    j.outcome === 'churned' 
-                      ? 'bg-earth-cocoa/5 border-earth-cocoa/20' 
-                      : 'bg-earth-sage/10 console-border'
+                    j.outcome === 'churned'
+                      ? 'bg-status-critical/10 border-status-critical/30'
+                      : 'bg-status-healthy/10 border-status-healthy/30'
                   }`}
                 >
                   <div className="flex justify-between items-center text-xs">
                     <span className="console-text-primary font-bold">{j.name} ({j.plan})</span>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold ${
-                      j.outcome === 'churned' ? 'bg-earth-cocoa/15 console-text-primary' : 'bg-earth-sage/20 console-text-primary'
+                      j.outcome === 'churned' ? 'bg-status-critical/15 text-status-critical' : 'bg-status-healthy/15 text-status-healthy'
                     }`}>
-                      {j.outcome.toUpperCase()} (Sim: {j.similarity}%)
+                      {j.outcome === 'churned' ? 'LEFT' : 'STAYED'} ({j.similarity}% match)
                     </span>
                   </div>
                   <p className="text-[11px] console-text-secondary leading-normal">
-                    <strong className="console-text-primary">Context:</strong> {j.reason}
+                    <strong className="console-text-primary">What happened:</strong> {j.reason}
                   </p>
                   <p className="text-[11px] console-text-secondary leading-normal">
-                    <strong className="console-text-primary">Intervention:</strong> {j.intervention}
+                    <strong className="console-text-primary">What we did:</strong> {j.intervention}
                   </p>
                 </div>
               ))}
@@ -704,7 +717,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           <div className="flex flex-col gap-2 relative">
             <div className="flex justify-between items-center">
               <span className="text-[10px] uppercase font-extrabold console-text-muted tracking-wider">
-                Generated CSM Outreach Draft (Personalized Email)
+                Suggested Email For This Customer
               </span>
               <button 
                 onClick={handleCopy}
@@ -730,10 +743,10 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           <div className="flex flex-col gap-1">
             <h3 className="text-base font-bold console-text-primary flex items-center gap-2">
               <HeartHandshake className="w-4 h-4 text-earth-clay" />
-              CSM Value Injections
+              Quick Actions
             </h3>
             <p className="text-xs console-text-secondary leading-normal mt-1">
-              Select an intervention to inject value immediately. These actions update client metrics and drop churn risk in real-time.
+              Pick an action to help this customer right away. Their risk of leaving updates instantly.
             </p>
           </div>
 
@@ -749,9 +762,9 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             >
               <span className="flex items-center gap-2">
                 <CreditCard className="w-4 h-4 text-earth-clay" />
-                Extend Billing Grace Period
+                Give Extra Time to Pay
               </span>
-              <span className="text-[10px] text-earth-sage font-extrabold">-25% Churn</span>
+              <span className="text-[10px] text-status-healthy font-extrabold">-25% risk</span>
             </button>
 
             <button
@@ -765,9 +778,9 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             >
               <span className="flex items-center gap-2">
                 <BookOpen className="w-4 h-4 text-earth-clay" />
-                Send Guided Tutorials package
+                Send Helpful Tutorials
               </span>
-              <span className="text-[10px] text-earth-sage font-extrabold">-15% Churn</span>
+              <span className="text-[10px] text-status-healthy font-extrabold">-15% risk</span>
             </button>
 
             <button
@@ -776,9 +789,9 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             >
               <span className="flex items-center gap-2">
                 <MessageSquare className="w-4 h-4 text-earth-clay" />
-                Schedule Priority Feedback Sync
+                Schedule a Check-In Call
               </span>
-              <span className="text-[10px] text-earth-sage font-extrabold">-18% Churn</span>
+              <span className="text-[10px] text-status-healthy font-extrabold">-18% risk</span>
             </button>
 
             <button
@@ -789,7 +802,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                 <DollarSign className="w-4 h-4 text-earth-clay" />
                 Offer 20% Loyalty Discount
               </span>
-              <span className="text-[10px] text-earth-sage font-extrabold">-20% Churn</span>
+              <span className="text-[10px] text-status-healthy font-extrabold">-20% risk</span>
             </button>
           </div>
 
@@ -801,7 +814,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             </div>
           ) : (
             <div className="border border-dashed console-border p-3 rounded-xl text-[10px] console-text-muted text-center">
-              Triggering an action immediately posts it to the customer activity logs.
+              Every action you take is recorded in the customer's recent activity.
             </div>
           )}
         </div>
