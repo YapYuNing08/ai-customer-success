@@ -2094,7 +2094,7 @@ System Status: Live
             </div>
           </div>
         ) : currentPage === 'client_dashboard' ? (
-          <div className="w-full max-w-4xl mx-auto px-6 py-12 text-left flex flex-col gap-8 animate-fadeIn bg-earth-bg min-h-[calc(100vh-80px)]">
+          <div className="w-full max-w-7xl mx-auto px-6 py-12 text-left flex flex-col gap-8 animate-fadeIn bg-earth-bg min-h-[calc(100vh-80px)]">
             {/* Header section */}
             <div className="flex justify-between items-center border-b pb-4 border-earth-sage/35">
               <div>
