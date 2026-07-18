@@ -153,7 +153,7 @@ export function ReportsTab(props: any) {
                             </div>
                             <div className="flex justify-between text-xs text-earth-cocoa font-bold">
                               <span>Estimated Churn Prevented:</span>
-                              <span className="text-status-healthy font-black">$14,200/mo</span>
+                              <span className="text-status-healthy font-black">RM14,200/mo</span>
                             </div>
                           </div>
                         </div>

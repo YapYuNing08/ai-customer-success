@@ -46,7 +46,7 @@ export function ConsolePage(props: any) {
       type: 'AI Analysis',
       date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
       status: 'Active',
-      content: `# Q2 Churn Risk & Rescue Assessment\n\nGenerated on: ${new Date().toLocaleDateString()}\n\n## Portfolio Summary\n- Average Health: 78/100\n- Critical Alerts: 2\n- Monthly Recurring Revenue: $25,000/mo\n\n## Action Items\nGenerate a live rescue report to get custom CSM recommendations.`
+      content: `# Q2 Churn Risk & Rescue Assessment\n\nGenerated on: ${new Date().toLocaleDateString()}\n\n## Portfolio Summary\n- Average Health: 78/100\n- Critical Alerts: 2\n- Monthly Recurring Revenue: RM25,000/mo\n\n## Action Items\nGenerate a live rescue report to get custom CSM recommendations.`
     },
     {
       id: '2',

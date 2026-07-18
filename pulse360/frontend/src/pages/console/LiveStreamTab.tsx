@@ -48,7 +48,7 @@ export function LiveStreamTab() {
                                 <span className="text-[9px] text-earth-cocoa/50">Just now</span>
                               </div>
                               <p className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
-                                Cart Value: $248.00 • High Intent Score detected
+                                Cart Value: RM248.00 • High Intent Score detected
                               </p>
                             </div>
                           </div>
@@ -186,7 +186,7 @@ export function LiveStreamTab() {
                           <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-baseline text-xs">
                               <span className="font-bold text-earth-cocoa">Cart Recovery Bots</span>
-                              <span className="font-extrabold text-earth-clay">+$14.2k</span>
+                              <span className="font-extrabold text-earth-clay">+RM14.2k</span>
                             </div>
                             <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
                               <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '72%' }} />

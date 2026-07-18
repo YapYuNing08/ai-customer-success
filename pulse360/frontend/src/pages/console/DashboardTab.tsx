@@ -60,7 +60,7 @@ export function DashboardTab(props: any) {
                         <Cpu className="w-4 h-4 text-status-healthy" />
                       </div>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-earth-cocoa">$14,200</span>
+                        <span className="text-2xl font-black text-earth-cocoa">RM14,200</span>
                       </div>
                       <span className="text-[9px] text-earth-cocoa/65">82% win rate</span>
                     </div>

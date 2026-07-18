@@ -129,7 +129,7 @@ export function CustomersTab(props: any) {
                                     </div>
                                   </td>
                                   <td className="py-3 px-4">
-                                    <span className="font-extrabold text-earth-clay">${u.mrr}/mo</span>
+                                    <span className="font-extrabold text-earth-clay">RM{u.mrr}/mo</span>
                                   </td>
                                   <td className="py-3 px-4 text-right">
                                     <button 

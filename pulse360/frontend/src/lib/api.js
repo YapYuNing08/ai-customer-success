@@ -27,6 +27,14 @@ export function getCustomerStats() {
   return request("/customers/stats");
 }
 
+// POST /customers — persist a new signup from the onboarding wizard
+export function createCustomer(payload) {
+  return request("/customers", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 // GET /customers/{id}
 export function getCustomer(customerId) {
   return request(`/customers/${customerId}`);

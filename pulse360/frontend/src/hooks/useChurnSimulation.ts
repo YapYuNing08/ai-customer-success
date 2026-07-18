@@ -67,7 +67,7 @@ export function useChurnSimulation(
           });
           updatedList[i] = u;
           didChange = true;
-          addTelemetry(`[CUSTOMER LOST] ⚠️ ${u.name} cancelled their subscription. Lost revenue: $${u.mrr}/mo.`);
+          addTelemetry(`[CUSTOMER LOST] ⚠️ ${u.name} cancelled their subscription. Lost revenue: RM${u.mrr}/mo.`);
           break;
         }
       }
