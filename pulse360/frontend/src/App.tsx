@@ -447,6 +447,9 @@ System Status: Live
   const textPrimary = isDark ? 'console-text-primary' : 'text-earth-cocoa';
   const textHeading = isDark ? 'text-earth-bg/75' : 'text-earth-cocoa/70';
 
+  const loggedInUser = users.find(u => u.id === clientUserId) || users[0];
+  const hasFailedPayment = loggedInUser?.warningFlags?.includes('Failed Payment');
+
   return (
     <div className={`min-h-screen font-sans flex flex-col antialiased transition-colors duration-300 ${isDark ? 'console-bg-dark' : 'bg-earth-bg text-earth-cocoa'}`}>
       {/* 1. Navigation Bar */}
