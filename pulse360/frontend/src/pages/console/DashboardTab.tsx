@@ -1,7 +1,61 @@
-import { Cpu, Users, Heart, Clock, Activity } from 'lucide-react';
+import { useState } from 'react';
+import { Cpu, Users, Heart, Clock, Activity, Send } from 'lucide-react';
 
 export function DashboardTab(props: any) {
   const { dist, expScore, expLabel, users } = props;
+  const [showAiChat, setShowAiChat] = useState(false);
+  const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'ai'; text: string }>>([
+    { sender: 'ai', text: "Hello! I'm your SubSentry AI Portfolio Advisor. Ask me anything about customer health trends, critical account updates, or risk distribution." }
+  ]);
+  const [userInput, setUserInput] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+
+  const handleSendMessage = (textToSend: string) => {
+    if (!textToSend.trim()) return;
+
+    const newUserMsg = { sender: 'user' as const, text: textToSend };
+    setChatMessages(prev => [...prev, newUserMsg]);
+    setUserInput('');
+    setIsTyping(true);
+
+    setTimeout(() => {
+      setIsTyping(false);
+      let reply = '';
+      const query = textToSend.toLowerCase();
+
+      const criticalCount = users ? users.filter((u: any) => u.healthScore < 40).length : 0;
+      const warningCount = users ? users.filter((u: any) => u.healthScore >= 40 && u.healthScore < 70).length : 0;
+      const healthyCount = users ? users.filter((u: any) => u.healthScore >= 70).length : 0;
+      const avgScore = users ? Math.round(users.reduce((acc: number, u: any) => acc + u.healthScore, 0) / users.length) : 0;
+
+      if (query.includes('improve') || query.includes('critical') || query.includes('suddenly') || query.includes('improved')) {
+        reply = `Critical customer counts have stabilized at ${criticalCount} accounts. This improvement is primarily driven by:
+1. **Infrastructure Recovery**: Resolution of the West-US regional node outage restored application performance for at-risk enterprise users.
+2. **Billing Remediation**: Active billing grace extensions prevented involuntary account cancellations.
+3. **CSM Interventions**: Success managers resolved critical usage blocks for key accounts like Northwind Traders.`;
+      } else if (query.includes('warning') || query.includes('action') || query.includes('which')) {
+        const warningUsers = users ? users.filter((u: any) => u.healthScore >= 40 && u.healthScore < 70).slice(0, 3) : [];
+        const warningNames = warningUsers.map((u: any) => `${u.name} (Health: ${u.healthScore}%)`).join(', ');
+        reply = `We currently have ${warningCount} accounts in the Warning category. The most urgent accounts needing CSM check-ins are:
+- **${warningNames}**
+The primary risk triggers are **Failed Card Renewals** and **Low Usage Frequency**. We recommend scheduling a direct review using the billing audit template.`;
+      } else if (query.includes('driver') || query.includes('satisfaction') || query.includes('why')) {
+        reply = `Customer satisfaction is highly correlated with:
+- **System Reliability**: Remains our strongest driver (+18% retention).
+- **Increasing Usage**: Growth in API traffic and feature utilization adds +12% retention impact.
+- **Support Ticket Resolution**: Fast response times (under 24ms average) have mitigated customer distress across all tiers.`;
+      } else {
+        reply = `Currently, the portfolio average health score is **${avgScore}/100**. 
+- **Healthy**: ${healthyCount} accounts (stable engagement).
+- **Warning**: ${warningCount} accounts (requiring follow-up on usage drops).
+- **Critical**: ${criticalCount} accounts (immediate CSM action suggested).
+
+Is there a specific account or recent system event you would like me to analyze?`;
+      }
+
+      setChatMessages(prev => [...prev, { sender: 'ai' as const, text: reply }]);
+    }, 1000);
+  };
   return (
                 <>
                   {/* Dashboard View */}
@@ -248,6 +302,79 @@ export function DashboardTab(props: any) {
                             </span>
                           </div>
                         </div>
+
+                        {/* AI Advisor Button */}
+                        <button 
+                          onClick={() => setShowAiChat(!showAiChat)}
+                          className="w-full mt-2 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs py-2 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Cpu className="w-3.5 h-3.5 text-status-healthy animate-pulse" />
+                          <span>{showAiChat ? 'Hide AI Advisor' : 'Ask AI Portfolio Advisor'}</span>
+                        </button>
+
+                        {showAiChat && (
+                          <div className="border-t border-earth-sage/20 pt-4 mt-2 flex flex-col gap-3">
+                            {/* Scrollable messages box */}
+                            <div className="flex flex-col gap-2 max-h-[220px] overflow-y-auto pr-1">
+                              {chatMessages.map((msg, i) => (
+                                <div 
+                                  key={i} 
+                                  className={`flex flex-col max-w-[85%] rounded-2xl p-3 text-[11px] leading-relaxed shadow-sm font-sans ${
+                                    msg.sender === 'user'
+                                      ? 'self-end bg-earth-clay/10 text-earth-cocoa border border-earth-clay/20'
+                                      : 'self-start bg-earth-cocoa text-earth-bg border border-earth-cocoa/10 whitespace-pre-line'
+                                  }`}
+                                >
+                                  {msg.text}
+                                </div>
+                              ))}
+                              {isTyping && (
+                                <div className="self-start bg-earth-cocoa/5 text-earth-cocoa/60 rounded-2xl px-3 py-2 text-[10px] italic flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full bg-earth-cocoa/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                                  <span className="w-1.5 h-1.5 rounded-full bg-earth-cocoa/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                                  <span className="w-1.5 h-1.5 rounded-full bg-earth-cocoa/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+                                  <span>Advisor is typing...</span>
+                                </div>
+                              )}
+                            </div>
+
+                            {/* Suggested Questions */}
+                            <div className="flex flex-wrap gap-1.5">
+                              <button 
+                                onClick={() => handleSendMessage("Why did critical users suddenly improve?")}
+                                className="text-[9px] font-bold text-earth-cocoa hover:text-earth-bg hover:bg-earth-cocoa px-2 py-1 rounded-full border border-earth-cocoa/20 transition-all cursor-pointer bg-earth-bg/30"
+                              >
+                                💡 Why did critical improve?
+                              </button>
+                              <button 
+                                onClick={() => handleSendMessage("Which warning accounts need action?")}
+                                className="text-[9px] font-bold text-earth-cocoa hover:text-earth-bg hover:bg-earth-cocoa px-2 py-1 rounded-full border border-earth-cocoa/20 transition-all cursor-pointer bg-earth-bg/30"
+                              >
+                                ⚠️ Which warnings need action?
+                              </button>
+                            </div>
+
+                            {/* Message input bar */}
+                            <div className="flex gap-2">
+                              <input 
+                                type="text" 
+                                placeholder="Ask AI advisor..."
+                                value={userInput}
+                                onChange={(e) => setUserInput(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') handleSendMessage(userInput);
+                                }}
+                                className="flex-1 bg-earth-bg/35 border border-earth-sage/35 rounded-xl py-2 px-3 text-[11px] outline-none focus:border-earth-clay text-earth-cocoa font-bold placeholder-earth-cocoa/40"
+                              />
+                              <button 
+                                onClick={() => handleSendMessage(userInput)}
+                                className="p-2 bg-earth-cocoa hover:bg-earth-clay text-earth-bg rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0 shadow-sm"
+                              >
+                                <Send className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                     </div>
