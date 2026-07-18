@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { 
   ShieldCheck, Play, Pause, Settings, Radio, ArrowDown, ChevronRight, 
-  MessageSquare, Cpu, HeartHandshake
+  MessageSquare, Cpu, HeartHandshake, ArrowLeft, LayoutDashboard,
+  Users, Heart, FileText, Search, Bell, Clock, RefreshCw, CreditCard
 } from 'lucide-react';
 import { mockUsers, mergeBackendCustomer, type ActiveUser } from './utils/mockData';
 import { Globe } from './components/Globe';
@@ -9,9 +10,10 @@ import { ActiveUserInsight } from './components/ActiveUserInsight';
 import { getCustomers } from './lib/api';
 
 function App() {
-  const [currentPage, setCurrentPage] = useState<'marketing' | 'console' | 'insight'>('console');
+  const [currentPage, setCurrentPage] = useState<'marketing' | 'client_console' | 'client_dashboard' | 'insight'>('marketing');
   const [users, setUsers] = useState<ActiveUser[]>(mockUsers);
   const [selectedUser, setSelectedUser] = useState<ActiveUser | null>(null);
+  const [clientUserId, setClientUserId] = useState<string>('1');
 
   // Fetch live customer summaries from FastAPI backend
   useEffect(() => {
@@ -20,6 +22,7 @@ function App() {
         if (data && data.length > 0) {
           const merged = data.map((c: any) => mergeBackendCustomer(c));
           setUsers(merged);
+          if (merged[0]) setClientUserId(merged[0].id);
           setTelemetryFeed(prev => [
             `[${new Date().toLocaleTimeString()}] Connected to live data. Showing ${merged.length} active customers.`,
             ...prev
@@ -49,11 +52,7 @@ function App() {
   const consoleRef = useRef<HTMLDivElement>(null);
 
   const scrollToConsole = () => {
-    if (currentPage === 'marketing') {
-      consoleRef.current?.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      setCurrentPage('console');
-    }
+    consoleRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
   // Handle selected user from the Globe tooltip
@@ -77,6 +76,48 @@ function App() {
     setUsers(prev => prev.map(u => u.id === recoveredUser.id ? recoveredUser : u));
     setSelectedUser(recoveredUser);
     addTelemetry(`[Action Taken] ${recoveredUser.name} is back on track — risk of leaving is down to ${recoveredUser.churnProbability}%.`);
+  };
+
+  const handleClientAction = (userId: string, action: 'downgrade' | 'extend_grace') => {
+    setUsers(prev => prev.map(u => {
+      if (u.id === userId) {
+        if (action === 'downgrade') {
+          return {
+            ...u,
+            plan: 'Starter',
+            mrr: 400,
+            healthScore: Math.min(98, u.healthScore + 20),
+            churnProbability: Math.max(5, u.churnProbability - 30),
+            warningFlags: u.warningFlags.filter(f => f !== 'Using It Less'),
+            activityLogs: [
+              {
+                date: new Date().toISOString().split('T')[0],
+                type: 'plan_change',
+                details: 'Customer self-downgraded subscription to Starter Plan ($400/mo) via Dashboard Console.'
+              },
+              ...u.activityLogs
+            ]
+          };
+        } else if (action === 'extend_grace') {
+          return {
+            ...u,
+            state: 'active',
+            warningFlags: u.warningFlags.filter(f => f !== 'Failed Payment'),
+            churnProbability: Math.max(10, u.churnProbability - 20),
+            activityLogs: [
+              {
+                date: new Date().toISOString().split('T')[0],
+                type: 'payment_success',
+                details: 'Requested 7-day payment grace extension via Dashboard Console.'
+              },
+              ...u.activityLogs
+            ]
+          };
+        }
+      }
+      return u;
+    }));
+    addTelemetry(`[Dashboard Console Action] Account ${userId} completed action: ${action}`);
   };
 
   const addTelemetry = (msg: string) => {
@@ -256,31 +297,76 @@ function App() {
         {/* Navigation links */}
         <nav className="hidden md:flex items-center gap-8 text-xs font-bold uppercase tracking-wider">
           <button 
-            onClick={() => setCurrentPage('marketing')} 
-            className={`hover:text-earth-clay transition-colors cursor-pointer ${currentPage === 'marketing' ? 'text-earth-clay underline decoration-2 font-black' : (isDark ? 'text-earth-bg/70' : 'text-earth-cocoa/75')}`}
+            onClick={() => {
+              setCurrentPage('marketing');
+              setSelectedUser(null);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }} 
+            className="hover:text-earth-clay text-earth-cocoa/75 transition-colors cursor-pointer font-bold"
           >
-            Product Tour
+            Overview
           </button>
           <button 
-            onClick={() => setCurrentPage('console')} 
-            className={`hover:text-earth-clay transition-colors cursor-pointer ${currentPage === 'console' ? 'text-earth-clay underline decoration-2 font-black' : (isDark ? 'text-earth-bg/70' : 'text-earth-cocoa/75')}`}
+            onClick={() => {
+              setCurrentPage('marketing');
+              setSelectedUser(null);
+              setTimeout(() => scrollToConsole(), 100);
+            }} 
+            className="hover:text-earth-clay text-earth-cocoa/75 transition-colors cursor-pointer font-bold"
           >
-            Admin Console
+            Customer Health Tracker
           </button>
         </nav>
 
-        {/* CTA Launch Button */}
+        {/* CTA Launch Buttons */}
         <div className="flex items-center gap-3">
-          <button 
-            onClick={() => setCurrentPage(currentPage === 'marketing' ? 'console' : 'marketing')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all duration-200 cursor-pointer ${
-              isDark 
-                ? 'bg-earth-bg hover:bg-earth-sage text-earth-cocoa shadow-earth-bg/10' 
-                : 'bg-earth-cocoa hover:bg-earth-clay text-earth-bg shadow-earth-cocoa/20'
-            }`}
-          >
-            {currentPage === 'marketing' ? 'Launch Console' : 'View Tour'}
-          </button>
+          {currentPage !== 'marketing' && (
+            <button 
+              onClick={() => {
+                setCurrentPage('marketing');
+                setSelectedUser(null);
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all duration-200 cursor-pointer ${
+                isDark 
+                  ? 'bg-earth-bg hover:bg-earth-sage text-earth-cocoa' 
+                  : 'bg-earth-cocoa hover:bg-earth-clay text-earth-bg'
+              }`}
+            >
+              Overview
+            </button>
+          )}
+          
+          {currentPage !== 'client_console' && (
+            <button 
+              onClick={() => {
+                setCurrentPage('client_console');
+                setSelectedUser(null);
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all duration-200 cursor-pointer ${
+                isDark 
+                  ? 'bg-earth-bg hover:bg-earth-sage text-earth-cocoa' 
+                  : 'bg-earth-cocoa hover:bg-earth-clay text-earth-bg'
+              }`}
+            >
+              Dashboard Console
+            </button>
+          )}
+
+          {currentPage !== 'client_dashboard' && (
+            <button 
+              onClick={() => {
+                setCurrentPage('client_dashboard');
+                setSelectedUser(null);
+              }}
+              className={`px-4 py-2 rounded-xl text-xs font-bold shadow-md transition-all duration-200 cursor-pointer ${
+                isDark 
+                  ? 'bg-earth-bg hover:bg-earth-sage text-earth-cocoa' 
+                  : 'bg-earth-cocoa hover:bg-earth-clay text-earth-bg'
+              }`}
+            >
+              Client Dashboard
+            </button>
+          )}
         </div>
       </header>
 
@@ -290,11 +376,549 @@ function App() {
           <ActiveUserInsight 
             user={selectedUser} 
             onBack={() => {
-              setCurrentPage('console');
+              setCurrentPage('marketing');
               setSelectedUser(null);
+              setTimeout(() => scrollToConsole(), 100);
             }} 
             onUpdateUser={handleUpdateUser}
           />
+        ) : currentPage === 'client_console' ? (
+          <div className="flex-1 flex min-h-[calc(100vh-80px)] w-full animate-fadeIn bg-earth-bg select-none">
+            {/* Sidebar */}
+            <div className="hidden lg:flex w-64 bg-[#F5ECE3]/75 border-r border-earth-sage/30 p-6 flex-col justify-between text-left shrink-0">
+              <div className="flex flex-col gap-6">
+                <div>
+                  <span className="text-[10px] uppercase font-extrabold tracking-widest text-earth-clay">ENTERPRISE TIER</span>
+                  <h3 className="font-extrabold text-earth-cocoa text-base leading-tight mt-0.5">Client Experience</h3>
+                </div>
+                
+                <nav className="flex flex-col gap-2.5 mt-4 text-xs font-bold text-earth-cocoa/75">
+                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-earth-sage/10 text-left cursor-pointer">
+                    <LayoutDashboard className="w-4 h-4 text-earth-clay" />
+                    <span>Dashboard</span>
+                  </button>
+                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage text-left cursor-pointer">
+                    <Radio className="w-4 h-4 text-earth-clay" />
+                    <span>Live Stream</span>
+                  </button>
+                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-earth-sage/10 text-left cursor-pointer">
+                    <Users className="w-4 h-4 text-earth-clay" />
+                    <span>Customers</span>
+                  </button>
+                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-earth-sage/10 text-left cursor-pointer">
+                    <Heart className="w-4 h-4 text-earth-clay" />
+                    <span>Health</span>
+                  </button>
+                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-earth-sage/10 text-left cursor-pointer">
+                    <FileText className="w-4 h-4 text-earth-clay" />
+                    <span>Reports</span>
+                  </button>
+                </nav>
+              </div>
+
+              <button className="w-full bg-earth-cocoa hover:bg-earth-clay text-earth-bg py-3 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer">
+                New Report
+              </button>
+            </div>
+
+            {/* Main Area */}
+            <div className="flex-1 p-6 md:p-8 flex flex-col gap-6 text-left w-full overflow-y-auto font-sans">
+              
+              {/* Top Navigation */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-earth-sage/20 w-full">
+                <div className="flex items-center gap-6 text-xs font-bold text-earth-cocoa/65 uppercase tracking-wider">
+                  <span className="text-earth-clay underline decoration-2">SuccessHub</span>
+                  <span className="hover:text-earth-clay cursor-pointer">Grid</span>
+                  <span className="hover:text-earth-clay cursor-pointer">Live Data</span>
+                  <span className="hover:text-earth-clay cursor-pointer">Map</span>
+                </div>
+                
+                <div className="flex items-center gap-4 w-full sm:w-auto">
+                  <div className="relative flex-1 sm:flex-none">
+                    <input 
+                      type="text" 
+                      placeholder="Search interactions..."
+                      className="bg-[#efe9d2]/35 border border-earth-sage/35 rounded-lg py-1.5 pl-8 pr-3 text-xs outline-none focus:border-earth-clay w-full sm:w-48 text-earth-cocoa font-bold placeholder-earth-cocoa/50"
+                    />
+                    <Search className="w-3.5 h-3.5 text-earth-cocoa/50 absolute left-2.5 top-2.5" />
+                  </div>
+                  <button className="p-1.5 hover:bg-[#efe9d2]/40 rounded-lg text-earth-cocoa/60 hover:text-earth-cocoa cursor-pointer">
+                    <Bell className="w-4 h-4" />
+                  </button>
+                  <button className="p-1.5 hover:bg-[#efe9d2]/40 rounded-lg text-earth-cocoa/60 hover:text-earth-cocoa cursor-pointer">
+                    <Settings className="w-4 h-4" />
+                  </button>
+                  <img src={users[0]?.avatar} className="w-6 h-6 rounded-full border border-earth-sage/40 object-cover" />
+                </div>
+              </div>
+
+              {/* Title & Subtitle block */}
+              <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full">
+                <div>
+                  <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight">Client Experience Console</h1>
+                  <p className="text-xs text-earth-cocoa/75 mt-1 max-w-xl">
+                    Real-time transparency into your end-user ecosystem. Track sentiment, health, and automated system wins.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3 text-xs font-bold shrink-0">
+                  <div className="bg-[#276B2B]/15 border border-[#276B2B]/30 rounded-lg px-3 py-1.5 text-status-healthy flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-status-healthy animate-pulse" />
+                    <span>System Live</span>
+                  </div>
+                  <div className="bg-earth-cocoa border border-earth-cocoa text-earth-bg rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>Last 24 Hours</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Grid Layout for dashboard items */}
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 w-full items-stretch">
+                
+                {/* Left side column: Live Experience Stream & Heatmap (Span 7) */}
+                <div className="md:col-span-7 flex flex-col gap-6 w-full">
+                  
+                  {/* Card 1: Live Experience Stream */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+                    <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
+                      <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">LIVE EXPERIENCE STREAM</span>
+                      <span className="text-[10px] font-bold text-earth-sage uppercase">Active Users: 1,422</span>
+                    </div>
+
+                    <div className="flex flex-col gap-3">
+                      {/* Item 1 */}
+                      <div className="border border-earth-sage/20 bg-earth-bg/30 p-3.5 rounded-xl flex gap-3.5 items-start">
+                        <div className="bg-earth-sage/25 p-1.5 rounded-lg text-earth-cocoa shrink-0">
+                          <Users className="w-4 h-4 text-earth-clay" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-baseline">
+                            <h4 className="text-xs font-bold text-earth-cocoa">User #8821 initiated Checkout</h4>
+                            <span className="text-[9px] text-earth-cocoa/50">Just now</span>
+                          </div>
+                          <p className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
+                            Cart Value: $248.00 • High Intent Score detected
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Item 2 */}
+                      <div className="border border-earth-sage/20 bg-earth-bg/30 p-3.5 rounded-xl flex gap-3.5 items-start">
+                        <div className="bg-earth-sage/25 p-1.5 rounded-lg text-earth-cocoa shrink-0">
+                          <Cpu className="w-4 h-4 text-earth-clay animate-pulse" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-baseline">
+                            <h4 className="text-xs font-bold text-earth-cocoa">Automated Support Intervention</h4>
+                            <span className="text-[9px] text-earth-cocoa/50">2m ago</span>
+                          </div>
+                          <p className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
+                            Resolved potential churn event for Client 'Atlas Corp'. Sentiment recovered to 85%.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Item 3 */}
+                      <div className="border border-earth-sage/20 bg-earth-bg/30 p-3.5 rounded-xl flex gap-3.5 items-start">
+                        <div className="bg-earth-sage/25 p-1.5 rounded-lg text-earth-cocoa shrink-0">
+                          <FileText className="w-4 h-4 text-earth-clay" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-baseline">
+                            <h4 className="text-xs font-bold text-earth-cocoa">Page View: Documentation Portal</h4>
+                            <span className="text-[9px] text-earth-cocoa/50">5m ago</span>
+                          </div>
+                          <p className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
+                            User searching for 'API Keys'. Interaction duration: 4m 12s.
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Item 4 */}
+                      <div className="border border-earth-sage/20 bg-earth-bg/30 p-3.5 rounded-xl flex gap-3.5 items-start">
+                        <div className="bg-earth-sage/25 p-1.5 rounded-lg text-earth-cocoa shrink-0">
+                          <CreditCard className="w-4 h-4 text-earth-clay" />
+                        </div>
+                        <div className="flex-1">
+                          <div className="flex justify-between items-baseline">
+                            <h4 className="text-xs font-bold text-earth-cocoa">Conversion: Premium Plan Upgrade</h4>
+                            <span className="text-[9px] text-earth-cocoa/50">8m ago</span>
+                          </div>
+                          <p className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
+                            Client 'Stellar Inc' upgraded seats from 50 to 100.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button className="self-center mt-2 bg-earth-cocoa hover:bg-earth-clay text-earth-bg px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all duration-200 cursor-pointer shadow-md">
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Updating Live Stream</span>
+                    </button>
+                  </div>
+
+                  {/* Card 2: Heatmap */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+                    <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
+                      <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER SENTIMENT HEATMAP</span>
+                      <span className="text-[10px] font-bold text-earth-sage uppercase">Regional emotional response density</span>
+                    </div>
+                    
+                    <div className="relative rounded-xl border border-earth-sage/20 overflow-hidden h-[180px] bg-[#efe9d2]/25 flex items-center justify-center">
+                      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(90,111,84,0.08),transparent)]" />
+                      
+                      <div className="text-[10px] text-earth-cocoa/40 font-mono tracking-widest text-center select-none uppercase">
+                        [ Interactive Sentiment Globe Layer ]
+                      </div>
+
+                      {/* Tooltip Overlay */}
+                      <div className="absolute bottom-4 left-6 bg-earth-cocoa border border-earth-cocoa/30 p-3 rounded-xl text-left shadow-lg">
+                        <span className="text-[8px] uppercase tracking-wider text-earth-sage font-extrabold block">North America</span>
+                        <span className="text-xs font-extrabold text-earth-bg block mt-0.5">89% POSITIVE SENTIMENT</span>
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+
+                {/* Right side column: Brand Health circular gauge & Automated wins (Span 5) */}
+                <div className="md:col-span-5 flex flex-col gap-6 w-full">
+                  
+                  {/* Card 3: Brand Health Circular progress gauge */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col justify-between items-center text-center relative overflow-hidden shadow-sm h-fit">
+                    <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 text-left w-full">
+                      <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">BRAND HEALTH SCORE</span>
+                      <span className="text-[10px] font-bold text-earth-sage uppercase">Aggregate loyalty & performance index</span>
+                    </div>
+
+                    <div className="relative flex items-center justify-center my-6">
+                      <svg className="w-32 h-32 transform -rotate-90">
+                        <circle 
+                          cx="64" cy="64" r="54" 
+                          className="stroke-earth-cocoa/15" strokeWidth="10" fill="transparent" 
+                        />
+                        <circle 
+                          cx="64" cy="64" r="54" 
+                          className="stroke-earth-clay" strokeWidth="10" fill="transparent" 
+                          strokeDasharray={2 * Math.PI * 54}
+                          strokeDashoffset={2 * Math.PI * 54 * (1 - 0.92)}
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      <div className="absolute flex flex-col items-center">
+                        <span className="text-3xl font-black text-earth-cocoa">92</span>
+                        <span className="text-[8px] uppercase font-bold text-earth-cocoa/60">OUT OF 100</span>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 border-t border-earth-sage/20 pt-4 w-full">
+                      <div className="flex flex-col items-center">
+                        <span className="text-lg font-extrabold text-earth-cocoa">8.4k</span>
+                        <span className="text-[8px] text-earth-cocoa/50 font-bold uppercase tracking-wider">Active Users</span>
+                      </div>
+                      <div className="flex flex-col items-center">
+                        <span className="text-lg font-extrabold text-status-healthy">+12%</span>
+                        <span className="text-[8px] text-earth-cocoa/50 font-bold uppercase tracking-wider">MoM Growth</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Card 4: Automated Engagement Wins progress bars */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+                    <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full text-left">
+                      <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">AUTOMATED ENGAGEMENT WINS</span>
+                      <span className="text-[10px] font-bold text-earth-sage uppercase">Where the platform worked for you</span>
+                    </div>
+
+                    <div className="flex flex-col gap-4.5 text-left">
+                      {/* Item 1 */}
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex justify-between items-baseline text-xs">
+                          <span className="font-bold text-earth-cocoa">Cart Recovery Bots</span>
+                          <span className="font-extrabold text-earth-clay">+$14.2k</span>
+                        </div>
+                        <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                          <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '72%' }} />
+                        </div>
+                        <div className="flex justify-between text-[8px] text-earth-cocoa/50 uppercase font-bold">
+                          <span>Progress</span>
+                          <span>72% Efficiency</span>
+                        </div>
+                      </div>
+
+                      {/* Item 2 */}
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex justify-between items-baseline text-xs">
+                          <span className="font-bold text-earth-cocoa">Churn Prediction (AI)</span>
+                          <span className="font-extrabold text-earth-clay">112 Saved</span>
+                        </div>
+                        <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                          <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '45%' }} />
+                        </div>
+                        <div className="flex justify-between text-[8px] text-earth-cocoa/50 uppercase font-bold">
+                          <span>Progress</span>
+                          <span>45% Efficiency</span>
+                        </div>
+                      </div>
+
+                      {/* Item 3 */}
+                      <div className="flex flex-col gap-1.5">
+                        <div className="flex justify-between items-baseline text-xs">
+                          <span className="font-bold text-earth-cocoa">Dynamic Pricing Engine</span>
+                          <span className="font-extrabold text-earth-clay">+4.5% Lift</span>
+                        </div>
+                        <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                          <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '89%' }} />
+                        </div>
+                        <div className="flex justify-between text-[8px] text-earth-cocoa/50 uppercase font-bold">
+                          <span>Progress</span>
+                          <span>89% Efficiency</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <p className="text-[9px] italic text-earth-cocoa/60 text-center border-t border-earth-sage/10 pt-3 leading-normal">
+                      Platform automation handled 82% of all repetitive support events today.
+                    </p>
+                  </div>
+
+                </div>
+
+              </div>
+
+              {/* Bottom stats bar: 4 items */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mt-2">
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-3 flex flex-col gap-1 shadow-sm">
+                  <span className="text-[8px] font-bold text-earth-cocoa/50 uppercase">API RESPONSE</span>
+                  <span className="text-xs font-black text-earth-cocoa">24ms</span>
+                </div>
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-3 flex flex-col gap-1 shadow-sm">
+                  <span className="text-[8px] font-bold text-earth-cocoa/50 uppercase">DATA FRESHNESS</span>
+                  <span className="text-xs font-black text-status-healthy">Real-time</span>
+                </div>
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-3 flex flex-col gap-1 shadow-sm">
+                  <span className="text-[8px] font-bold text-earth-cocoa/50 uppercase">TRANSPARENCY INDEX</span>
+                  <span className="text-xs font-black text-earth-cocoa font-mono">Level 5</span>
+                </div>
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-3 flex flex-col gap-1 shadow-sm">
+                  <span className="text-[8px] font-bold text-earth-cocoa/50 uppercase">PREMIUM ADVANTAGE</span>
+                  <span className="text-xs font-black text-earth-clay">Enabled</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        ) : currentPage === 'client_dashboard' ? (
+          <div className="w-full max-w-4xl mx-auto px-6 py-12 text-left flex flex-col gap-8 animate-fadeIn bg-earth-bg min-h-[calc(100vh-80px)]">
+            {/* Header section */}
+            <div className="flex justify-between items-center border-b pb-4 border-earth-sage/35">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-earth-clay tracking-wider">Subscriber Portal</span>
+                <h2 className="text-2xl font-extrabold mt-0.5 text-earth-cocoa font-serif">Client Self-Service Console</h2>
+              </div>
+              <button 
+                onClick={() => setCurrentPage('marketing')}
+                className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-bold border transition-all duration-200 cursor-pointer bg-earth-cocoa border-earth-cocoa/20 text-earth-bg hover:bg-earth-clay"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>Return to Overview</span>
+              </button>
+            </div>
+
+            {/* Profile Switcher dropdown */}
+            <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
+              <div className="flex-1">
+                <h3 className="text-sm font-bold text-earth-cocoa">Switch Client View (CSM Sandbox Tool)</h3>
+                <p className="text-xs text-earth-cocoa/75 mt-1">
+                  Change active customer profiles to preview different billing or underutilization states.
+                </p>
+              </div>
+              <select
+                value={clientUserId}
+                onChange={(e) => setClientUserId(e.target.value)}
+                className="bg-earth-bg border border-earth-sage/35 rounded-lg p-2 text-xs text-earth-cocoa font-bold outline-none cursor-pointer focus:border-earth-clay min-w-[200px]"
+              >
+                {users.map(u => (
+                  <option key={u.id} value={u.id}>{u.name} ({u.plan})</option>
+                ))}
+              </select>
+            </div>
+
+            {/* Main dashboard grid */}
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-stretch font-sans">
+              
+              {/* Left Column: Subscription & Profile details (Span 4) */}
+              <div className="md:col-span-5 flex flex-col gap-6 w-full">
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-4 shadow-sm h-full justify-between">
+                  <div className="flex items-center gap-4">
+                    <img 
+                      src={users.find(u => u.id === clientUserId)?.avatar || users[0]?.avatar} 
+                      alt={users.find(u => u.id === clientUserId)?.name || users[0]?.name} 
+                      className="w-16 h-16 rounded-full border border-earth-sage/40 object-cover bg-white" 
+                    />
+                    <div>
+                      <h3 className="font-bold text-earth-cocoa text-base leading-tight">
+                        {users.find(u => u.id === clientUserId)?.name || users[0]?.name}
+                      </h3>
+                      <span className="text-[10px] text-earth-cocoa/65 mt-1 block">
+                        {users.find(u => u.id === clientUserId)?.email || users[0]?.email}
+                      </span>
+                      <span className="text-[10px] text-earth-cocoa/65 mt-0.5 block">
+                        {users.find(u => u.id === clientUserId)?.location || users[0]?.location}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="border-t border-earth-sage/20 pt-4 flex flex-col gap-2.5">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-earth-cocoa/65">Subscription Plan:</span>
+                      <span className="font-bold text-earth-cocoa uppercase tracking-wider text-[11px]">
+                        {users.find(u => u.id === clientUserId)?.plan || users[0]?.plan}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-earth-cocoa/65">Monthly Contract MRR:</span>
+                      <span className="font-bold text-earth-clay">
+                        ${users.find(u => u.id === clientUserId)?.mrr || users[0]?.mrr}/mo
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-earth-cocoa/65">Billing Status:</span>
+                      <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
+                        (users.find(u => u.id === clientUserId) || users[0])?.warningFlags.includes('Failed Payment')
+                          ? 'bg-status-critical/15 border border-status-critical/30 text-status-critical'
+                          : 'bg-status-healthy/15 border border-status-healthy/30 text-status-healthy'
+                      }`}>
+                        {(users.find(u => u.id === clientUserId) || users[0])?.warningFlags.includes('Failed Payment') ? 'Past Due' : 'Active'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Column: Gauges (Span 8) */}
+              <div className="md:col-span-7 flex flex-col gap-6 w-full">
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-6 shadow-sm justify-between">
+                  {/* Gauge 1: Usage Limits */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-earth-cocoa/75">PACKAGE LIMITS UTILIZATION</span>
+                      <span className="font-extrabold text-earth-clay">
+                        {Math.round(((users.find(u => u.id === clientUserId) || users[0])?.metrics.usageVelocity || 0) * 100)}%
+                      </span>
+                    </div>
+                    <div className="w-full bg-earth-cocoa/10 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${
+                          ((users.find(u => u.id === clientUserId) || users[0])?.metrics.usageVelocity || 0) < 0.35 ? 'bg-status-risk' : 'bg-status-healthy'
+                        }`}
+                        style={{ width: `${Math.round(((users.find(u => u.id === clientUserId) || users[0])?.metrics.usageVelocity || 0) * 100)}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-earth-cocoa/60 leading-normal">
+                      Based on your login sessions, data throughput, and active seat allocation.
+                    </span>
+                  </div>
+
+                  {/* Gauge 2: Service SLA health score */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="font-bold text-earth-cocoa/75">SERVICE HEALTH SCORE</span>
+                      <span className="font-extrabold text-status-healthy">
+                        {(users.find(u => u.id === clientUserId) || users[0])?.healthScore}/100
+                      </span>
+                    </div>
+                    <div className="w-full bg-earth-cocoa/10 rounded-full h-2">
+                      <div 
+                        className="h-2 rounded-full bg-status-healthy"
+                        style={{ width: `${(users.find(u => u.id === clientUserId) || users[0])?.healthScore}%` }}
+                      />
+                    </div>
+                    <span className="text-[10px] text-earth-cocoa/60 leading-normal">
+                      We track service uptime and response times to ensure your subscription remains stable.
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            {/* WOW FACTOR INTERVENTIONS SECTION */}
+            <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-4 shadow-sm">
+              <h3 className="text-xs font-bold text-earth-cocoa uppercase tracking-wider">SubSentry Active Value Guard recommendations</h3>
+              
+              {/* Case A: Underutilization -> Downgrade suggestion */}
+              {((users.find(u => u.id === clientUserId) || users[0])?.metrics.usageVelocity || 0) < 0.35 && (users.find(u => u.id === clientUserId) || users[0])?.plan !== 'Starter' && (
+                <div className="bg-status-healthy/10 border border-status-healthy/30 p-5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all duration-300 animate-slideDown">
+                  <div className="flex-1 text-left">
+                    <h4 className="text-xs font-bold text-status-healthy uppercase tracking-wider flex items-center gap-1.5">
+                      <Cpu className="w-3.5 h-3.5 text-status-healthy" />
+                      Recommended Saving Action
+                    </h4>
+                    <p className="text-xs text-earth-cocoa mt-1.5 leading-relaxed">
+                      We noticed you are only using <strong>{Math.round(((users.find(u => u.id === clientUserId) || users[0])?.metrics.usageVelocity || 0) * 100)}%</strong> of your package limits. 
+                      Downgrade to the <strong>Starter Plan</strong> to save <strong>$1,500/mo</strong> while retaining your core features. We value your trust over empty spend!
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => handleClientAction(clientUserId, 'downgrade')}
+                    className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer whitespace-nowrap shrink-0"
+                  >
+                    Execute 1-Click Downgrade
+                  </button>
+                </div>
+              )}
+
+              {/* Case B: Payment Issue -> Request extension */}
+              {(users.find(u => u.id === clientUserId) || users[0])?.warningFlags.includes('Failed Payment') && (
+                <div className="bg-status-critical/10 border border-status-critical/30 p-5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all duration-300 animate-slideDown">
+                  <div className="flex-1 text-left">
+                    <h4 className="text-xs font-bold text-status-critical uppercase tracking-wider">
+                      ⚠️ Payment Delinquency Grace Alert
+                    </h4>
+                    <p className="text-xs text-earth-cocoa mt-1.5 leading-relaxed">
+                      Your invoice payment renewal failed (declined bank transaction). 
+                      Request an automatic <strong>7-day grace extension</strong> to keep services fully active while you contact your bank.
+                    </p>
+                  </div>
+                  <button 
+                    onClick={() => handleClientAction(clientUserId, 'extend_grace')}
+                    className="bg-status-critical hover:bg-status-critical-deep text-earth-bg font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer whitespace-nowrap shrink-0"
+                  >
+                    Request 7-Day Extension
+                  </button>
+                </div>
+              )}
+
+              {/* Default State: Healthy */}
+              {!(((users.find(u => u.id === clientUserId) || users[0])?.metrics.usageVelocity || 0) < 0.35 && (users.find(u => u.id === clientUserId) || users[0])?.plan !== 'Starter') && !(users.find(u => u.id === clientUserId) || users[0])?.warningFlags.includes('Failed Payment') && (
+                <div className="bg-earth-cocoa/5 border border-earth-sage/20 p-5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                  <div className="flex-1 text-left">
+                    <h4 className="text-xs font-bold text-earth-cocoa/75 uppercase tracking-wider">
+                      Subscription Status: Healthy
+                    </h4>
+                    <p className="text-xs text-earth-cocoa/70 mt-1.5 leading-relaxed">
+                      Your services are fully configured and functional. Uptime SLA is currently operating at 99.98% across all active regions.
+                    </p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Service Log Ticker */}
+            <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-earth-cocoa/65">YOUR RECENT ACCOUNT HISTORY LOG</span>
+              <div className="flex flex-col gap-2 max-h-[140px] overflow-y-auto">
+                {((users.find(u => u.id === clientUserId) || users[0])?.activityLogs || []).map((log, idx) => (
+                  <div key={idx} className="flex gap-2 text-[10px] text-earth-cocoa/75 items-start">
+                    <span className="font-bold text-earth-sage shrink-0">{log.date}</span>
+                    <span className="text-earth-cocoa/30 shrink-0">|</span>
+                    <span className="text-left flex-1 leading-normal">{log.details}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         ) : (
           <div className="flex flex-col w-full">
             {currentPage === 'marketing' && (
@@ -441,137 +1065,21 @@ function App() {
               className="w-full max-w-7xl mx-auto px-6 py-12 flex flex-col gap-8 scroll-mt-20 text-left"
             >
               
-              <div className={`flex flex-col md:flex-row md:items-end justify-between gap-4 border-b pb-4 transition-colors duration-300 ${isDark ? 'border-earth-bg/15' : 'border-earth-sage/35'}`}>
+              <div className="flex justify-between items-center border-b pb-4 border-earth-sage/35">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-earth-clay tracking-wider">SubSentry Workspace</span>
-                  <h2 className={`text-xl font-extrabold mt-0.5 ${textPrimary}`}>Admin Management Console</h2>
+                  <h2 className="text-xl font-extrabold mt-0.5 text-earth-cocoa">Customer Directory Panel</h2>
                 </div>
-
-                <div className={`flex items-center gap-6 text-xs border-l pl-6 h-full transition-colors duration-300 ${isDark ? 'border-earth-bg/15' : 'border-earth-sage/30'}`}>
-                  <div className="flex flex-col">
-                    <span className={`text-[9px] font-bold ${textMuted}`}>Health Level</span>
-                    <span className={`font-bold mt-0.5 ${isDark ? 'text-status-healthy' : 'text-status-healthy-deep'}`}>{avgHealth}% Avg</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className={`text-[9px] font-bold ${textMuted}`}>Monthly Revenue</span>
-                    <span className={`font-bold mt-0.5 ${textPrimary}`}>${totalMRR.toLocaleString()}</span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className={`text-[9px] font-bold ${textMuted}`}>Critical Alert</span>
-                    <span className={`font-bold mt-0.5 ${isDark ? 'text-status-critical' : 'text-status-critical-deep'}`}>{criticalCount} Accounts</span>
-                  </div>
-                  
-                  <button 
-                    onClick={() => setShowModelModal(true)}
-                    className={`ml-4 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all duration-200 cursor-pointer ${
-                      isDark 
-                        ? 'bg-earth-bg/10 border-earth-bg/25 text-earth-bg hover:bg-earth-bg/20' 
-                        : 'bg-earth-cocoa border-earth-cocoa/20 text-earth-bg hover:bg-earth-clay'
-                    }`}
-                  >
-                    <Cpu className="w-3.5 h-3.5 text-earth-clay animate-pulse" />
-                    <span>How Predictions Work</span>
-                  </button>
-                </div>
+                <button 
+                  onClick={() => setShowModelModal(true)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all duration-200 cursor-pointer bg-earth-cocoa border-earth-cocoa/20 text-earth-bg hover:bg-earth-clay"
+                >
+                  <Cpu className="w-3.5 h-3.5 text-earth-clay animate-pulse" />
+                  <span>How Predictions Work</span>
+                </button>
               </div>
 
-              {/* Grid: Simulation Controls & Telemetry Feed */}
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch animate-fadeIn">
-                
-                {/* Sandbox controls (Span 5) */}
-                <div className={`lg:col-span-5 border rounded-2xl p-5 flex flex-col gap-4 shadow-sm transition-all duration-300 ${isDark ? 'console-card-dark' : 'bg-[#efe9d2]/30 border-earth-sage/30'}`}>
-                  <div className="flex justify-between items-center">
-                    <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 ${textHeading}`}>
-                      <Settings className="w-3.5 h-3.5 text-earth-clay" />
-                      Demo Scenario Controls
-                    </h3>
-                    <button 
-                      onClick={() => {
-                        setIsSimulating(!isSimulating);
-                        addTelemetry(isSimulating ? 'Demo simulation paused.' : 'Demo simulation resumed.');
-                      }}
-                      className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[10px] font-bold border transition-all duration-200 cursor-pointer ${
-                        isSimulating 
-                          ? 'bg-earth-clay/10 border-earth-clay/35 text-earth-clay hover:bg-earth-clay/20' 
-                          : `bg-earth-sage/20 border-earth-sage/40 hover:bg-earth-sage/30 ${isDark ? 'text-earth-bg' : 'text-earth-cocoa'}`
-                      }`}
-                    >
-                      {isSimulating ? <Pause className="w-3 h-3" /> : <Play className="w-3 h-3" />}
-                      <span>{isSimulating ? 'PAUSE SIM' : 'RESUME SIM'}</span>
-                    </button>
-                  </div>
-
-                  {/* Outage Slider */}
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between text-xs">
-                      <span className={`font-semibold ${textSecondary}`}>Service Outage Frequency</span>
-                      <span className="font-bold text-earth-clay">{outageRate}% rate</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="0" 
-                      max="50" 
-                      value={outageRate} 
-                      onChange={(e) => setOutageRate(Number(e.target.value))}
-                      className={`w-full accent-earth-cocoa cursor-pointer h-1.5 rounded-lg appearance-none ${isDark ? 'bg-earth-bg/15' : 'bg-[#efe9d2]'}`} 
-                    />
-                    <span className={`text-[10px] leading-none ${textMuted}`}>
-                      Randomly simulates service outages, making customers log in and use the product less.
-                    </span>
-                  </div>
-
-                  {/* Billing Slider */}
-                  <div className="flex flex-col gap-2 mt-2">
-                    <div className="flex justify-between text-xs">
-                      <span className={`font-semibold ${textSecondary}`}>Failed Payment Frequency</span>
-                      <span className="font-bold text-earth-clay">{billingFailureRate}% rate</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="0" 
-                      max="40" 
-                      value={billingFailureRate} 
-                      onChange={(e) => setBillingFailureRate(Number(e.target.value))}
-                      className={`w-full accent-earth-cocoa cursor-pointer h-1.5 rounded-lg appearance-none ${isDark ? 'bg-earth-bg/15' : 'bg-[#efe9d2]'}`} 
-                    />
-                    <span className={`text-[10px] leading-none ${textMuted}`}>
-                      Simulates declined cards, so you can see how payment problems affect customers.
-                    </span>
-                  </div>
-                </div>
-
-                {/* Telemetry Log Feed (Span 7) */}
-                <div className={`lg:col-span-7 border rounded-2xl p-5 flex flex-col min-h-[220px] shadow-sm transition-all duration-300 ${isDark ? 'console-card-dark' : 'bg-[#efe9d2]/30 border-earth-sage/30'}`}>
-                  <h3 className={`text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 mb-3 shrink-0 ${textHeading}`}>
-                    <Radio className="w-3.5 h-3.5 text-earth-clay animate-pulse" />
-                    Live Activity Feed
-                  </h3>
-                  <div className={`flex-1 overflow-y-auto pr-1 flex flex-col gap-2 font-mono text-[10px] max-h-[160px] ${isDark ? 'text-earth-bg/70' : 'text-earth-cocoa/80'}`}>
-                    {telemetryFeed.map((log, i) => (
-                      <div 
-                        key={i} 
-                        className={`py-1.5 border-b border-earth-sage/10 leading-normal ${
-                          /alert|warning|customer lost|cancelled|outage|payment problem|failed/i.test(log)
-                            ? (isDark
-                                ? 'text-status-critical bg-status-critical/10 px-1.5 rounded border border-status-critical/25'
-                                : 'text-status-critical-deep bg-status-critical-deep/5 px-1.5 rounded border border-status-critical-deep/20')
-                            : /action taken|back on track|saved|restored|resolved/i.test(log)
-                            ? (isDark
-                                ? 'text-status-healthy bg-status-healthy/10 px-1.5 rounded border border-status-healthy/25'
-                                : 'text-status-healthy-deep bg-status-healthy-deep/5 px-1.5 rounded border border-status-healthy-deep/20')
-                            : isDark ? 'text-earth-bg/85' : 'text-earth-cocoa/80'
-                        }`}
-                      >
-                        {log}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-
-              {/* Customer Directory Table */}
-              <div className={`border rounded-2xl p-5 shadow-sm transition-all duration-300 ${isDark ? 'console-card-dark' : 'bg-[#efe9d2]/20 border-earth-sage/35'}`}>
+              <div className={`rounded-2xl p-5 shadow-sm transition-all duration-300 border ${isDark ? 'console-card-dark' : 'bg-[#efe9d2]/40 border-earth-sage/30'}`}>
                 <div className="flex justify-between items-center mb-4">
                   <h3 className={`text-sm font-bold ${textPrimary}`}>Customer Health Tracker</h3>
                   <span className={`text-[10px] font-bold ${textMuted}`}>* Click on any row to see customer details</span>
