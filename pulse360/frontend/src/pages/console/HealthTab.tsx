@@ -68,8 +68,8 @@ export function HealthTab(props: any) {
                   {/* Main health analytics panels */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch animate-fadeIn">
                     
-                    {/* Left Column (Span 7) */}
-                    <div className="lg:col-span-7 flex flex-col gap-6 w-full">
+                    {/* Full Width Column */}
+                    <div className="lg:col-span-12 flex flex-col gap-6 w-full">
                       {/* Recent transitions log */}
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
                         <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
@@ -77,7 +77,7 @@ export function HealthTab(props: any) {
                           <span className="text-[10px] font-bold text-earth-sage uppercase">Distressed Users</span>
                         </div>
 
-                        <div className="flex flex-col gap-3 max-h-[220px] overflow-y-auto pr-1">
+                        <div className="flex flex-col gap-3 max-h-[300px] overflow-y-auto pr-1">
                           {users.filter(u => u.healthScore < 70).map(u => (
                             <div key={u.id} className="border border-earth-sage/20 bg-earth-bg/30 p-3 rounded-xl flex justify-between items-center">
                               <div className="flex gap-3 items-center">
@@ -94,56 +94,6 @@ export function HealthTab(props: any) {
                               </span>
                             </div>
                           ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Right Column (Span 5) */}
-                    <div className="lg:col-span-5 flex flex-col gap-6 w-full text-left">
-                      {/* Health Cohort Segmentation */}
-                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm h-full justify-between">
-                        <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full">
-                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER'S HEALTH</span>
-                          <span className="text-[10px] font-bold text-earth-sage uppercase">Distribution of customer base</span>
-                        </div>
-
-                        <div className="flex flex-col gap-4 my-2">
-                          {/* Healthy */}
-                          <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-3 h-3 rounded-full bg-status-healthy" />
-                              <span className="font-bold text-earth-cocoa">Healthy (Score 70+)</span>
-                            </div>
-                            <span className="text-status-healthy font-black text-sm">
-                              {users.filter(u => u.healthScore >= 70).length} Accounts
-                            </span>
-                          </div>
-
-                          {/* Warning */}
-                          <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-3 h-3 rounded-full bg-status-risk" />
-                              <span className="font-bold text-earth-cocoa">Warning (Score 40-69)</span>
-                            </div>
-                            <span className="text-status-risk font-black text-sm">
-                              {users.filter(u => u.healthScore < 70 && u.healthScore >= 40).length} Accounts
-                            </span>
-                          </div>
-
-                          {/* Critical */}
-                          <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-3 h-3 rounded-full bg-status-critical" />
-                              <span className="font-bold text-earth-cocoa">Critical (Score &lt; 40)</span>
-                            </div>
-                            <span className="text-status-critical font-black text-sm">
-                              {users.filter(u => u.healthScore < 40).length} Accounts
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="bg-earth-sage/10 p-3 rounded-xl border border-earth-sage/20 text-[10px] text-earth-cocoa/75 leading-relaxed mt-2 italic text-center">
-                          ℹ️ Telemetry thresholds and state changes are simulated live and updated dynamically via WebSocket and FastAPI ML pipelines.
                         </div>
                       </div>
                     </div>

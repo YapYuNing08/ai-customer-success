@@ -1,7 +1,7 @@
 import { Cpu, Users, Heart, Clock, Activity } from 'lucide-react';
 
 export function DashboardTab(props: any) {
-  const { dist, expScore, expLabel } = props;
+  const { dist, expScore, expLabel, users } = props;
   return (
                 <>
                   {/* Dashboard View */}
@@ -172,55 +172,13 @@ export function DashboardTab(props: any) {
                         </div>
                       </div>
 
-                      {/* Recent resolutions log */}
-                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
-                        <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
-                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">RECENT RESOLUTIONS</span>
-                          <span className="text-[10px] font-bold text-earth-sage uppercase">Automated support interventions</span>
-                        </div>
-
-                        <div className="flex flex-col gap-3">
-                          <div className="border border-earth-sage/20 bg-earth-bg/30 p-3 rounded-xl flex justify-between items-center">
-                            <div className="flex gap-3 items-center">
-                              <span className="w-2.5 h-2.5 rounded-full bg-status-healthy" />
-                              <div>
-                                <h4 className="text-xs font-bold text-earth-cocoa">Atlas Corp</h4>
-                                <p className="text-[10px] text-earth-cocoa/75">Sentiment recovered to 85% after grace period extension.</p>
-                              </div>
-                            </div>
-                            <span className="text-[9px] bg-status-healthy/15 text-status-healthy border border-status-healthy/30 px-2 py-0.5 rounded font-extrabold uppercase">Success</span>
-                          </div>
-
-                          <div className="border border-earth-sage/20 bg-earth-bg/30 p-3 rounded-xl flex justify-between items-center">
-                            <div className="flex gap-3 items-center">
-                              <span className="w-2.5 h-2.5 rounded-full bg-status-healthy" />
-                              <div>
-                                <h4 className="text-xs font-bold text-earth-cocoa">Lagos Ventures</h4>
-                                <p className="text-[10px] text-earth-cocoa/75">Invoice issue resolved via automated grace period extension.</p>
-                              </div>
-                            </div>
-                            <span className="text-[9px] bg-status-healthy/15 text-status-healthy border border-status-healthy/30 px-2 py-0.5 rounded font-extrabold uppercase">Success</span>
-                          </div>
-
-                          <div className="border border-earth-sage/20 bg-earth-bg/30 p-3 rounded-xl flex justify-between items-center">
-                            <div className="flex gap-3 items-center">
-                              <span className="w-2.5 h-2.5 rounded-full bg-earth-clay" />
-                              <div>
-                                <h4 className="text-xs font-bold text-earth-cocoa">Northwind Traders</h4>
-                                <p className="text-[10px] text-earth-cocoa/75">Cost-optimization downgrade advice executed.</p>
-                              </div>
-                            </div>
-                            <span className="text-[9px] bg-earth-clay/15 text-earth-clay border border-earth-clay/30 px-2 py-0.5 rounded font-extrabold uppercase">Optimized</span>
-                          </div>
-                        </div>
-                      </div>
-
+                      
                     </div>
 
                     {/* Right Column (Span 4) */}
                     <div className="lg:col-span-4 flex flex-col gap-6 w-full">
                       {/* Experience drivers */}
-                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm h-full">
+                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm h-fit">
                         <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full text-left">
                           <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER SATISFACTION DRIVERS</span>
                           <span className="text-[10px] font-bold text-earth-sage uppercase">What keeps customers happy & loyal</span>
@@ -260,6 +218,50 @@ export function DashboardTab(props: any) {
                           </div>
                         </div>
                       </div>
+
+                      {/* Customer's Health */}
+                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
+                        <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full">
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER'S HEALTH</span>
+                          <span className="text-[10px] font-bold text-earth-sage uppercase">Distribution of customer base</span>
+                        </div>
+
+                        <div className="flex flex-col gap-4 my-2 font-bold text-xs">
+                          {/* Healthy */}
+                          <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-3 h-3 rounded-full bg-status-healthy" />
+                              <span className="font-bold text-earth-cocoa">Healthy (Score 70+)</span>
+                            </div>
+                            <span className="text-status-healthy font-black text-sm">
+                              {users ? users.filter((u: any) => u.healthScore >= 70).length : 0} Accounts
+                            </span>
+                          </div>
+
+                          {/* Warning */}
+                          <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-3 h-3 rounded-full bg-status-risk" />
+                              <span className="font-bold text-earth-cocoa">Warning (Score 40-69)</span>
+                            </div>
+                            <span className="text-status-risk font-black text-sm">
+                              {users ? users.filter((u: any) => u.healthScore < 70 && u.healthScore >= 40).length : 0} Accounts
+                            </span>
+                          </div>
+
+                          {/* Critical */}
+                          <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-3 h-3 rounded-full bg-status-critical" />
+                              <span className="font-bold text-earth-cocoa">Critical (Score &lt; 40)</span>
+                            </div>
+                            <span className="text-status-critical font-black text-sm">
+                              {users ? users.filter((u: any) => u.healthScore < 40).length : 0} Accounts
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
                     </div>
 
                   </div>
