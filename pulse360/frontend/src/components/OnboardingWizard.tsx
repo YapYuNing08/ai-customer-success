@@ -397,7 +397,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
         <div className="px-8 py-2.5 bg-earth-cocoa/5 border-t border-earth-sage/20 flex items-center gap-4 text-[9px] font-bold text-earth-cocoa/60">
           <span className="flex items-center gap-1.5 text-earth-clay">
             <Bot className="w-3 h-3" />
-            AI Success Agent monitoring
+            AI Onboarding Success Agent monitoring
             <span className="w-1.5 h-1.5 rounded-full bg-[#276B2B] animate-pulse" />
           </span>
         </div>
