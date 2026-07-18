@@ -131,7 +131,7 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users 
     }));
 
     // Repulsion pass to push close dots apart (so cities close to each other are separated)
-    const minDistance = 0.32; // Minimum visual distance between dots on 2.41 radius
+    const minDistance = 0.45; // Minimum visual distance between dots on 2.41 radius
     const iterations = 8;
     for (let step = 0; step < iterations; step++) {
       for (let i = 0; i < positionedUsers.length; i++) {
