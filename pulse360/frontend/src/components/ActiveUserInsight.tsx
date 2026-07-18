@@ -251,14 +251,14 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b console-border">
         <button 
           onClick={onBack}
-          className="flex items-center gap-2 console-text-muted hover:text-earth-bg transition-colors duration-200 text-sm group font-semibold cursor-pointer"
+          className="flex items-center gap-2 console-text-muted hover:text-earth-cocoa transition-colors duration-200 text-sm group font-semibold cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
           <span>Back to Dashboard</span>
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="bg-earth-sage/20 border console-border rounded-full px-3 py-1 text-xs console-text-primary font-medium flex items-center gap-1.5 animate-pulse-glow-earth">
+          <div className="bg-earth-sage/20 border console-border rounded-full px-3 py-1 text-xs console-text-primary font-medium flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-earth-sage" />
             <span>Customer Is Online Now</span>
           </div>
@@ -286,7 +286,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                   ? 'bg-status-risk/15 border-status-risk/40 text-status-risk animate-pulse'
                   : user.state === 'disengaged'
                   ? 'bg-status-critical/15 border-status-critical/40 text-status-critical'
-                  : 'bg-earth-bg/10 border-earth-bg/25 text-earth-bg/50'
+                  : 'bg-earth-cocoa/15 border-earth-cocoa/20 text-earth-cocoa/60'
               }`}>
                 {user.state}
               </span>
@@ -327,7 +327,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             <svg className="w-28 h-28 transform -rotate-90">
               <circle 
                 cx="56" cy="56" r="48" 
-                className="stroke-earth-bg/80" strokeWidth="8" fill="transparent" 
+                className="stroke-earth-cocoa/20" strokeWidth="8" fill="transparent" 
               />
               <circle 
                 cx="56" cy="56" r="48" 
@@ -390,7 +390,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             </div>
           </div>
 
-          <div className="w-full bg-earth-bg/10 rounded-full h-2">
+          <div className="w-full bg-earth-cocoa/15 rounded-full h-2">
             <div
               className={`h-2 rounded-full ${
                 user.churnProbability > 50 ? 'bg-status-critical' : user.churnProbability > 15 ? 'bg-status-risk' : 'bg-status-healthy'
@@ -480,7 +480,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                     </span>
                   </div>
                   {/* Slider bar */}
-                  <div className="w-full h-2 bg-earth-bg/10/80 rounded-full relative overflow-hidden">
+                  <div className="w-full h-2 bg-earth-cocoa/15 rounded-full relative overflow-hidden">
                     <div
                       className={`h-full absolute rounded-full ${isPositive ? 'bg-status-critical right-1/2 left-auto' : 'bg-status-healthy left-1/2 right-auto'}`}
                       style={
@@ -591,7 +591,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                 step="0.1"
                 value={simLevers.login_frequency} 
                 onChange={(e) => setSimLevers({...simLevers, login_frequency: parseFloat(e.target.value)})}
-                className="w-full accent-earth-sage cursor-pointer h-1 bg-earth-bg/10 rounded-lg appearance-none" 
+                className="w-full accent-earth-sage cursor-pointer h-1 bg-earth-cocoa/15 rounded-lg appearance-none" 
               />
             </div>
 
@@ -608,7 +608,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                 step="0.05"
                 value={simLevers.feature_usage} 
                 onChange={(e) => setSimLevers({...simLevers, feature_usage: parseFloat(e.target.value)})}
-                className="w-full accent-earth-sage cursor-pointer h-1 bg-earth-bg/10 rounded-lg appearance-none" 
+                className="w-full accent-earth-sage cursor-pointer h-1 bg-earth-cocoa/15 rounded-lg appearance-none" 
               />
             </div>
 
@@ -625,7 +625,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                 step="1.0"
                 value={simLevers.monthly_usage_pct} 
                 onChange={(e) => setSimLevers({...simLevers, monthly_usage_pct: parseFloat(e.target.value)})}
-                className="w-full accent-earth-sage cursor-pointer h-1 bg-earth-bg/10 rounded-lg appearance-none" 
+                className="w-full accent-earth-sage cursor-pointer h-1 bg-earth-cocoa/15 rounded-lg appearance-none" 
               />
             </div>
 
@@ -642,7 +642,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                 step="1"
                 value={simLevers.support_ticket_count} 
                 onChange={(e) => setSimLevers({...simLevers, support_ticket_count: parseInt(e.target.value)})}
-                className="w-full accent-earth-sage cursor-pointer h-1 bg-earth-bg/10 rounded-lg appearance-none" 
+                className="w-full accent-earth-sage cursor-pointer h-1 bg-earth-cocoa/15 rounded-lg appearance-none" 
               />
             </div>
 
@@ -659,7 +659,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                 step="0.1"
                 value={simLevers.feedback_score} 
                 onChange={(e) => setSimLevers({...simLevers, feedback_score: parseFloat(e.target.value)})}
-                className="w-full accent-earth-sage cursor-pointer h-1 bg-earth-bg/10 rounded-lg appearance-none" 
+                className="w-full accent-earth-sage cursor-pointer h-1 bg-earth-cocoa/15 rounded-lg appearance-none" 
               />
             </div>
 
@@ -669,10 +669,10 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               <select
                 value={simLevers.payment_status}
                 onChange={(e) => setSimLevers({...simLevers, payment_status: e.target.value})}
-                className="bg-earth-cocoa border console-border rounded-lg p-1.5 text-xs console-text-primary font-bold outline-none cursor-pointer focus:border-earth-clay w-full"
+                className="bg-earth-bg border border-earth-sage/35 rounded-lg p-1.5 text-xs text-earth-cocoa font-bold outline-none cursor-pointer focus:border-earth-clay w-full"
               >
-                <option value="active" className="bg-earth-cocoa console-text-primary">Paid Up (Good Standing)</option>
-                <option value="past_due" className="bg-earth-cocoa console-text-primary">Behind on Payments</option>
+                <option value="active" className="bg-earth-bg text-earth-cocoa">Paid Up (Good Standing)</option>
+                <option value="past_due" className="bg-earth-bg text-earth-cocoa">Behind on Payments</option>
               </select>
             </div>
 
@@ -887,8 +887,8 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               disabled={!user.warningFlags.includes('Failed Payment')}
               className={`w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border transition-all duration-200 ${
                 user.warningFlags.includes('Failed Payment')
-                  ? 'bg-earth-bg/10 hover:bg-earth-bg/20 console-border text-earth-bg cursor-pointer'
-                  : 'bg-earth-bg/5 console-border text-earth-bg/20 cursor-not-allowed'
+                  ? 'bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa cursor-pointer'
+                  : 'bg-earth-cocoa/5 console-border text-earth-cocoa/30 cursor-not-allowed'
               }`}
             >
               <span className="flex items-center gap-2">
@@ -903,8 +903,8 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               disabled={user.metrics.featureAdoption > 0.8}
               className={`w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border transition-all duration-200 ${
                 user.metrics.featureAdoption <= 0.8
-                  ? 'bg-earth-bg/10 hover:bg-earth-bg/20 console-border text-earth-bg cursor-pointer'
-                  : 'bg-earth-bg/5 console-border text-earth-bg/20 cursor-not-allowed'
+                  ? 'bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa cursor-pointer'
+                  : 'bg-earth-cocoa/5 console-border text-earth-cocoa/30 cursor-not-allowed'
               }`}
             >
               <span className="flex items-center gap-2">
@@ -916,7 +916,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
 
             <button
               onClick={() => handleAction('csm_call')}
-              className="w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border bg-earth-bg/10 hover:bg-earth-bg/20 console-border text-earth-bg transition-all duration-200 cursor-pointer"
+              className="w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa transition-all duration-200 cursor-pointer"
             >
               <span className="flex items-center gap-2">
                 <MessageSquare className="w-4 h-4 text-earth-clay" />
@@ -927,7 +927,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
 
             <button
               onClick={() => handleAction('discount')}
-              className="w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border bg-earth-bg/10 hover:bg-earth-bg/20 console-border text-earth-bg transition-all duration-200 cursor-pointer"
+              className="w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa transition-all duration-200 cursor-pointer"
             >
               <span className="flex items-center gap-2">
                 <DollarSign className="w-4 h-4 text-earth-clay" />
