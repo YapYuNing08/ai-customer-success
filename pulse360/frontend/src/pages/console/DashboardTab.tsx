@@ -14,13 +14,16 @@ export function DashboardTab(props: any) {
   const [isSendingBroadcast, setIsSendingBroadcast] = useState(false);
   const [broadcastSuccess, setBroadcastSuccess] = useState(false);
   const [selectedRecipientIds, setSelectedRecipientIds] = useState<string[]>([]);
+  const [recipientSearch, setRecipientSearch] = useState('');
 
   // Automatically select all recipients when modal opens
   useEffect(() => {
     if (activeBroadcast) {
       setSelectedRecipientIds(activeBroadcast.recipients.map(r => r.id));
+      setRecipientSearch('');
     } else {
       setSelectedRecipientIds([]);
+      setRecipientSearch('');
     }
   }, [activeBroadcast]);
 
@@ -583,36 +586,67 @@ Is there a specific account or recent system event you would like me to analyze?
                           </div>
                         </div>
 
-                        {/* Recipients list */}
-                        <div className="text-xs border-y border-earth-sage/20 py-3 flex flex-col gap-1.5">
-                          <span className="font-extrabold text-[10px] text-earth-clay uppercase tracking-wider">
-                            RECIPIENT PORTFOLIOS ({selectedRecipientIds.length}/{activeBroadcast.recipients.length} SELECTED):
-                          </span>
+                        {/* Recipients list with Search bar */}
+                        <div className="text-xs border-y border-earth-sage/20 py-3 flex flex-col gap-2">
+                          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                            <span className="font-extrabold text-[10px] text-earth-clay uppercase tracking-wider">
+                              RECIPIENT PORTFOLIOS ({selectedRecipientIds.length}/{activeBroadcast.recipients.length} SELECTED):
+                            </span>
+                            <input
+                              type="text"
+                              placeholder="Search by name or email..."
+                              value={recipientSearch}
+                              onChange={(e) => setRecipientSearch(e.target.value)}
+                              className="bg-earth-bg/50 border border-earth-sage/35 rounded-lg px-2.5 py-1 text-[10px] text-earth-cocoa font-bold outline-none focus:border-earth-clay placeholder-earth-cocoa/50 w-full sm:w-48"
+                            />
+                          </div>
+
                           <div className="flex flex-wrap gap-1.5 mt-1 max-h-[90px] overflow-y-auto pr-1">
-                            {activeBroadcast.recipients.map((r: any) => {
-                              const isSelected = selectedRecipientIds.includes(r.id);
-                              return (
-                                <button
-                                  key={r.id}
-                                  disabled={broadcastSuccess || isSendingBroadcast}
-                                  onClick={() => {
-                                    if (isSelected) {
-                                      setSelectedRecipientIds(prev => prev.filter(id => id !== r.id));
-                                    } else {
-                                      setSelectedRecipientIds(prev => [...prev, r.id]);
-                                    }
-                                  }}
-                                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all border cursor-pointer disabled:cursor-not-allowed ${
-                                    isSelected
-                                      ? 'bg-earth-cocoa text-earth-bg border-earth-cocoa shadow-sm font-extrabold'
-                                      : 'bg-earth-bg/30 text-earth-cocoa/40 border-earth-sage/20 line-through opacity-60'
-                                  }`}
-                                >
-                                  <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-status-healthy' : 'bg-earth-cocoa/40'}`} />
-                                  <span>{r.name} ({activeBroadcast.type === 'email' ? r.email : 'WhatsApp Live'})</span>
-                                </button>
+                            {(() => {
+                              const filtered = activeBroadcast.recipients.filter((r: any) =>
+                                r.name.toLowerCase().includes(recipientSearch.toLowerCase()) ||
+                                (activeBroadcast.type === 'email' && r.email.toLowerCase().includes(recipientSearch.toLowerCase()))
                               );
-                            })}
+
+                              if (filtered.length === 0) {
+                                return (
+                                  <span className="text-[10px] text-earth-cocoa/50 italic py-1">
+                                    No recipients match your search.
+                                  </span>
+                                );
+                              }
+
+                              return filtered.map((r: any) => {
+                                const isSelected = selectedRecipientIds.includes(r.id);
+                                return (
+                                  <button
+                                    key={r.id}
+                                    disabled={broadcastSuccess || isSendingBroadcast}
+                                    onClick={() => {
+                                      if (isSelected) {
+                                        setSelectedRecipientIds(prev => prev.filter(id => id !== r.id));
+                                      } else {
+                                        setSelectedRecipientIds(prev => [...prev, r.id]);
+                                      }
+                                    }}
+                                    className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all border cursor-pointer disabled:cursor-not-allowed ${
+                                      isSelected
+                                        ? 'bg-earth-cocoa text-earth-bg border-earth-cocoa shadow-sm font-extrabold'
+                                        : 'bg-earth-bg/30 text-earth-cocoa/40 border-earth-sage/20 opacity-60'
+                                    }`}
+                                  >
+                                    <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center text-[9px] font-black transition-all shrink-0 ${
+                                      isSelected 
+                                        ? 'bg-status-healthy border-status-healthy text-earth-bg' 
+                                        : 'border-earth-cocoa/40 bg-transparent text-transparent'
+                                    }`}>
+                                      ✓
+                                    </span>
+                                    <span>{r.name} ({activeBroadcast.type === 'email' ? r.email : 'WhatsApp Live'})</span>
+                                  </button>
+                                );
+                              });
+                            })()}
                           </div>
                         </div>
 
