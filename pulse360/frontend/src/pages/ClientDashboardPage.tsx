@@ -154,10 +154,10 @@ export function ClientDashboardPage(props: any) {
           </div>
 
           {/* Row 2: Interaction Actions, AI Optimization, & Chatbot (2 main layout columns) */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full items-stretch">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-stretch">
             
             {/* Left Column: Stack of Checklist, Plan Optimization, Add-ons, and History Log */}
-            <div className="lg:col-span-2 flex flex-col gap-6 w-full">
+            <div className="flex flex-col gap-6 w-full">
               
               {/* Onboarding Checklist Card */}
               <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
@@ -350,7 +350,7 @@ export function ClientDashboardPage(props: any) {
             </div>
 
             {/* Right Column: AI Chatbot Assistant */}
-            <div className="lg:col-span-1 w-full">
+            <div className="w-full">
               <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all h-full justify-between text-left min-h-[480px]">
                 <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                   <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">AI PLAN ASSISTANT CHATBOT</span>
