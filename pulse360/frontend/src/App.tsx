@@ -190,6 +190,8 @@ System Status: Live
   ]);
   const [pulseTrigger, setPulseTrigger] = useState(0);
   const [showModelModal, setShowModelModal] = useState(false);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
 
   const consoleRef = useRef<HTMLDivElement>(null);
 
@@ -634,12 +636,152 @@ System Status: Live
                     />
                     <Search className="w-3.5 h-3.5 text-earth-cocoa/50 absolute left-2.5 top-2.5" />
                   </div>
-                  <button className="p-1.5 hover:bg-[#efe9d2]/40 rounded-lg text-earth-cocoa/60 hover:text-earth-cocoa cursor-pointer">
-                    <Bell className="w-4 h-4" />
-                  </button>
-                  <button className="p-1.5 hover:bg-[#efe9d2]/40 rounded-lg text-earth-cocoa/60 hover:text-earth-cocoa cursor-pointer">
-                    <Settings className="w-4 h-4" />
-                  </button>
+                  <div className="relative">
+                    <button 
+                      onClick={() => {
+                        setShowNotifications(!showNotifications);
+                        setShowSettingsDropdown(false);
+                      }}
+                      className="p-1.5 hover:bg-[#efe9d2]/40 rounded-lg text-earth-cocoa/60 hover:text-earth-cocoa cursor-pointer relative"
+                    >
+                      <Bell className="w-4 h-4" />
+                      <span className="absolute top-1 right-1 w-2 h-2 bg-status-critical rounded-full animate-pulse" />
+                    </button>
+                    
+                    {showNotifications && (
+                      <div className="absolute right-0 mt-2 w-72 bg-[#efe9d2] border border-earth-sage rounded-2xl shadow-xl z-50 p-4 animate-fadeIn text-left text-xs">
+                        <div className="font-bold text-earth-cocoa border-b border-earth-sage/20 pb-2 mb-2 flex justify-between items-center">
+                          <span>Recent Warnings</span>
+                          <span className="text-[9px] bg-status-critical/15 text-status-critical px-2 py-0.5 rounded font-extrabold uppercase">3 Unread</span>
+                        </div>
+                        <div className="flex flex-col gap-2.5 mt-2">
+                          <div className="flex flex-col gap-0.5 border-b border-earth-sage/10 pb-2">
+                            <span className="font-bold text-earth-cocoa flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 bg-status-critical rounded-full shrink-0" />
+                              ⚠️ Failed Card Renewal
+                            </span>
+                            <span className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
+                              Northwind Traders bank transaction renewal failed. Grace period active.
+                            </span>
+                            <span className="text-[8px] text-earth-cocoa/50 mt-1 font-mono">2 hours ago</span>
+                          </div>
+                          
+                          <div className="flex flex-col gap-0.5 border-b border-earth-sage/10 pb-2">
+                            <span className="font-bold text-earth-cocoa flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 bg-status-critical rounded-full shrink-0" />
+                              🔌 Regional Server Outage
+                            </span>
+                            <span className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
+                              Outage rate spike detected in West-US server node cluster.
+                            </span>
+                            <span className="text-[8px] text-earth-cocoa/50 mt-1 font-mono">4 hours ago</span>
+                          </div>
+                          
+                          <div className="flex flex-col gap-0.5">
+                            <span className="font-bold text-earth-cocoa flex items-center gap-1.5">
+                              <span className="w-1.5 h-1.5 bg-earth-clay rounded-full shrink-0" />
+                              📉 Engagement Drop
+                            </span>
+                            <span className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
+                              Acme Robotics usage limits fell below 35% threshold limits.
+                            </span>
+                            <span className="text-[8px] text-earth-cocoa/50 mt-1 font-mono">6 hours ago</span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="relative">
+                    <button 
+                      onClick={() => {
+                        setShowSettingsDropdown(!showSettingsDropdown);
+                        setShowNotifications(false);
+                      }}
+                      className="p-1.5 hover:bg-[#efe9d2]/40 rounded-lg text-earth-cocoa/60 hover:text-earth-cocoa cursor-pointer"
+                    >
+                      <Settings className="w-4 h-4" />
+                    </button>
+                    
+                    {showSettingsDropdown && (
+                      <div className="absolute right-0 mt-2 w-72 bg-[#efe9d2] border border-earth-sage rounded-2xl shadow-xl z-50 p-4 animate-fadeIn text-left text-xs flex flex-col gap-3">
+                        <div className="font-bold text-earth-cocoa border-b border-earth-sage/20 pb-2 flex justify-between items-center">
+                          <span>Console Configurations</span>
+                          <span className="text-[9px] bg-earth-sage/25 text-earth-cocoa px-2 py-0.5 rounded font-extrabold uppercase">Sandbox</span>
+                        </div>
+                        
+                        <div className="flex flex-col gap-3.5">
+                          {/* Toggle 1: Simulation running */}
+                          <div className="flex justify-between items-center">
+                            <div className="flex flex-col">
+                              <span className="font-bold text-earth-cocoa">Digital Twin Sandbox</span>
+                              <span className="text-[9px] text-earth-cocoa/65">Simulate background user state transitions</span>
+                            </div>
+                            <button 
+                              onClick={() => setIsSimulating(!isSimulating)}
+                              className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase transition-all border cursor-pointer ${
+                                isSimulating 
+                                  ? 'bg-[#276B2B]/15 border-[#276B2B]/35 text-status-healthy' 
+                                  : 'bg-earth-cocoa/10 border-earth-cocoa/20 text-earth-cocoa/60'
+                              }`}
+                            >
+                              {isSimulating ? 'Active' : 'Paused'}
+                            </button>
+                          </div>
+                          
+                          {/* Slider 1: Outage Rate */}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex justify-between font-bold">
+                              <span>Outage Frequency</span>
+                              <span className="text-earth-clay">{outageRate}%</span>
+                            </div>
+                            <input 
+                              type="range" 
+                              min="0" 
+                              max="100" 
+                              value={outageRate}
+                              onChange={(e) => setOutageRate(Number(e.target.value))}
+                              className="w-full accent-earth-clay h-1 bg-earth-cocoa/15 rounded-lg appearance-none cursor-pointer outline-none"
+                            />
+                          </div>
+                          
+                          {/* Slider 2: Billing Failure Rate */}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex justify-between font-bold">
+                              <span>Billing Fail Chance</span>
+                              <span className="text-earth-clay">{billingFailureRate}%</span>
+                            </div>
+                            <input 
+                              type="range" 
+                              min="0" 
+                              max="100" 
+                              value={billingFailureRate}
+                              onChange={(e) => setBillingFailureRate(Number(e.target.value))}
+                              className="w-full accent-earth-clay h-1 bg-earth-cocoa/15 rounded-lg appearance-none cursor-pointer outline-none"
+                            />
+                          </div>
+
+                          {/* Trigger Incident Button */}
+                          <button 
+                            onClick={() => {
+                              setUsers(prev => prev.map((u, i) => i === 0 || i === 4 || i === 7 ? {
+                                ...u,
+                                warningFlags: [...new Set([...u.warningFlags, 'Regional Outage'])],
+                                healthScore: Math.max(0, u.healthScore - 35),
+                                churnProbability: Math.min(100, u.churnProbability + 40)
+                              } : u));
+                              addTelemetry("Forced critical outage simulation on active accounts.");
+                              setShowSettingsDropdown(false);
+                              alert("⚡ Simulated a regional outage! Check the Live Stream and Customer Directory for immediate risk updates.");
+                            }}
+                            className="w-full bg-status-critical hover:bg-[#8F2618] text-earth-bg font-extrabold text-[10px] py-2 rounded-xl transition-all cursor-pointer shadow-sm text-center"
+                          >
+                            Trigger Instant Outage
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                   <img src={users[0]?.avatar} className="w-6 h-6 rounded-full border border-earth-sage/40 object-cover" />
                 </div>
               </div>
