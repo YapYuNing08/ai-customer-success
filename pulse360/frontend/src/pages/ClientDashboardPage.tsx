@@ -153,13 +153,14 @@ export function ClientDashboardPage(props: any) {
 
           </div>
 
-          {/* Row 2: Interaction Actions, AI Optimization, & Chatbot (3 uniform columns) */}
+          {/* Row 2: Interaction Actions, AI Optimization, & Chatbot (2 main layout columns) */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full items-stretch">
             
-            {/* Module 1: Self-Service & Onboarding */}
-            <div className="flex flex-col gap-6 w-full">
+            {/* Left Column: Stack of Checklist, Plan Optimization, Add-ons, and History Log */}
+            <div className="lg:col-span-2 flex flex-col gap-6 w-full">
+              
               {/* Onboarding Checklist Card */}
-              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all text-left flex-1 justify-between">
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
                 <div>
                   <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">AI ONBOARDING CHECKLIST</span>
                   <div className="flex flex-col gap-2 mt-3">
@@ -206,70 +207,13 @@ export function ClientDashboardPage(props: any) {
                     })}
                   </div>
                 </div>
-                <span className="text-xs text-slate-500 mt-3 leading-tight block">
+                <span className="text-xs text-slate-500 mt-2 leading-tight block">
                   💡 Click items to complete onboarding. Setup Auto-pay resolves payment warnings instantly.
                 </span>
               </div>
 
-              {/* Add-on deals card */}
-              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all text-left justify-between min-h-[170px]">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">PERSONALIZED ADD-ON DEALS</span>
-                <div className="flex flex-col gap-3 mt-1.5">
-                  <div className="flex justify-between items-center border-b border-slate-100 pb-2">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-extrabold text-[#001871]">Roaming Pass</span>
-                      <span className="text-xs text-slate-500">APAC & Europe • $15/mo</span>
-                    </div>
-                    <button 
-                      onClick={() => {
-                        loggedInUser.activityLogs = [
-                          { date: new Date().toLocaleDateString(), type: 'plan_change' as const, details: 'Purchased APAC & Europe Roaming Pass Add-on.' },
-                          ...(loggedInUser.activityLogs || [])
-                        ];
-                        addTelemetry(`Customer ${loggedInUser.name} purchased Roaming Pass add-on.`);
-                        setPortalNotification({
-                          title: 'Add-on Pass Activated',
-                          message: '✈ APAC & Europe Roaming Pass activated successfully! Added to your next monthly bill.',
-                          type: 'success'
-                        });
-                      }}
-                      className="bg-[#001871] hover:bg-[#0064DC] text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap shadow-sm"
-                    >
-                      Buy Pass
-                    </button>
-                  </div>
-
-                  <div className="flex justify-between items-center">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-extrabold text-[#001871]">5G Extra Quota</span>
-                      <span className="text-xs text-slate-500">+10 GB High-Speed • $10/mo</span>
-                    </div>
-                    <button 
-                      onClick={() => {
-                        loggedInUser.activityLogs = [
-                          { date: new Date().toLocaleDateString(), type: 'plan_change' as const, details: 'Added 10 GB 5G Extra Data Quota.' },
-                          ...(loggedInUser.activityLogs || [])
-                        ];
-                        addTelemetry(`Customer ${loggedInUser.name} added 10 GB data quota.`);
-                        setPortalNotification({
-                          title: 'Data Quota Added',
-                          message: '⚡ 10 GB Extra Data Quota added successfully! Added to your next invoice.',
-                          type: 'success'
-                        });
-                      }}
-                      className="bg-[#001871] hover:bg-[#0064DC] text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap shadow-sm"
-                    >
-                      Buy Data
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Module 2: AI Plan Optimization Suggestions & Logs */}
-            <div className="flex flex-col gap-6 w-full">
-              {/* Suggestions block */}
-              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3 shadow-sm hover:border-[#0064DC]/20 transition-all text-left justify-between flex-1">
+              {/* Suggestions block / AI Plan Optimization Card */}
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
                 <div>
                   <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">AI PLAN OPTIMIZATION</span>
                   
@@ -330,15 +274,69 @@ export function ClientDashboardPage(props: any) {
                     </div>
                   )}
                 </div>
-                <span className="text-xs text-slate-500 mt-3 leading-tight block">
+                <span className="text-xs text-slate-500 mt-2 leading-tight block">
                   💡 Optimization recommendation algorithm auto-syncs every 60 seconds to right-size contracts.
                 </span>
               </div>
 
-              {/* Service Log Ticker */}
-              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3 shadow-sm hover:border-[#0064DC]/20 transition-all text-left min-h-[170px] justify-between">
+              {/* Add-on deals card */}
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">PERSONALIZED ADD-ON DEALS</span>
+                <div className="flex flex-col gap-3 mt-1.5">
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-2">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-extrabold text-[#001871]">Roaming Pass</span>
+                      <span className="text-xs text-slate-500">APAC & Europe • $15/mo</span>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        loggedInUser.activityLogs = [
+                          { date: new Date().toLocaleDateString(), type: 'plan_change' as const, details: 'Purchased APAC & Europe Roaming Pass Add-on.' },
+                          ...(loggedInUser.activityLogs || [])
+                        ];
+                        addTelemetry(`Customer ${loggedInUser.name} purchased Roaming Pass add-on.`);
+                        setPortalNotification({
+                          title: 'Add-on Pass Activated',
+                          message: '✈ APAC & Europe Roaming Pass activated successfully! Added to your next monthly bill.',
+                          type: 'success'
+                        });
+                      }}
+                      className="bg-[#001871] hover:bg-[#0064DC] text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap shadow-sm"
+                    >
+                      Buy Pass
+                    </button>
+                  </div>
+
+                  <div className="flex justify-between items-center">
+                    <div className="flex flex-col">
+                      <span className="text-xs font-extrabold text-[#001871]">5G Extra Quota</span>
+                      <span className="text-xs text-slate-500">+10 GB High-Speed • $10/mo</span>
+                    </div>
+                    <button 
+                      onClick={() => {
+                        loggedInUser.activityLogs = [
+                          { date: new Date().toLocaleDateString(), type: 'plan_change' as const, details: 'Added 10 GB 5G Extra Data Quota.' },
+                          ...(loggedInUser.activityLogs || [])
+                        ];
+                        addTelemetry(`Customer ${loggedInUser.name} added 10 GB data quota.`);
+                        setPortalNotification({
+                          title: 'Data Quota Added',
+                          message: '⚡ 10 GB Extra Data Quota added successfully! Added to your next invoice.',
+                          type: 'success'
+                        });
+                      }}
+                      className="bg-[#001871] hover:bg-[#0064DC] text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap shadow-sm"
+                    >
+                      Buy Data
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Service Log Ticker / History Log Card */}
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-600">YOUR RECENT ACCOUNT HISTORY LOG</span>
-                <div className="flex-1 flex flex-col gap-2 overflow-y-auto mt-2 max-h-[100px] border border-slate-200 rounded-xl p-2 bg-slate-50">
+                <div className="flex-1 flex flex-col gap-2 overflow-y-auto mt-2 max-h-[120px] border border-slate-200 rounded-xl p-2.5 bg-slate-50">
                   {(loggedInUser?.activityLogs || []).map((log, idx) => (
                     <div key={idx} className="flex gap-2 text-xs text-slate-700 items-start">
                       <span className="font-bold text-[#0064DC] shrink-0">{log.date}</span>
@@ -348,76 +346,77 @@ export function ClientDashboardPage(props: any) {
                   ))}
                 </div>
               </div>
+
             </div>
 
-            {/* Module 3: AI Chatbot Assistant */}
-            <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all h-full justify-between text-left min-h-[380px]">
-              <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">AI PLAN ASSISTANT CHATBOT</span>
-                <span className="w-2 h-2 rounded-full bg-[#0064DC] animate-pulse" />
-              </div>
+            {/* Right Column: AI Chatbot Assistant */}
+            <div className="lg:col-span-1 w-full">
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all h-full justify-between text-left min-h-[480px]">
+                <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">AI PLAN ASSISTANT CHATBOT</span>
+                  <span className="w-2 h-2 rounded-full bg-[#0064DC] animate-pulse" />
+                </div>
 
-              <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 py-2 font-sans pr-1 text-xs max-h-[250px]">
-                {chatbotMessages.map((msg, idx) => (
-                  <div 
-                    key={idx} 
-                    className={`p-2.5 rounded-2xl max-w-[85%] leading-relaxed ${
-                      msg.sender === 'user' 
-                        ? 'bg-[#0064DC] text-white ml-auto rounded-tr-none shadow-sm' 
-                        : 'bg-slate-100 text-[#001871] mr-auto rounded-tl-none border border-slate-200/80 shadow-sm'
-                    }`}
-                  >
-                    {msg.text}
-                  </div>
-                ))}
-              </div>
+                <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 py-2 font-sans pr-1 text-xs max-h-[450px]">
+                  {chatbotMessages.map((msg, idx) => (
+                    <div 
+                      key={idx} 
+                      className={`p-2.5 rounded-2xl max-w-[85%] leading-relaxed ${
+                        msg.sender === 'user' 
+                          ? 'bg-[#0064DC] text-white ml-auto rounded-tr-none shadow-sm' 
+                          : 'bg-slate-100 text-[#001871] mr-auto rounded-tl-none border border-slate-200/80 shadow-sm'
+                      }`}
+                    >
+                      {msg.text}
+                    </div>
+                  ))}
+                </div>
 
-              <form 
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  if (!chatInput.trim()) return;
-                  const userMsg = chatInput.trim();
-                  setChatbotMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
-                  setChatInput('');
+                <form 
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    if (!chatInput.trim()) return;
+                    const userMsg = chatInput.trim();
+                    setChatbotMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
+                    setChatInput('');
 
-                  // Compute AI Response
-                  setTimeout(() => {
-                    let botReply = "I can help you audit your billing invoices, change subscription plans, activate eSIM roaming passes, or resolve credit card issues. What would you like to do?";
-                    const lower = userMsg.toLowerCase();
-                    if (lower.includes("bill") || lower.includes("invoice") || lower.includes("charge") || lower.includes("pay")) {
-                      botReply = hasFailedPayment 
-                        ? `⚠️ ALERT: Your last credit card renewal declined. Please request a Grace Extension or update payment details.`
-                        : `Your account is healthy! Current subscription costs $${loggedInUser.mrr}/mo and auto-renews via credit card.`;
-                    } else if (lower.includes("limit") || lower.includes("data") || lower.includes("usage") || lower.includes("quota")) {
-                      botReply = `You are currently utilizing ${Math.round((loggedInUser.metrics.usageVelocity || 0) * 100)}% of your plan thresholds. Recommend buying 5G Extra Data (+10 GB) for $10 to prevent speed drops.`;
-                    } else if (lower.includes("roaming") || lower.includes("travel") || lower.includes("abroad")) {
-                      botReply = "Planning a trip? Buy our APAC & Europe Roaming Pass add-on for $15/mo to get high-speed connection abroad!";
-                    } else if (lower.includes("upgrade") || lower.includes("downgrade") || lower.includes("plan")) {
-                      botReply = `You are on the ${loggedInUser.plan} subscription plan. If you need plan suggestions, our optimization dashboard recommends right-sizing to match your telemetry metrics.`;
-                    }
-                    setChatbotMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
-                  }, 500);
-                }}
-                className="flex gap-2 border-t border-slate-200 pt-2.5"
-              >
-                <input 
-                  type="text" 
-                  placeholder="Ask about plan, billing, roaming..." 
-                  value={chatInput}
-                  onChange={(e) => setChatInput(e.target.value)}
-                  className="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold outline-none focus:border-[#0064DC] placeholder-slate-400"
-                />
-                <button 
-                  type="submit"
-                  className="bg-[#001871] hover:bg-[#0064DC] text-white font-extrabold text-xs px-4 rounded-xl transition-all cursor-pointer shadow-sm"
+                    // Compute AI Response
+                    setTimeout(() => {
+                      let botReply = "I can help you audit your billing invoices, change subscription plans, activate eSIM roaming passes, or resolve credit card issues. What would you like to do?";
+                      const lower = userMsg.toLowerCase();
+                      if (lower.includes("bill") || lower.includes("invoice") || lower.includes("charge") || lower.includes("pay")) {
+                        botReply = hasFailedPayment 
+                          ? `⚠️ ALERT: Your last credit card renewal declined. Please request a Grace Extension or update payment details.`
+                          : `Your account is healthy! Current subscription costs $${loggedInUser.mrr}/mo and auto-renews via credit card.`;
+                      } else if (lower.includes("limit") || lower.includes("data") || lower.includes("usage") || lower.includes("quota")) {
+                        botReply = `You are currently utilizing ${Math.round((loggedInUser.metrics.usageVelocity || 0) * 100)}% of your plan thresholds. Recommend buying 5G Extra Data (+10 GB) for $10 to prevent speed drops.`;
+                      } else if (lower.includes("roaming") || lower.includes("travel") || lower.includes("abroad")) {
+                        botReply = "Planning a trip? Buy our APAC & Europe Roaming Pass add-on for $15/mo to get high-speed connection abroad!";
+                      } else if (lower.includes("upgrade") || lower.includes("downgrade") || lower.includes("plan")) {
+                        botReply = `You are on the ${loggedInUser.plan} subscription plan. If you need plan suggestions, our optimization dashboard recommends right-sizing to match your telemetry metrics.`;
+                      }
+                      setChatbotMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
+                    }, 500);
+                  }}
+                  className="flex gap-2 border-t border-slate-200 pt-2.5"
                 >
-                  Send
-                </button>
-              </form>
+                  <input 
+                    type="text" 
+                    placeholder="Ask about plan, billing, roaming..." 
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    className="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold outline-none focus:border-[#0064DC] placeholder-slate-400"
+                  />
+                  <button 
+                    type="submit"
+                    className="bg-[#001871] hover:bg-[#0064DC] text-white font-extrabold text-xs px-4 rounded-xl transition-all cursor-pointer shadow-sm"
+                  >
+                    Send
+                  </button>
+                </form>
+              </div>
             </div>
-
           </div>
-
         </div>
       </div>
       {portalNotification && (
