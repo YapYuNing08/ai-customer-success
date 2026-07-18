@@ -408,7 +408,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             <span className={`text-4xl font-extrabold tracking-tight ${
               user.metrics.usageVelocity < 0.5 ? 'text-status-critical' : user.metrics.usageVelocity < 0.9 ? 'text-status-risk' : 'text-status-healthy'
             }`}>
-              {user.metrics.usageVelocity}x
+              {Math.round(user.metrics.usageVelocity * 100)}%
             </span>
             <div className="flex items-center gap-1 mt-2 text-xs console-text-secondary">
               {user.metrics.usageVelocity < 0.8 ? (
@@ -422,7 +422,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           </div>
 
           <div className="text-[10px] console-text-muted leading-normal">
-            1.0x means steady usage. Below 0.8x means this customer is logging in noticeably less than usual.
+            100% means steady usage. Below 80% means this customer is logging in noticeably less than usual.
           </div>
         </div>
 
@@ -483,7 +483,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                   <div className="w-full h-2 bg-earth-cocoa/10 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full ${isPositive ? 'bg-status-critical' : 'bg-status-healthy'}`}
-                      style={{ width: `${Math.min(100, Math.abs(factor.impact) * 2)}%` }}
+                      style={{ width: `${Math.min(100, Math.abs(factor.impact))}%` }}
                     />
                   </div>
                 </div>
