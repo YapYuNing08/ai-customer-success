@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, LayoutDashboard, Users, Heart, FileText, Search, Bell } from 'lucide-react';
+import { Settings, LayoutDashboard, Users, FileText, Search, Bell } from 'lucide-react';
 import type { ActiveUser } from '../../utils/mockData';
 import type { Report } from '../../types';
 import { buildRescuePlanReport } from '../../utils/reports';
@@ -7,13 +7,12 @@ import { ReportSuccessModal } from '../../components/modals/ReportSuccessModal';
 import { OutageAlertModal } from '../../components/modals/OutageAlertModal';
 import { DashboardTab } from './DashboardTab';
 import { CustomersTab } from './CustomersTab';
-import { HealthTab } from './HealthTab';
 import { ReportsTab } from './ReportsTab';
 
 export function ConsolePage(props: any) {
   const { users, setUsers, telemetryFeed, setTelemetryFeed, isSimulating, setIsSimulating, outageRate, setOutageRate, billingFailureRate, setBillingFailureRate, addTelemetry, handleUpdateUser, dist, expScore, expLabel } = props;
 
-  const [consoleTab, setConsoleTab] = useState<'dashboard' | 'customers' | 'health' | 'reports'>('dashboard');
+  const [consoleTab, setConsoleTab] = useState<'dashboard' | 'customers' | 'reports'>('dashboard');
   const [selectedConsoleUser, setSelectedConsoleUser] = useState<ActiveUser | null>(null);
   const [customerSearch, setCustomerSearch] = useState<string>('');
   const [filterPlan, setFilterPlan] = useState<string>('all');
@@ -69,10 +68,6 @@ export function ConsolePage(props: any) {
     }
   ]);
 
-  const avgHealth = Math.round(users.reduce((acc, u) => acc + u.healthScore, 0) / users.length);
-  const totalMRR = users.reduce((acc, u) => acc + u.mrr, 0);
-  const criticalCount = users.filter(u => u.healthScore < 40).length;
-
   const filteredConsoleUsers = users.filter(u => {
     const matchesSearch = u.name.toLowerCase().includes(customerSearch.toLowerCase()) || 
                           u.email.toLowerCase().includes(customerSearch.toLowerCase()) ||
@@ -124,17 +119,6 @@ export function ConsolePage(props: any) {
                   >
                     <Users className="w-4 h-4 text-earth-clay" />
                     <span>Customers</span>
-                  </button>
-                  <button 
-                    onClick={() => { setConsoleTab('health'); setSelectedConsoleUser(null); }}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
-                      consoleTab === 'health'
-                        ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
-                        : 'hover:bg-earth-sage/10'
-                    }`}
-                  >
-                    <Heart className="w-4 h-4 text-earth-clay" />
-                    <span>Health</span>
                   </button>
                   <button 
                     onClick={() => { setConsoleTab('reports'); setSelectedConsoleUser(null); }}
@@ -331,8 +315,6 @@ export function ConsolePage(props: any) {
                 <DashboardTab dist={dist} expScore={expScore} expLabel={expLabel} users={users} />
               ) : consoleTab === 'customers' ? (
                 <CustomersTab selectedConsoleUser={selectedConsoleUser} setSelectedConsoleUser={setSelectedConsoleUser} users={users} handleUpdateUser={handleUpdateUser} customerSearch={customerSearch} setCustomerSearch={setCustomerSearch} filterPlan={filterPlan} setFilterPlan={setFilterPlan} filterRisk={filterRisk} setFilterRisk={setFilterRisk} filteredConsoleUsers={filteredConsoleUsers} />
-              ) : consoleTab === 'health' ? (
-                <HealthTab users={users} avgHealth={avgHealth} criticalCount={criticalCount} totalMRR={totalMRR} />
               ) : (
                 <ReportsTab reports={reports} users={users} generateDynamicRescuePlan={generateDynamicRescuePlan} />
               )}
