@@ -30,7 +30,7 @@ export function CustomersTab(props: any) {
                       </div>
                       <div className="bg-earth-cocoa border border-earth-cocoa text-earth-bg rounded-lg px-3 py-1.5 flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>Last 24 Hours</span>
+                        <span>Last 30 Days</span>
                       </div>
                     </div>
                   </div>

@@ -19,13 +19,13 @@ export function DashboardTab(props: any) {
                       </div>
                       <div className="bg-earth-cocoa border border-earth-cocoa text-earth-bg rounded-lg px-3 py-1.5 flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>Last 24 Hours</span>
+                        <span>Last 30 Days</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Metric Cards Row */}
-                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
                     {/* Card 1 */}
                     <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
                       <div className="flex justify-between items-center">
@@ -56,19 +56,7 @@ export function DashboardTab(props: any) {
                     {/* Card 3 */}
                     <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
                       <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Automated Wins Saved</span>
-                        <Cpu className="w-4 h-4 text-status-healthy" />
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-earth-cocoa">$14,200</span>
-                      </div>
-                      <span className="text-[9px] text-earth-cocoa/65">82% win rate</span>
-                    </div>
-
-                    {/* Card 4 */}
-                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Avg Response Time</span>
+                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">System Avg Response Time</span>
                         <Activity className="w-4 h-4 text-earth-clay" />
                       </div>
                       <div className="flex items-baseline gap-2">
@@ -81,8 +69,8 @@ export function DashboardTab(props: any) {
                   {/* Main section grid */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch">
                     
-                    {/* Left Column (Span 8) */}
-                    <div className="lg:col-span-8 flex flex-col gap-6 w-full">
+                    {/* Left Column (Span 6) */}
+                    <div className="lg:col-span-6 flex flex-col gap-6 w-full">
                       {/* Health distribution block */}
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
                         <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
@@ -121,7 +109,7 @@ export function DashboardTab(props: any) {
                       {/* Telemetry Status Breakdown */}
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
                         <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
-                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">TELEMETRY STATUS BREAKDOWN</span>
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">SYSTEM STATUS BREAKDOWN</span>
                           <span className="text-[10px] font-bold text-earth-sage uppercase">System checks</span>
                         </div>
 
@@ -175,8 +163,8 @@ export function DashboardTab(props: any) {
                       
                     </div>
 
-                    {/* Right Column (Span 4) */}
-                    <div className="lg:col-span-4 flex flex-col gap-6 w-full">
+                    {/* Right Column (Span 6) */}
+                    <div className="lg:col-span-6 flex flex-col gap-6 w-full">
                       {/* Experience drivers */}
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm h-fit">
                         <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full text-left">

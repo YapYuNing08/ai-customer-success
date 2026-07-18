@@ -22,13 +22,13 @@ export function ReportsTab(props: any) {
                       </div>
                       <div className="bg-earth-cocoa border border-earth-cocoa text-earth-bg rounded-lg px-3 py-1.5 flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>Last 24 Hours</span>
+                        <span>Last 30 Days</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Reports Metric Cards Row */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full animate-fadeIn">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full animate-fadeIn">
                     {/* Card 1 */}
                     <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
                       <div className="flex justify-between items-center">
@@ -54,18 +54,6 @@ export function ReportsTab(props: any) {
                       </div>
                       <span className="text-[9px] text-earth-cocoa/65">Based on active churn risks</span>
                     </div>
-
-                    {/* Card 3 */}
-                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Last Generation Time</span>
-                        <RefreshCw className="w-4 h-4 text-earth-clay" />
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-earth-cocoa">Just Now</span>
-                      </div>
-                      <span className="text-[9px] text-earth-cocoa/65">Real-time sync complete</span>
-                    </div>
                   </div>
 
                   {/* Main reports grid */}
@@ -75,7 +63,7 @@ export function ReportsTab(props: any) {
                     <div className="lg:col-span-8 flex flex-col gap-6 w-full">
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl overflow-hidden shadow-sm w-full text-left">
                         <div className="p-5 border-b border-earth-sage/20 bg-earth-sage/5">
-                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">REPORT LIBRARY</span>
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">GENERATED REPORTS</span>
                           <h3 className="text-sm font-bold text-earth-cocoa mt-0.5">Select and view compiled analytical outputs</h3>
                         </div>
                         
