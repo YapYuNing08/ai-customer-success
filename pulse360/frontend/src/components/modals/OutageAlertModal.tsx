@@ -1,6 +1,6 @@
 import { ShieldAlert } from 'lucide-react';
 
-export function OutageAlertModal({ onClose, onNavigate }: { onClose: () => void; onNavigate: (tab: 'live_stream' | 'customers') => void }) {
+export function OutageAlertModal({ onClose, onNavigate }: { onClose: () => void; onNavigate: (tab: 'grid' | 'customers') => void }) {
   return (
         <div 
           className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300 animate-fadeIn"
@@ -41,17 +41,17 @@ export function OutageAlertModal({ onClose, onNavigate }: { onClose: () => void;
                 </div>
               </div>
               <p className="text-[10px] text-earth-cocoa/65 italic mt-1 leading-normal">
-                Observe the Live Stream for automated support interventions and check the Customers Directory list to view AI-powered rescue plan updates.
+                Check the Customer Health Grid and check the Customers Directory list to view AI-powered rescue plan updates.
               </p>
             </div>
 
             {/* Modal Actions */}
             <div className="flex gap-3 justify-end mt-2">
               <button 
-                onClick={() => onNavigate('live_stream')}
+                onClick={() => onNavigate('grid')}
                 className="px-4 py-2.5 bg-[#e4ddc3] hover:bg-[#d8cfb3] text-earth-cocoa font-bold text-xs rounded-xl transition-all cursor-pointer border border-earth-sage/20"
               >
-                Go to Live Stream
+                Go to Grid
               </button>
               
               <button 
