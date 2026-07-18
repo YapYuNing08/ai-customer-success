@@ -1,12 +1,13 @@
 import { useState, useRef } from 'react';
-import { mockUsers, mergeBackendCustomer, downgradeSavings, type ActiveUser } from './utils/mockData';
+import { mockUsers, mergeBackendCustomer, downgradeSavings, upgradeCost, suggestPlanChange, type ActiveUser } from './utils/mockData';
+import { LIFESTYLE_CONFIG, type WizardResult } from './components/OnboardingWizard';
 import { ActiveUserInsight } from './components/ActiveUserInsight';
 import { NavBar } from './components/NavBar';
 import { MarketingPage } from './pages/MarketingPage';
 import { ClientDashboardPage } from './pages/ClientDashboardPage';
 import { ConsolePage } from './pages/console/ConsolePage';
 import { useChurnSimulation } from './hooks/useChurnSimulation';
-import { getCustomers, getCustomerStats } from './lib/api';
+import { getCustomers, getCustomerStats, createCustomer } from './lib/api';
 import { useEffect } from 'react';
 
 function App() {
@@ -14,6 +15,9 @@ function App() {
   const [users, setUsers] = useState<ActiveUser[]>(mockUsers);
   const [selectedUser, setSelectedUser] = useState<ActiveUser | null>(null);
   const [clientUserId, setClientUserId] = useState<string>('1');
+  // First visit to the client dashboard runs the guided setup as a sign-up
+  // flow; once completed (or skipped) it never auto-opens again this session.
+  const [signupCompleted, setSignupCompleted] = useState(false);
 
   // Simulation States (Concept 1: Digital Twin Sandbox)
   const [isSimulating, setIsSimulating] = useState(true);
@@ -95,23 +99,39 @@ function App() {
     addTelemetry(`[Action Taken] ${recoveredUser.name} is back on track — risk of leaving is down to ${recoveredUser.churnProbability}%.`);
   };
 
-  const handleClientAction = (userId: string, action: 'downgrade' | 'extend_grace') => {
+  const handleClientAction = (userId: string, action: 'downgrade' | 'upgrade' | 'extend_grace') => {
     setUsers(prev => prev.map(u => {
       if (u.id === userId) {
-        if (action === 'downgrade') {
-          const newMrr = u.mrr - downgradeSavings(u.mrr);
+        if (action === 'downgrade' || action === 'upgrade') {
+          const suggestion = suggestPlanChange(u.plan, u.metrics.usageVelocity, u.mrr);
+          const targetPlan = suggestion?.direction === action
+            ? suggestion.targetPlan
+            : action === 'downgrade' ? 'Starter' : u.plan;
+          const newMrr = action === 'downgrade'
+            ? u.mrr - downgradeSavings(u.mrr)
+            : u.mrr + upgradeCost(u.mrr);
           return {
             ...u,
-            plan: 'Starter',
+            plan: targetPlan,
             mrr: newMrr,
-            healthScore: Math.min(98, u.healthScore + 20),
-            churnProbability: Math.max(5, u.churnProbability - 30),
+            healthScore: Math.min(98, u.healthScore + (action === 'downgrade' ? 20 : 10)),
+            churnProbability: Math.max(5, u.churnProbability - (action === 'downgrade' ? 30 : 15)),
+            metrics: {
+              ...u.metrics,
+              // Right-sizing changes capacity, so relative usage shifts:
+              // a smaller plan fills up, a bigger one opens headroom.
+              usageVelocity: action === 'downgrade'
+                ? Math.min(0.85, Number((u.metrics.usageVelocity * 2.2).toFixed(2)))
+                : Number((u.metrics.usageVelocity * 0.55).toFixed(2)),
+            },
             warningFlags: u.warningFlags.filter(f => f !== 'Using It Less'),
             activityLogs: [
               {
                 date: new Date().toISOString().split('T')[0],
                 type: 'plan_change',
-                details: `Customer self-downgraded subscription to Starter Plan ($${newMrr.toLocaleString()}/mo) via Dashboard Console.`
+                details: action === 'downgrade'
+                  ? `Customer self-downgraded subscription to ${targetPlan} Plan (RM${newMrr.toLocaleString()}/mo) via Dashboard Console.`
+                  : `Customer self-upgraded subscription to ${targetPlan} Plan (RM${newMrr.toLocaleString()}/mo) via Dashboard Console.`
               },
               ...u.activityLogs
             ]
@@ -136,6 +156,86 @@ function App() {
       return u;
     }));
     addTelemetry(`[Dashboard Console Action] Account ${userId} completed action: ${action}`);
+  };
+
+  // Guided setup completed in signup mode: persist the new customer via
+  // POST /customers (model-scored server-side), falling back to an in-memory
+  // record if the backend is unreachable so signup never blocks the demo.
+  const handleSignup = async (result: WizardResult) => {
+    const name = result.name || 'New Customer';
+    const plan: ActiveUser['plan'] = result.plan || 'Starter';
+    const planMrr = { Starter: 400, Growth: 800, Pro: 1200, Enterprise: 4000 } as const;
+    const today = new Date().toISOString().split('T')[0];
+    const cfg = LIFESTYLE_CONFIG[result.lifestyle];
+    const buildLocalUser = (id: string): ActiveUser => ({
+      id,
+      name,
+      email: result.email || `${name.toLowerCase().replace(/[^a-z0-9]+/g, '.')}@gmail.com`,
+      avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
+      location: 'Kuala Lumpur, Malaysia',
+      lat: 3.139,
+      lng: 101.6869,
+      plan,
+      mrr: planMrr[plan],
+      healthScore: 85,
+      churnProbability: 8,
+      warningFlags: [],
+      metrics: {
+        usageVelocity: 0.1,
+        featureAdoption: 0.25,
+        frictionIndex: 0,
+        failedPayments: 0,
+        daysSinceOnboarding: 1,
+      },
+      churnFactors: [
+        { name: 'Recent Signup', impact: 10 },
+        { name: 'Completed Onboarding', impact: -15 },
+      ],
+      activityLogs: [
+        { date: today, type: 'feature_use', details: `AI agent auto-configured preferences for "${cfg.label}" (roaming, notifications, data alerts).` },
+        { date: today, type: 'plan_change', details: `Activated ${result.simChoice === 'esim' ? 'eSIM' : 'physical SIM'}${result.phone ? ` for ${result.phone}` : ''} on ${plan} Plan (RM${planMrr[plan]}/mo).` },
+        { date: today, type: 'login', details: 'Signed up via AI-guided onboarding (3-minute setup completed).' },
+      ],
+      pastJourneys: [],
+      state: 'active',
+    });
+
+    let newUser: ActiveUser;
+    try {
+      const created = await createCustomer({
+        name,
+        subscription_plan: plan,
+        monthly_charges: planMrr[plan],
+        contract: 'Month-to-month',
+        sim_type: result.simChoice,
+        lifestyle: result.lifestyle,
+      });
+      // Backend supplies the scored fields; keep the wizard's richer demo
+      // context (email, KL location, signup activity log) over the synthetic
+      // values mergeBackendCustomer derives for unknown customers.
+      const local = buildLocalUser(created.customer_id);
+      const merged = mergeBackendCustomer(created);
+      newUser = {
+        ...merged,
+        email: local.email,
+        avatar: local.avatar,
+        location: local.location,
+        lat: local.lat,
+        lng: local.lng,
+        mrr: local.mrr,
+        activityLogs: local.activityLogs,
+        // New signups have no train-time SHAP values yet — keep the local
+        // fresh-account factors instead of an empty breakdown.
+        churnFactors: merged.churnFactors.length > 0 ? merged.churnFactors : local.churnFactors,
+      };
+    } catch (err) {
+      console.warn('Could not save signup to the backend; keeping the customer in-memory.', err);
+      newUser = buildLocalUser(`cus_new_${Date.now()}`);
+    }
+    setUsers(prev => [newUser, ...prev]);
+    setClientUserId(newUser.id);
+    setSignupCompleted(true);
+    addTelemetry(`New customer ${name} signed up via guided onboarding (${result.aiInterventions} AI intervention${result.aiInterventions === 1 ? '' : 's'}) — added to customer list on ${plan} Plan.`);
   };
 
   const addTelemetry = (msg: string) => {
@@ -203,6 +303,9 @@ function App() {
             handleClientAction={handleClientAction}
             addTelemetry={addTelemetry}
             setCurrentPage={setCurrentPage}
+            signupCompleted={signupCompleted}
+            onSignup={handleSignup}
+            onSignupSkip={() => setSignupCompleted(true)}
           />
         ) : (
           <MarketingPage

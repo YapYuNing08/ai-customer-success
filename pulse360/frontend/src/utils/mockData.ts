@@ -68,7 +68,7 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     activityLogs: [
       { date: '2026-07-15', type: 'feature_use', details: 'Used Advanced Analytics dashboard' },
       { date: '2026-07-14', type: 'login', details: 'Logged in from desktop browser' },
-      { date: '2026-07-10', type: 'payment_success', details: 'Invoice #1092 paid ($4,500.00)' }
+      { date: '2026-07-10', type: 'payment_success', details: 'Invoice #1092 paid (RM4,500.00)' }
     ],
     pastJourneys: []
   },
@@ -172,7 +172,7 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     mrr: 400,
     warningFlags: [],
     activityLogs: [
-      { date: '2026-07-15', type: 'payment_success', details: 'Invoice paid ($400.00)' }
+      { date: '2026-07-15', type: 'payment_success', details: 'Invoice paid (RM400.00)' }
     ],
     pastJourneys: []
   },
@@ -338,7 +338,7 @@ const offlineRisk: Record<string, string> = {
 
 const offlineUsage: Record<string, number> = {
   "cus_001": 34.0, "cus_002": 61.0, "cus_003": 92.0, "cus_004": 45.0, "cus_005": 70.0,
-  "cus_006": 88.0, "cus_007": 50.0, "cus_008": 22.0, "cus_009": 72.0, "cus_010": 90.0,
+  "cus_006": 88.0, "cus_007": 50.0, "cus_008": 22.0, "cus_009": 72.0, "cus_010": 93.0,
   "cus_011": 58.0, "cus_012": 96.0, "cus_013": 39.0, "cus_014": 78.0, "cus_015": 31.0,
   "cus_016": 91.0, "cus_017": 65.0, "cus_018": 48.0, "cus_019": 94.0, "cus_020": 32.0
 };
@@ -419,6 +419,42 @@ const pseudoGeo = (customerId: string) => {
 export const downgradeSavings = (mrr: number): number =>
   Math.max(5, Math.round(mrr * 0.4));
 
+// Added cost of stepping up one plan tier (~30% of current charges), same
+// consistency rationale as downgradeSavings.
+export const upgradeCost = (mrr: number): number =>
+  Math.max(5, Math.round(mrr * 0.3));
+
+export const PLAN_LADDER = ['Starter', 'Growth', 'Pro', 'Enterprise'] as const;
+export type PlanTier = typeof PLAN_LADDER[number];
+
+export interface PlanSuggestion {
+  direction: 'downgrade' | 'upgrade';
+  targetPlan: PlanTier;
+  // RM/month saved (downgrade) or added (upgrade).
+  monthlyDelta: number;
+}
+
+// Threshold-based subscription right-sizing (no model — a rule, per the
+// feature spec): usage far below plan capacity steps the customer down a tier
+// (very low usage goes straight to Starter); sustained near-cap usage steps
+// them up. Returns null when the plan already fits.
+export const suggestPlanChange = (
+  plan: string,
+  usageVelocity: number,
+  mrr: number
+): PlanSuggestion | null => {
+  const idx = PLAN_LADDER.indexOf(plan as PlanTier);
+  if (idx === -1) return null;
+  if (usageVelocity < 0.35 && idx > 0) {
+    const targetIdx = usageVelocity < 0.2 ? 0 : idx - 1;
+    return { direction: 'downgrade', targetPlan: PLAN_LADDER[targetIdx], monthlyDelta: downgradeSavings(mrr) };
+  }
+  if (usageVelocity > 0.9 && idx < PLAN_LADDER.length - 1) {
+    return { direction: 'upgrade', targetPlan: PLAN_LADDER[idx + 1], monthlyDelta: upgradeCost(mrr) };
+  }
+  return null;
+};
+
 const dateDaysAgo = (n: number): string => {
   const d = new Date();
   d.setDate(d.getDate() - n);
@@ -452,7 +488,7 @@ const deriveActivityLogs = (c: any): UserActivityLog[] => {
     });
   }
 
-  const charges = c.monthly_charges != null ? `$${Number(c.monthly_charges).toFixed(2)}` : 'monthly invoice';
+  const charges = c.monthly_charges != null ? `RM${Number(c.monthly_charges).toFixed(2)}` : 'monthly invoice';
   if (c.payment_status === 'past_due') {
     logs.push({
       date: dateDaysAgo(3 + (h % 8)),

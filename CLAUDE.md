@@ -51,7 +51,8 @@ There is a stale duplicate frontend at the repo root (`/src`, package "subsentry
 Customer object: `customer_id, name, subscription_plan, health_score, churn_probability, risk_tier, shap_reasons: [{feature, contribution}], recommended_action, monthly_usage_pct, monthly_charges`. Detail view adds the raw signals (`login_frequency, feature_usage, support_ticket_count, feedback_score`) so the simulator can initialize sliders from real values (untouched run = zero delta).
 
 Endpoints:
-- `GET /customers` — list + health scores, for dashboard table
+- `GET /customers` — list + health scores, for dashboard table. Live signups (`NEW-*` ids) always lead the list, excluded from the band-balanced sampling — otherwise a fresh low-churn signup gets buried and looks "lost" after a page reload.
+- `POST /customers` — persists a signup from the onboarding wizard (name, subscription_plan, monthly_charges, contract, + fresh-account signal defaults). Server generates `NEW-{hex}` id and `signup_date=today`. Scores are a deliberate fresh-account baseline (health 85, churn 0.08, low risk), NOT live model output: the Telco model equates near-zero tenure with churn (~0.62 for a day-0 signup), which misrepresents a just-onboarded customer. `shap_reasons=[]` (SHAP only exists at train time). Insert failure returns the customer un-persisted rather than 500 — signup must never block the demo. NEW-* rows are wiped whenever `ml/load_data.py` truncates the table (expected, harmless). To find them in the Supabase table editor (7k rows, unordered pages): filter `customer_id like NEW-%` or sort `signup_date` desc.
 - `GET /customers/{id}` — detail + SHAP breakdown, for drill-down
 - `GET /customers/{id}/recommendation` — Next Best Action output
 - `POST /customers/{id}/simulate` — What-If simulator, takes lever values, returns projected churn/health deltas + revenue framing (`monthly_charges`, `projected_monthly_revenue_saved`, `projected_annual_revenue_saved`)
@@ -70,7 +71,7 @@ Endpoints:
 6. What-If Retention Simulator ✅ DONE (2026-07-17) — POST /simulate runs the real model with per-customer deltas; UI sliders initialize from the customer's real DB values with a "Reset to Today's Values" button; results show revenue impact ((baseline churn − simulated churn) × monthly_charges × 12) plus a Gemini-written retention plan with deterministic fallback
 
 **Fake it, don't build it:**
-7. Onboarding Agent — do NOT build real dwell-time/click-tracking ML. Deterministic scripted trigger only: `time_on_page > 2min AND same_button_clicked >= 3 → show popup`, run against a scripted demo customer.
+7. Onboarding Agent ✅ DONE (2026-07-19, signup-wizard-only) — deterministic scripted triggers, no ML, and it lives ONLY inside the signup wizard (`frontend/src/components/OnboardingWizard.tsx`); the client-dashboard checklist card, its 2-min dwell timer, and `OnboardingAgentModal.tsx` were removed. Wizard is 4 steps (Welcome name/email/phone all mandatory → Package → SIM → Preferences); on every step the agent pops (once per step) on `5s idle OR same control clicked >= 3×`, and triggers stay armed until the customer ADVANCES the step — picking an option but hesitating on Continue still fires. Completing signup calls `POST /customers` (in-memory fallback if backend is down).
 8. Copilot — do NOT build live RAG during the judged demo. Pre-generate answers for 3-4 rehearsed questions, route those exact queries to a real Gemini call with retrieved context. Everything outside the rehearsed set falls back to a canned response — do not risk a live LLM call failing on stage.
 
 **Drop entirely for the hackathon:**
@@ -87,5 +88,6 @@ CSM dashboard (Design) → drill into high-risk customer, show SHAP "why" (Metho
 - Don't let UI polish (Stitch cleanup) run past its time box — Design points are already secured once real data is wired in; remaining time should weight toward Formulation of Concept and Methodology, which score zero until the backend/model actually works.
 - API contract is defined by the frontend's needs, not the model's natural output shape — reshape model output to match the contract, not the other way around.
 - Every screen needs loading and empty states — Stitch-generated components usually don't have them by default.
+- Currency is RM (Malaysian Ringgit) everywhere in the UI — format `RM800/mo`, no space, never `$`. Plan prices live in `PLAN_OPTIONS` (OnboardingWizard.tsx) and the `planMrr` map (App.tsx) and must stay in sync. Currency is display-only; the DB stores plain numbers.
 - NEVER put real credentials in `.env.example` (or any committed file) — placeholders only. Real values go in `.env`, which is gitignored. A real Supabase password was committed to `.env.example` history once already; it must be rotated in the Supabase dashboard (Project Settings → Database → Reset database password), then every teammate updates their local `.env`.
 - After re-running `ml/load_data.py`, always re-run `ml/train.py` — the loader truncates the customers table, leaving score columns NULL until training writes them back.

@@ -61,6 +61,27 @@ class Customer(BaseModel):
     contract: Optional[str] = None
 
 
+class CustomerCreate(BaseModel):
+    """Signup payload from the onboarding wizard.
+
+    Raw-signal defaults describe a brand-new account; the server scores them
+    live and persists the row. Email is intentionally absent — no DB column.
+    """
+
+    name: str
+    subscription_plan: str
+    monthly_charges: Optional[float] = None
+    contract: str = "Month-to-month"
+    sim_type: Optional[str] = None  # "esim" | "physical" — demo flavor, not persisted
+    lifestyle: Optional[str] = None  # demo flavor, not persisted
+    login_frequency: float = 1.0
+    feature_usage: float = 0.25
+    monthly_usage_pct: float = 10.0
+    support_ticket_count: int = 0
+    feedback_score: float = 4.5
+    payment_status: str = "active"
+
+
 class HealthStats(BaseModel):
     """Population-wide health-band aggregates for the dashboard.
 

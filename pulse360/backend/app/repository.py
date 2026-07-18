@@ -5,6 +5,7 @@ unreachable (conference Wi-Fi, expired pooler, ...) we fall back to
 app/data.py so the demo never 500s. Dicts may carry extra keys (raw signal
 columns for /simulate) — FastAPI's response_model filters them out.
 """
+import logging
 from itertools import zip_longest
 from typing import List, Optional
 
@@ -14,6 +15,8 @@ from sqlalchemy.orm import Session
 
 from app import data
 from app.db.models import Customer
+
+logger = logging.getLogger(__name__)
 
 
 def _row_to_dict(row: Customer) -> dict:
@@ -55,12 +58,23 @@ def list_customers(db: Session, limit: int = 100, offset: int = 0) -> List[dict]
     of the table shows a balanced but still demo-interesting selection.
     """
     try:
+        # Live signups (NEW-* ids from POST /customers) always lead the list —
+        # they'd otherwise be buried in the healthy band and look "lost" after
+        # a page reload.
+        signup_stmt = (
+            select(Customer)
+            .where(Customer.customer_id.like("NEW-%"))
+            .order_by(Customer.signup_date.desc(), Customer.customer_id)
+            .limit(10)
+        )
+        signups = [_row_to_dict(r) for r in db.execute(signup_stmt).scalars()]
+
         share, remainder = divmod(limit, len(_HEALTH_BANDS))
         bands = []
         for i, cond in enumerate(_HEALTH_BANDS):
             stmt = (
                 select(Customer)
-                .where(cond)
+                .where(cond, Customer.customer_id.notlike("NEW-%"))
                 .order_by(Customer.churn_probability.desc().nulls_last())
                 .limit(share + (1 if i < remainder else 0))
                 .offset(offset)
@@ -70,7 +84,7 @@ def list_customers(db: Session, limit: int = 100, offset: int = 0) -> List[dict]
         merged = []
         for group in zip_longest(*bands):
             merged.extend(r for r in group if r is not None)
-        return merged
+        return signups + merged
     except SQLAlchemyError:
         return data.list_customers()[offset : offset + limit]
 
@@ -109,6 +123,20 @@ def get_stats(db: Session) -> dict:
         healthy = sum(1 for s in scores if s > 70)
         avg_health = sum(scores) / len(scores) if scores else 0.0
         return _stats_from_counts(critical, at_risk, healthy, avg_health)
+
+
+def create_customer(db: Session, values: dict) -> dict:
+    """Insert a new customer row. Returns the contract-shaped dict either way —
+    on DB failure the customer is served un-persisted so signup never blocks."""
+    row = Customer(**values)
+    try:
+        db.add(row)
+        db.commit()
+        db.refresh(row)
+    except SQLAlchemyError:
+        db.rollback()
+        logger.warning("customer insert failed; serving %s un-persisted", values.get("customer_id"))
+    return _row_to_dict(row)
 
 
 def get_customer(db: Session, customer_id: str) -> Optional[dict]:

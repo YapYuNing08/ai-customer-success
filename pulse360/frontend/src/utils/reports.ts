@@ -26,13 +26,13 @@ export const buildRescuePlanReport = (users: ActiveUser[]): { report: Report; di
       distressed.forEach(u => {
         let recommendation = "";
         if (u.metrics.usageVelocity < 0.35 && u.plan !== 'Starter') {
-          recommendation = `Execute 1-Click Downgrade to Starter Plan to save $${downgradeSavings(u.mrr).toLocaleString()}/mo (Usage velocity at ${Math.round(u.metrics.usageVelocity * 100)}%).`;
+          recommendation = `Execute 1-Click Downgrade to Starter Plan to save RM${downgradeSavings(u.mrr).toLocaleString()}/mo (Usage velocity at ${Math.round(u.metrics.usageVelocity * 100)}%).`;
         } else if (u.warningFlags.includes('Failed Payment')) {
           recommendation = `Request automatic 7-day grace extension to keep services active during card renewal.`;
         } else {
           recommendation = `Schedule active CSM check-in and feature walkthrough (Health at ${u.healthScore}/100).`;
         }
-        userBreakdownText += `### 👤 ${u.name} (${u.plan} - $${u.mrr}/mo)\n- **Health Score**: ${u.healthScore}/100\n- **Churn Risk**: ${Math.round(u.churnProbability)}%\n- **Warning Flags**: ${u.warningFlags.join(', ') || 'Low Engagement'}\n- **CSM Action Recommendation**: ${recommendation}\n\n`;
+        userBreakdownText += `### 👤 ${u.name} (${u.plan} - RM${u.mrr}/mo)\n- **Health Score**: ${u.healthScore}/100\n- **Churn Risk**: ${Math.round(u.churnProbability)}%\n- **Warning Flags**: ${u.warningFlags.join(', ') || 'Low Engagement'}\n- **CSM Action Recommendation**: ${recommendation}\n\n`;
       });
     }
 
@@ -46,8 +46,8 @@ System Status: Live
 - **Average Portfolio Health**: ${avgHealth}/100
 - **Total At-Risk Accounts (Health < 70)**: ${distressed.length}
 - **Critical Alerts (Health < 40)**: ${criticalUsers.length}
-- **Active Monthly Recurring Revenue (MRR)**: $${totalMRR.toLocaleString()}/mo
-- **Estimated Monthly Revenue At Churn Risk**: $${distressed.reduce((sum, u) => sum + u.mrr, 0).toLocaleString()}/mo
+- **Active Monthly Recurring Revenue (MRR)**: RM${totalMRR.toLocaleString()}/mo
+- **Estimated Monthly Revenue At Churn Risk**: RM${distressed.reduce((sum, u) => sum + u.mrr, 0).toLocaleString()}/mo
 
 ## 🔍 RISK ANALYSIS BY SEGMENT
 - **Enterprise Cohort**: ${users.filter(u => u.plan === 'Enterprise' && u.healthScore < 70).length} at risk

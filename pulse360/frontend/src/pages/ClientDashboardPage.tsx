@@ -1,21 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { downgradeSavings } from '../utils/mockData';
+import { suggestPlanChange } from '../utils/mockData';
 import { PortalNotificationModal } from '../components/modals/PortalNotificationModal';
+import { OnboardingWizard, LIFESTYLE_CONFIG, type WizardResult } from '../components/OnboardingWizard';
 
 export function ClientDashboardPage(props: any) {
-  const { users, clientUserId, setClientUserId, handleClientAction, addTelemetry, setCurrentPage } = props;
+  const { users, clientUserId, setClientUserId, handleClientAction, addTelemetry, setCurrentPage, signupCompleted, onSignup, onSignupSkip } = props;
   const [chatbotMessages, setChatbotMessages] = useState<{ sender: 'user' | 'bot'; text: string }[]>([
     { sender: 'bot', text: "Hello! I'm your Telco AI assistant. Ask me anything about your mobile plan, billing renewal, data usage, or roaming add-ons!" }
   ]);
   const [chatInput, setChatInput] = useState('');
-  const [onboardingSteps, setOnboardingSteps] = useState([
-    { id: 'esim', label: 'Activate eSIM Profile', done: true },
-    { id: '5g', label: 'Configure 5G VoLTE Calling', done: true },
-    { id: 'autopay', label: 'Setup Auto-pay Billing', done: false },
-    { id: 'app', label: 'Install Mobile Companion App', done: false }
-  ]);
   const [portalNotification, setPortalNotification] = useState<{ title: string; message: string; type: 'success' | 'info' | 'warning' } | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
 
   const loggedInUser = users.find((u: any) => u.id === clientUserId) || users[0];
   const hasFailedPayment = loggedInUser?.warningFlags?.includes('Failed Payment');
