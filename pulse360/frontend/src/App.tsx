@@ -30,6 +30,18 @@ interface Report {
   content: string;
 }
 
+  const [reportModalData, setReportModalData] = useState<{
+    isOpen: boolean;
+    reportName: string;
+    distressedCount: number;
+    report: Report | null;
+  }>({
+    isOpen: false,
+    reportName: '',
+    distressedCount: 0,
+    report: null
+  });
+
   // Fetch live customer summaries from FastAPI backend
   const [reports, setReports] = useState<Report[]>([
     {
@@ -137,7 +149,12 @@ System Status: Live
     };
 
     setReports(prev => [newReport, ...prev]);
-    alert(`🎉 Success! A new Churn Rescue Plan has been generated and added to your Report Library based on real-time data for ${distressed.length} distressed customers.`);
+    setReportModalData({
+      isOpen: true,
+      reportName: newReport.name,
+      distressedCount: distressed.length,
+      report: newReport
+    });
   };
 
   // Fetch live customer summaries from FastAPI backend
@@ -2170,6 +2187,74 @@ System Status: Live
                   <strong>What this means</strong>: This chart measures how well SubSentry separates customers likely to leave from loyal ones. It scores <strong>83 out of 100</strong> — well above chance (50) — so the risk scores you see are dependable at any customer volume.
                 </p>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 5. Custom Success Report Modal Overlay */}
+      {reportModalData.isOpen && (
+        <div 
+          className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300 animate-fadeIn"
+          onClick={() => setReportModalData(prev => ({ ...prev, isOpen: false }))}
+        >
+          <div 
+            className="bg-[#efe9d2] border-2 border-earth-sage text-earth-cocoa rounded-3xl max-w-md w-full p-6 text-left relative shadow-2xl flex flex-col gap-4 animate-scaleUp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Success Header Icon */}
+            <div className="flex items-center gap-4">
+              <div className="bg-status-healthy/20 text-status-healthy p-3 rounded-full border border-status-healthy/30 w-fit">
+                <ShieldCheck className="w-8 h-8" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-extrabold text-earth-clay tracking-wider">SubSentry Success Engine</span>
+                <h2 className="text-lg font-serif font-black text-earth-cocoa mt-0.5">Report Generated!</h2>
+              </div>
+            </div>
+
+            {/* Modal Body */}
+            <div className="text-xs text-earth-cocoa/80 leading-relaxed border-y border-earth-sage/20 py-4 flex flex-col gap-2">
+              <p>
+                A new **Churn Rescue Plan & Customer Health Assessment** has been compiled successfully using live telemetry data.
+              </p>
+              <div className="bg-earth-bg/40 p-3 rounded-xl border border-earth-sage/15 flex flex-col gap-1.5 mt-1">
+                <div className="flex justify-between font-bold">
+                  <span>Report Name:</span>
+                  <span className="text-earth-clay font-extrabold truncate max-w-[200px]">{reportModalData.reportName}</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span>At-Risk Customers Audited:</span>
+                  <span className="text-status-risk font-extrabold">{reportModalData.distressedCount} Accounts</span>
+                </div>
+                <div className="flex justify-between font-bold">
+                  <span>Report Status:</span>
+                  <span className="text-status-healthy font-extrabold">Ready / Downloadable</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Actions */}
+            <div className="flex gap-3 justify-end mt-2">
+              <button 
+                onClick={() => setReportModalData(prev => ({ ...prev, isOpen: false }))}
+                className="px-4 py-2.5 bg-[#e4ddc3] hover:bg-[#d8cfb3] text-earth-cocoa font-bold text-xs rounded-xl transition-all cursor-pointer border border-earth-sage/20"
+              >
+                Close & View Library
+              </button>
+              
+              <button 
+                onClick={() => {
+                  if (reportModalData.report) {
+                    downloadReport(reportModalData.report);
+                  }
+                  setReportModalData(prev => ({ ...prev, isOpen: false }));
+                }}
+                className="px-4 py-2.5 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>Download Report (.md)</span>
+              </button>
             </div>
           </div>
         </div>
