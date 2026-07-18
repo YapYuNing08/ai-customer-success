@@ -193,6 +193,7 @@ System Status: Live
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showOutageAlertModal, setShowOutageAlertModal] = useState(false);
+  const [workspaceMode, setWorkspaceMode] = useState<'successhub' | 'grid'>('successhub');
 
   const consoleRef = useRef<HTMLDivElement>(null);
 
@@ -622,10 +623,30 @@ System Status: Live
               {/* Top Navigation */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-earth-sage/20 w-full">
                 <div className="flex items-center gap-6 text-xs font-bold text-earth-cocoa/65 uppercase tracking-wider">
-                  <span className="text-earth-clay underline decoration-2">SuccessHub</span>
-                  <span className="hover:text-earth-clay cursor-pointer">Grid</span>
-                  <span className="hover:text-earth-clay cursor-pointer">Live Data</span>
-                  <span className="hover:text-earth-clay cursor-pointer">Map</span>
+                  <button 
+                    onClick={() => setWorkspaceMode('successhub')}
+                    className={`cursor-pointer transition-all hover:text-earth-clay pb-1 ${
+                      workspaceMode === 'successhub' 
+                        ? 'text-earth-clay border-b-2 border-earth-clay font-black' 
+                        : 'text-earth-cocoa/65'
+                    }`}
+                  >
+                    SuccessHub
+                  </button>
+                  
+                  <button 
+                    onClick={() => setWorkspaceMode('grid')}
+                    className={`cursor-pointer transition-all hover:text-earth-clay pb-1 ${
+                      workspaceMode === 'grid' 
+                        ? 'text-earth-clay border-b-2 border-earth-clay font-black' 
+                        : 'text-earth-cocoa/65'
+                    }`}
+                  >
+                    Grid
+                  </button>
+                  
+                  <span className="opacity-40 cursor-not-allowed select-none">Live Data</span>
+                  <span className="opacity-40 cursor-not-allowed select-none">Map</span>
                 </div>
                 
                 <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -786,7 +807,160 @@ System Status: Live
                   <img src={users[0]?.avatar} className="w-6 h-6 rounded-full border border-earth-sage/40 object-cover" />
                 </div>
               </div>
-              {consoleTab === 'live_stream' ? (
+              {workspaceMode === 'grid' ? (
+                <>
+                  {/* Grid View of Customer Cards */}
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full animate-fadeIn">
+                    <div>
+                      <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight font-serif">Customer Health Grid</h1>
+                      <p className="text-xs text-earth-cocoa/75 mt-1 max-w-xl">
+                        Visual card array of active customer profiles, real-time risk tiers, and telemetry alerts.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-bold shrink-0">
+                      <div className="bg-[#276B2B]/15 border border-[#276B2B]/30 rounded-lg px-3 py-1.5 text-status-healthy flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-status-healthy animate-pulse" />
+                        <span>System Live</span>
+                      </div>
+                      <div className="bg-earth-cocoa border border-earth-cocoa text-earth-bg rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>Last 24 Hours</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Filter & Search Bar */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 shadow-sm w-full animate-fadeIn">
+                    <div className="relative flex-1">
+                      <input 
+                        type="text" 
+                        placeholder="Search customers in grid by name, email, or location..."
+                        value={customerSearch}
+                        onChange={(e) => setCustomerSearch(e.target.value)}
+                        className="w-full bg-earth-bg border border-earth-sage/35 rounded-xl py-2 pl-9 pr-4 text-xs outline-none focus:border-earth-clay text-earth-cocoa font-bold placeholder-earth-cocoa/50"
+                      />
+                      <Search className="w-4 h-4 text-earth-cocoa/50 absolute left-3 top-2.5" />
+                    </div>
+
+                    <div className="flex gap-3">
+                      <select
+                        value={filterPlan}
+                        onChange={(e) => setFilterPlan(e.target.value)}
+                        className="bg-earth-bg border border-earth-sage/35 rounded-xl px-3 py-2 text-xs text-earth-cocoa font-bold outline-none cursor-pointer focus:border-earth-clay min-w-[120px]"
+                      >
+                        <option value="all">All Plans</option>
+                        <option value="enterprise">Enterprise</option>
+                        <option value="growth">Growth</option>
+                        <option value="starter">Starter</option>
+                      </select>
+
+                      <select
+                        value={filterRisk}
+                        onChange={(e) => setFilterRisk(e.target.value)}
+                        className="bg-earth-bg border border-earth-sage/35 rounded-xl px-3 py-2 text-xs text-earth-cocoa font-bold outline-none cursor-pointer focus:border-earth-clay min-w-[120px]"
+                      >
+                        <option value="all">All Risks</option>
+                        <option value="low">Low Risk</option>
+                        <option value="medium">Medium Risk</option>
+                        <option value="high">High Risk</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Grid Cards Container */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full animate-fadeIn">
+                    {filteredConsoleUsers.length > 0 ? (
+                      filteredConsoleUsers.map(u => {
+                        const isHighRisk = u.churnProbability > 50;
+                        const isMedRisk = u.churnProbability <= 50 && u.churnProbability > 15;
+                        return (
+                          <div 
+                            key={u.id} 
+                            className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all text-earth-cocoa hover:bg-[#efe9d2]/60"
+                          >
+                            <div className="flex flex-col gap-3">
+                              {/* Card Header */}
+                              <div className="flex justify-between items-start gap-2">
+                                <div className="flex items-center gap-3">
+                                  <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full border border-earth-sage/20 object-cover bg-white shrink-0" />
+                                  <div className="text-left">
+                                    <h4 className="font-extrabold text-sm leading-tight line-clamp-1">{u.name}</h4>
+                                    <span className="text-[10px] text-earth-cocoa/50 block mt-0.5">{u.location}</span>
+                                  </div>
+                                </div>
+                                <span className="text-[8px] px-2 py-0.5 border border-earth-sage/35 rounded-full font-bold uppercase tracking-wider bg-earth-bg">
+                                  {u.plan}
+                                </span>
+                              </div>
+
+                              {/* Health & Risk Stats */}
+                              <div className="bg-earth-bg/25 border border-earth-sage/10 p-3 rounded-xl flex justify-between items-center text-xs font-bold mt-1">
+                                <div className="flex flex-col text-left">
+                                  <span className="text-[9px] text-earth-cocoa/50 uppercase">Health Score</span>
+                                  <span className={`text-base font-black ${
+                                    u.healthScore > 70 ? 'text-status-healthy' : u.healthScore > 40 ? 'text-status-risk' : 'text-status-critical'
+                                  }`}>
+                                    {u.healthScore}/100
+                                  </span>
+                                </div>
+                                <div className="flex flex-col text-right">
+                                  <span className="text-[9px] text-earth-cocoa/50 uppercase">Churn Probability</span>
+                                  <span className={`text-base font-black ${
+                                    isHighRisk ? 'text-status-critical' : isMedRisk ? 'text-status-risk' : 'text-status-healthy'
+                                  }`}>
+                                    {Math.round(u.churnProbability)}%
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Warning Flags */}
+                              <div className="flex flex-wrap gap-1.5 min-h-[22px] items-center">
+                                {u.warningFlags.length > 0 ? (
+                                  u.warningFlags.map((flag, idx) => (
+                                    <span 
+                                      key={idx} 
+                                      className={`text-[8px] px-2 py-0.5 rounded font-extrabold uppercase tracking-wider ${
+                                        flag === 'Regional Outage' || flag === 'Failed Payment'
+                                          ? 'bg-status-critical/15 text-status-critical border border-status-critical/35'
+                                          : 'bg-status-risk/15 text-status-risk border border-status-risk/35'
+                                      }`}
+                                    >
+                                      ⚠️ {flag}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-[9px] text-status-healthy font-extrabold uppercase tracking-wider flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 bg-status-healthy rounded-full" />
+                                    Account Stable
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Card Footer Actions */}
+                            <div className="border-t border-earth-sage/10 pt-3 flex gap-2 w-full mt-1">
+                              <button 
+                                onClick={() => {
+                                  setSelectedConsoleUser(u);
+                                  setConsoleTab('customers');
+                                  setWorkspaceMode('successhub');
+                                }}
+                                className="flex-1 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-[10px] py-2 rounded-xl transition-all cursor-pointer text-center"
+                              >
+                                View Insights
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="col-span-full py-12 text-center text-earth-cocoa/50 font-bold">
+                        No customers found matching the search criteria.
+                      </div>
+                    )}
+                  </div>
+                </>
+              ) : consoleTab === 'live_stream' ? (
                 <>
                   {/* Title & Subtitle block */}
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full">
