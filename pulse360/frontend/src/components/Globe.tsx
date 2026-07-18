@@ -124,9 +124,36 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users 
       return new THREE.Vector3(x, y, z);
     };
 
-    activeUsersList.forEach((user) => {
-      const position = latLngToVector3(user.lat, user.lng, 2.41);
+    // Convert all users to initial spherical coordinates
+    const positionedUsers = activeUsersList.map((user) => ({
+      user,
+      pos: latLngToVector3(user.lat, user.lng, 2.41),
+    }));
 
+    // Repulsion pass to push close dots apart (so cities close to each other are separated)
+    const minDistance = 0.45; // Minimum visual distance between dots on 2.41 radius
+    const iterations = 8;
+    for (let step = 0; step < iterations; step++) {
+      for (let i = 0; i < positionedUsers.length; i++) {
+        for (let j = i + 1; j < positionedUsers.length; j++) {
+          const p1 = positionedUsers[i].pos;
+          const p2 = positionedUsers[j].pos;
+          const dist = p1.distanceTo(p2);
+          if (dist < minDistance && dist > 0.001) {
+            const diff = new THREE.Vector3().subVectors(p1, p2).normalize();
+            const pushAmount = (minDistance - dist) * 0.5;
+            p1.addScaledVector(diff, pushAmount);
+            p2.addScaledVector(diff, -pushAmount);
+
+            // Re-project back onto the surface sphere of radius 2.41
+            p1.normalize().multiplyScalar(2.41);
+            p2.normalize().multiplyScalar(2.41);
+          }
+        }
+      }
+    }
+
+    positionedUsers.forEach(({ user, pos }) => {
       // Status colors (deep variants — dots render over the light cream globe)
       let color = 0x276b2b; // healthy
       if (user.healthScore < 40) color = 0xa81e17; // critical
@@ -140,7 +167,7 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users 
         opacity: 0.9,
       });
       const dotMesh = new THREE.Mesh(dotGeometry, dotMaterial);
-      dotMesh.position.copy(position);
+      dotMesh.position.copy(pos);
       dotMesh.userData = { userId: user.id };
       dotsGroup.add(dotMesh);
 
@@ -154,7 +181,7 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users 
         blending: THREE.AdditiveBlending,
       });
       const ringMesh = new THREE.Mesh(ringGeometry, ringMaterial);
-      ringMesh.position.copy(position);
+      ringMesh.position.copy(pos);
       ringMesh.lookAt(new THREE.Vector3(0, 0, 0));
       dotsGroup.add(ringMesh);
 

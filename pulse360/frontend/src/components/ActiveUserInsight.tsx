@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, TrendingDown, TrendingUp, UserCheck, 
   Clock, CreditCard, MessageSquare, DollarSign, CheckCircle, 
-  Copy, Zap, BookOpen, HeartHandshake, ShieldAlert, Cpu
+  Copy, Zap, BookOpen, HeartHandshake, ShieldAlert, Cpu, Send
 } from 'lucide-react';
 import { type ActiveUser } from '../utils/mockData';
 import { explainSimulation, getCustomer, getRecommendation, simulate } from '../lib/api';
@@ -16,6 +16,16 @@ interface ActiveUserInsightProps {
 export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBack, onUpdateUser }) => {
   const [copied, setCopied] = useState(false);
   const [activePlaybook, setActivePlaybook] = useState<string | null>(null);
+  const [lastClickedAction, setLastClickedAction] = useState<'grace_period' | 'training' | 'discount' | 'csm_call' | null>(null);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailSentSuccess, setEmailSentSuccess] = useState(false);
+
+  // Reset states when user changes
+  useEffect(() => {
+    setLastClickedAction(null);
+    setIsSendingEmail(false);
+    setEmailSentSuccess(false);
+  }, [user.id]);
 
   // Real backend recommendation state
   const [recommendation, setRecommendation] = useState<any>(null);
@@ -128,6 +138,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
 
   // Quick Action triggers (Value Injections)
   const handleAction = (actionType: 'grace_period' | 'training' | 'discount' | 'csm_call') => {
+    setLastClickedAction(actionType);
     let updatedUser = { ...user };
     let message = '';
 
@@ -188,19 +199,25 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
 
   // Generate Email Text based on Churn Indicators
   const generateEmailDraft = () => {
-    const isBillingFail = user.warningFlags.includes('Failed Payment');
-    const isLowUsage = user.warningFlags.includes('Using It Less') || user.warningFlags.includes('Not Using Key Features');
-    
+    if (!lastClickedAction) {
+      return { subject: '', body: '' };
+    }
+
     let subject = `Optimizing your experience with SubSentry`;
     let body = `Hi ${user.name.split(' ')[0]},\n\nI'm checking in from the SubSentry team. We noticed you've been working with our platform for the past ${user.metrics.daysSinceOnboarding} days. `;
 
-    if (isBillingFail) {
+    if (lastClickedAction === 'grace_period') {
       subject = `Action Required: Keeping your SubSentry account active`;
-      body += `We recently encountered a renewal issue with your payment card on file. \n\nTo ensure your service is not interrupted, we've extended a 7-day grace period on your account. You can easily update your card details in your billing console whenever you're ready.\n\nLet me know if we can help you with anything else!`;
-    } else if (isLowUsage) {
-      body += `We want to make sure you're getting the absolute best value out of your ${user.plan} plan. We noticed you haven't had a chance to explore our advanced reporting tools yet.\n\nI'd love to schedule a quick 10-minute walkthrough to help configure these pipelines for you, or discuss if a different tier would better match your current workflow needs.\n\nWhat is your availability this week?`;
-    } else {
-      body += `I wanted to reach out and thank you for being a valued customer. Your usage metrics look fantastic, and we'd love to share some of our upcoming beta features with you.\n\nLet me know if you would be interested in joining our early-tester program.`;
+      body += `We recently encountered a renewal issue with your subscription payment card on file. \n\nTo ensure your service is not interrupted, we've extended a 14-day grace period on your account. You can securely update your card details in your billing console whenever you're ready.\n\nLet me know if we can help you with anything else!`;
+    } else if (lastClickedAction === 'training') {
+      subject = `Unlocking the full value of SubSentry`;
+      body += `We want to make sure you're getting the absolute best value out of your active package plan. We noticed you haven't had a chance to explore all our advanced integrations yet.\n\nSent you helpful video tutorials and how-to guides to get started. I'd love to schedule a quick 10-minute walkthrough to help configure these pipelines for you.\n\nWhat is your availability this week?`;
+    } else if (lastClickedAction === 'discount') {
+      subject = `Loyalty Appreciation: 20% discount on SubSentry`;
+      body += `I wanted to reach out and thank you for being a valued customer. As a token of our appreciation, we have applied a 20% loyalty discount to your subscription for the next 3 months.\n\nLet me know if you would be interested in discussing advanced usage strategies!`;
+    } else if (lastClickedAction === 'csm_call') {
+      subject = `SubSentry Customer Success Check-in Call`;
+      body += `I wanted to reach out to check how your team is getting along with SubSentry. We've noticed some outstanding support inquiries and want to make sure we resolve all friction.\n\nWould you have 10 minutes next week for a quick sync call?\n\nLet me know if we can help you with anything else!`;
     }
 
     body += `\n\nBest regards,\nCustomer Success Team\nSubSentry`;
@@ -213,6 +230,24 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
     navigator.clipboard.writeText(`Subject: ${subject}\n\n${body}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSendEmail = () => {
+    setIsSendingEmail(true);
+    setTimeout(() => {
+      setIsSendingEmail(false);
+      setEmailSentSuccess(true);
+
+      const updatedUser = { ...user };
+      updatedUser.activityLogs.unshift({
+        date: new Date().toISOString().split('T')[0],
+        type: 'feature_use',
+        details: `Emailed customer: "${subject}"`
+      });
+      onUpdateUser(updatedUser);
+
+      setTimeout(() => setEmailSentSuccess(false), 4000);
+    }, 1500);
   };
 
   // Friendly display names for backend risk factors (raw DB column names otherwise)
@@ -408,7 +443,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             <span className={`text-4xl font-extrabold tracking-tight ${
               user.metrics.usageVelocity < 0.5 ? 'text-status-critical' : user.metrics.usageVelocity < 0.9 ? 'text-status-risk' : 'text-status-healthy'
             }`}>
-              {user.metrics.usageVelocity}x
+              {Math.round(user.metrics.usageVelocity * 100)}%
             </span>
             <div className="flex items-center gap-1 mt-2 text-xs console-text-secondary">
               {user.metrics.usageVelocity < 0.8 ? (
@@ -422,7 +457,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           </div>
 
           <div className="text-[10px] console-text-muted leading-normal">
-            1.0x means steady usage. Below 0.8x means this customer is logging in noticeably less than usual.
+            100% means steady usage. Below 80% means this customer is logging in noticeably less than usual.
           </div>
         </div>
 
@@ -439,7 +474,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             </div>
             <div className="flex justify-between items-center w-full">
               <span className="text-xs console-text-muted">Failed Payments (last 30 days)</span>
-              <span className={`font-bold ${user.metrics.failedPayments > 0 ? 'text-status-critical animate-pulse' : 'text-status-healthy'}`}>
+              <span className={`font-bold ${user.metrics.failedPayments > 0 ? 'text-status-critical' : 'text-status-healthy'}`}>
                 {user.metrics.failedPayments} Failed
               </span>
             </div>
@@ -465,7 +500,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             </span>
           </div>
           <p className="text-xs console-text-secondary leading-relaxed">
-            Each factor below shows how much it is pushing this customer toward leaving (red) or helping keep them around (green), compared with a typical customer.
+            The factors below show what is causing this customer to consider leaving (red) versus what is keeping them happy and loyal (green).
           </p>
 
           <div className="flex flex-col gap-4 my-2">
@@ -480,25 +515,20 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                     </span>
                   </div>
                   {/* Slider bar */}
-                  <div className="w-full h-2 bg-earth-cocoa/15 rounded-full relative overflow-hidden">
+                  <div className="w-full h-2 bg-earth-cocoa/10 rounded-full overflow-hidden">
                     <div
-                      className={`h-full absolute rounded-full ${isPositive ? 'bg-status-critical right-1/2 left-auto' : 'bg-status-healthy left-1/2 right-auto'}`}
-                      style={
-                        isPositive 
-                          ? { left: '50%', width: `${factor.impact * 2}%` } 
-                          : { right: '50%', width: `${Math.abs(factor.impact) * 2}%` }
-                      }
+                      className={`h-full rounded-full ${isPositive ? 'bg-status-critical' : 'bg-status-healthy'}`}
+                      style={{ width: `${Math.min(100, Math.abs(factor.impact))}%` }}
                     />
-                    <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-earth-cocoa/30" /> {/* Center line */}
                   </div>
                 </div>
               );
             })}
           </div>
 
-          <div className="console-card-dark-inner rounded-lg p-3 text-[10px] console-text-muted flex justify-between">
-            <span>&larr; Helping keep this customer</span>
-            <span>Pushing them toward leaving &rarr;</span>
+          <div className="console-card-dark-inner rounded-lg p-3 text-[10px] console-text-muted flex justify-between items-center">
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-status-healthy" /> Green = Helps retain this customer</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-status-critical" /> Red = Increases cancellation risk</span>
           </div>
         </div>
 
@@ -850,96 +880,171 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               <span className="text-[10px] uppercase font-extrabold console-text-muted tracking-wider">
                 Suggested Email For This Customer
               </span>
-              <button 
-                onClick={handleCopy}
-                className="flex items-center gap-1 text-[11px] text-earth-clay hover:console-text-primary transition-colors font-bold cursor-pointer"
-              >
-                {copied ? <CheckCircle className="w-3.5 h-3.5 text-earth-sage" /> : <Copy className="w-3.5 h-3.5" />}
-                <span>{copied ? 'Copied!' : 'Copy to Clipboard'}</span>
-              </button>
+              {lastClickedAction && (
+                <button 
+                  onClick={handleCopy}
+                  className="flex items-center gap-1 text-[11px] text-earth-clay hover:console-text-primary transition-colors font-bold cursor-pointer"
+                >
+                  {copied ? <CheckCircle className="w-3.5 h-3.5 text-earth-sage" /> : <Copy className="w-3.5 h-3.5" />}
+                  <span>{copied ? 'Copied!' : 'Copy to Clipboard'}</span>
+                </button>
+              )}
             </div>
 
-            <div className="console-card-dark-inner rounded-xl p-4 font-mono text-xs console-text-primary flex flex-col gap-2 leading-relaxed shadow-inner">
-              <div>
-                <strong className="console-text-muted">Subject:</strong> {subject}
+            {lastClickedAction ? (
+              <>
+                <div className="console-card-dark-inner rounded-xl p-4 font-mono text-xs console-text-primary flex flex-col gap-2 leading-relaxed shadow-inner">
+                  <div>
+                    <strong className="console-text-muted">Subject:</strong> {subject}
+                  </div>
+                  <hr className="console-border my-1" />
+                  <div className="whitespace-pre-line console-text-primary">{body}</div>
+                </div>
+
+                <button
+                  disabled={isSendingEmail}
+                  onClick={handleSendEmail}
+                  className="w-full py-2.5 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 mt-1"
+                >
+                  {isSendingEmail ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-earth-bg border-t-transparent rounded-full animate-spin" />
+                      <span>Sending Email to {user.email}...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Send Email Directly</span>
+                    </>
+                  )}
+                </button>
+
+                {emailSentSuccess && (
+                  <div className="bg-[#276B2B]/15 border border-[#276B2B]/35 text-status-healthy p-2.5 rounded-xl text-[10px] font-bold text-center animate-scaleUp">
+                    ✅ Suggested email successfully transmitted directly to {user.email}! Activity timeline updated.
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="console-card-dark-inner rounded-xl p-6 border border-dashed console-border text-center text-xs console-text-muted">
+                Select one of the Quick Actions on the right to automatically generate a tailored follow-up email draft here.
               </div>
-              <hr className="console-border my-1" />
-              <div className="whitespace-pre-line console-text-primary">{body}</div>
-            </div>
+            )}
           </div>
         </div>
 
         {/* Value Injections Playbook */}
         <div className="console-card-dark rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-sm">
-          <div className="flex flex-col gap-1">
-            <h3 className="text-base font-bold console-text-primary flex items-center gap-2">
-              <HeartHandshake className="w-4 h-4 text-earth-clay" />
-              Quick Actions
-            </h3>
-            <p className="text-xs console-text-secondary leading-normal mt-1">
-              Pick an action to help this customer right away. Their risk of leaving updates instantly.
-            </p>
-          </div>
+          {(() => {
+            const getMostRecommendedAction = () => {
+              if (user.warningFlags.includes('Failed Payment')) {
+                return 'grace_period';
+              }
+              if (user.warningFlags.includes('Using It Less') || user.warningFlags.includes('Not Using Key Features') || user.metrics.featureAdoption < 0.5) {
+                return 'training';
+              }
+              if (user.metrics.frictionIndex > 4) {
+                return 'csm_call';
+              }
+              return 'discount';
+            };
 
-          <div className="flex flex-col gap-2.5 my-2">
-            <button
-              onClick={() => handleAction('grace_period')}
-              disabled={!user.warningFlags.includes('Failed Payment')}
-              className={`w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border transition-all duration-200 ${
-                user.warningFlags.includes('Failed Payment')
-                  ? 'bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa cursor-pointer'
-                  : 'bg-earth-cocoa/5 console-border text-earth-cocoa/30 cursor-not-allowed'
-              }`}
-            >
-              <span className="flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-earth-clay" />
-                Give Extra Time to Pay
-              </span>
-              <span className="text-[10px] text-status-healthy font-extrabold">-25% risk</span>
-            </button>
+            const mostRecommended = getMostRecommendedAction();
 
-            <button
-              onClick={() => handleAction('training')}
-              disabled={user.metrics.featureAdoption > 0.8}
-              className={`w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border transition-all duration-200 ${
-                user.metrics.featureAdoption <= 0.8
-                  ? 'bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa cursor-pointer'
-                  : 'bg-earth-cocoa/5 console-border text-earth-cocoa/30 cursor-not-allowed'
-              }`}
-            >
-              <span className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-earth-clay" />
-                Send Helpful Tutorials
-              </span>
-              <span className="text-[10px] text-status-healthy font-extrabold">-15% risk</span>
-            </button>
+            return (
+              <>
+                <div className="flex flex-col gap-1">
+                  <h3 className="text-base font-bold console-text-primary flex items-center gap-2">
+                    <HeartHandshake className="w-4 h-4 text-earth-clay" />
+                    Quick Actions
+                  </h3>
+                  <p className="text-xs console-text-secondary leading-normal mt-1">
+                    Pick an action to help this customer right away. Their risk of leaving updates instantly.
+                  </p>
+                </div>
 
-            <button
-              onClick={() => handleAction('csm_call')}
-              className="w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa transition-all duration-200 cursor-pointer"
-            >
-              <span className="flex items-center gap-2">
-                <MessageSquare className="w-4 h-4 text-earth-clay" />
-                Schedule a Check-In Call
-              </span>
-              <span className="text-[10px] text-status-healthy font-extrabold">-18% risk</span>
-            </button>
+                <div className="flex flex-col gap-2.5 my-2">
+                  <button
+                    onClick={() => handleAction('grace_period')}
+                    disabled={!user.warningFlags.includes('Failed Payment')}
+                    className={`w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border transition-all duration-200 ${
+                      user.warningFlags.includes('Failed Payment')
+                        ? 'bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa cursor-pointer'
+                        : 'bg-earth-cocoa/5 console-border text-earth-cocoa/30 cursor-not-allowed'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2 flex-wrap">
+                      <CreditCard className="w-4 h-4 text-earth-clay" />
+                      Give Extra Time to Pay
+                      {mostRecommended === 'grace_period' && (
+                        <span className="text-status-healthy text-[9px] font-extrabold ml-1 uppercase bg-status-healthy/10 px-1.5 py-0.5 rounded border border-status-healthy/20 tracking-wider">
+                          (Most Recommended)
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-[10px] text-status-healthy font-extrabold shrink-0">-25% risk</span>
+                  </button>
 
-            <button
-              onClick={() => handleAction('discount')}
-              className="w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa transition-all duration-200 cursor-pointer"
-            >
-              <span className="flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-earth-clay" />
-                Offer 20% Loyalty Discount
-              </span>
-              <span className="text-[10px] text-status-healthy font-extrabold">-20% risk</span>
-            </button>
-          </div>
+                  <button
+                    onClick={() => handleAction('training')}
+                    disabled={user.metrics.featureAdoption > 0.8}
+                    className={`w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border transition-all duration-200 ${
+                      user.metrics.featureAdoption <= 0.8
+                        ? 'bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa cursor-pointer'
+                        : 'bg-earth-cocoa/5 console-border text-earth-cocoa/30 cursor-not-allowed'
+                    }`}
+                  >
+                    <span className="flex items-center gap-2 flex-wrap">
+                      <BookOpen className="w-4 h-4 text-earth-clay" />
+                      Send Helpful Tutorials
+                      {mostRecommended === 'training' && (
+                        <span className="text-status-healthy text-[9px] font-extrabold ml-1 uppercase bg-status-healthy/10 px-1.5 py-0.5 rounded border border-status-healthy/20 tracking-wider">
+                          (Most Recommended)
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-[10px] text-status-healthy font-extrabold shrink-0">-15% risk</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleAction('csm_call')}
+                    className="w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa transition-all duration-200 cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2 flex-wrap">
+                      <MessageSquare className="w-4 h-4 text-earth-clay" />
+                      Schedule a Check-In Call
+                      {mostRecommended === 'csm_call' && (
+                        <span className="text-status-healthy text-[9px] font-extrabold ml-1 uppercase bg-status-healthy/10 px-1.5 py-0.5 rounded border border-status-healthy/20 tracking-wider">
+                          (Most Recommended)
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-[10px] text-status-healthy font-extrabold shrink-0">-18% risk</span>
+                  </button>
+
+                  <button
+                    onClick={() => handleAction('discount')}
+                    className="w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa transition-all duration-200 cursor-pointer"
+                  >
+                    <span className="flex items-center gap-2 flex-wrap">
+                      <DollarSign className="w-4 h-4 text-earth-clay" />
+                      Offer 20% Loyalty Discount
+                      {mostRecommended === 'discount' && (
+                        <span className="text-status-healthy text-[9px] font-extrabold ml-1 uppercase bg-status-healthy/10 px-1.5 py-0.5 rounded border border-status-healthy/20 tracking-wider">
+                          (Most Recommended)
+                        </span>
+                      )}
+                    </span>
+                    <span className="text-[10px] text-status-healthy font-extrabold shrink-0">-20% risk</span>
+                  </button>
+                </div>
+              </>
+            );
+          })()}
 
           {/* Action Alert Banner */}
           {activePlaybook ? (
-            <div className="bg-earth-sage/20 border console-border console-text-primary text-[11px] p-3 rounded-xl flex items-center gap-2 animate-bounce font-bold shadow-sm">
+            <div className="bg-earth-sage/20 border console-border console-text-primary text-[11px] p-3 rounded-xl flex items-center gap-2 animate-fadeIn font-bold shadow-sm">
               <CheckCircle className="w-4 h-4 shrink-0 console-text-primary" />
               <span>{activePlaybook}</span>
             </div>

@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { Cpu, FileText, Clock, RefreshCw, Download } from 'lucide-react';
 import { downloadReport } from '../../utils/reports';
 
 export function ReportsTab(props: any) {
-  const { reports, users, generateDynamicRescuePlan } = props;
+  const { reports, users, generateReport } = props;
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   return (
                 <>
                   {/* Reports View */}
@@ -20,13 +22,13 @@ export function ReportsTab(props: any) {
                       </div>
                       <div className="bg-earth-cocoa border border-earth-cocoa text-earth-bg rounded-lg px-3 py-1.5 flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>Last 24 Hours</span>
+                        <span>Last 30 Days</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Reports Metric Cards Row */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full animate-fadeIn">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full animate-fadeIn">
                     {/* Card 1 */}
                     <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
                       <div className="flex justify-between items-center">
@@ -52,18 +54,6 @@ export function ReportsTab(props: any) {
                       </div>
                       <span className="text-[9px] text-earth-cocoa/65">Based on active churn risks</span>
                     </div>
-
-                    {/* Card 3 */}
-                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Last Generation Time</span>
-                        <RefreshCw className="w-4 h-4 text-earth-clay" />
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-earth-cocoa">Just Now</span>
-                      </div>
-                      <span className="text-[9px] text-earth-cocoa/65">Real-time sync complete</span>
-                    </div>
                   </div>
 
                   {/* Main reports grid */}
@@ -73,7 +63,7 @@ export function ReportsTab(props: any) {
                     <div className="lg:col-span-8 flex flex-col gap-6 w-full">
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl overflow-hidden shadow-sm w-full text-left">
                         <div className="p-5 border-b border-earth-sage/20 bg-earth-sage/5">
-                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">REPORT LIBRARY</span>
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">GENERATED REPORTS</span>
                           <h3 className="text-sm font-bold text-earth-cocoa mt-0.5">Select and view compiled analytical outputs</h3>
                         </div>
                         
@@ -84,7 +74,6 @@ export function ReportsTab(props: any) {
                                 <th className="py-3 px-4">Report Name</th>
                                 <th className="py-3 px-4">Type</th>
                                 <th className="py-3 px-4">Date Generated</th>
-                                <th className="py-3 px-4">Status</th>
                                 <th className="py-3 px-4 text-right">Action</th>
                               </tr>
                             </thead>
@@ -94,15 +83,6 @@ export function ReportsTab(props: any) {
                                   <td className="py-3.5 px-4 font-bold">{report.name}</td>
                                   <td className="py-3.5 px-4">{report.type}</td>
                                   <td className="py-3.5 px-4">{report.date}</td>
-                                  <td className="py-3.5 px-4">
-                                    <span className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
-                                      report.status === 'Active'
-                                        ? 'bg-status-healthy/15 border border-status-healthy/30 text-status-healthy'
-                                        : 'bg-earth-cocoa/20 border border-earth-cocoa/30 text-earth-cocoa'
-                                    }`}>
-                                      {report.status}
-                                    </span>
-                                  </td>
                                   <td className="py-3.5 px-4 text-right">
                                     <button 
                                       onClick={() => downloadReport(report)}
@@ -129,13 +109,56 @@ export function ReportsTab(props: any) {
                         </div>
 
                         <div className="flex flex-col gap-3 my-2">
-                          <button 
-                            onClick={generateDynamicRescuePlan}
-                            className="w-full bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
-                          >
-                            <Cpu className="w-4 h-4 animate-pulse text-status-healthy" />
-                            <span>Generate Rescue Plan</span>
-                          </button>
+                          <div className="relative w-full">
+                            <button 
+                              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                              className="w-full bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs py-3 rounded-xl transition-all shadow-md flex items-center justify-center gap-2 cursor-pointer"
+                            >
+                              <Cpu className="w-4 h-4 text-status-healthy" />
+                              <span>Generate Report</span>
+                            </button>
+
+                            {isDropdownOpen && (
+                              <div className="absolute left-0 right-0 mt-1 bg-[#efe9d2] border border-earth-sage rounded-xl shadow-xl z-50 p-2 animate-fadeIn flex flex-col gap-1 text-xs">
+                                <button 
+                                  onClick={() => {
+                                    generateReport('rescue_plan');
+                                    setIsDropdownOpen(false);
+                                  }}
+                                  className="w-full text-left px-3 py-2 hover:bg-earth-sage/10 rounded-lg text-earth-cocoa font-bold cursor-pointer transition-colors"
+                                >
+                                  📋 AI Churn Rescue Plan
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    generateReport('telemetry');
+                                    setIsDropdownOpen(false);
+                                  }}
+                                  className="w-full text-left px-3 py-2 hover:bg-earth-sage/10 rounded-lg text-earth-cocoa font-bold cursor-pointer transition-colors"
+                                >
+                                  🔌 Daily Telemetry & Outage Audit
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    generateReport('performance');
+                                    setIsDropdownOpen(false);
+                                  }}
+                                  className="w-full text-left px-3 py-2 hover:bg-earth-sage/10 rounded-lg text-earth-cocoa font-bold cursor-pointer transition-colors"
+                                >
+                                  📈 Enterprise Account Performance
+                                </button>
+                                <button 
+                                  onClick={() => {
+                                    generateReport('billing');
+                                    setIsDropdownOpen(false);
+                                  }}
+                                  className="w-full text-left px-3 py-2 hover:bg-earth-sage/10 rounded-lg text-earth-cocoa font-bold cursor-pointer transition-colors"
+                                >
+                                  💳 Billing & Invoice Extension Audit
+                                </button>
+                              </div>
+                            )}
+                          </div>
 
                           <div className="bg-earth-bg/25 border border-earth-sage/10 p-4 rounded-xl flex flex-col gap-2">
                             <span className="text-[10px] font-extrabold text-earth-clay uppercase tracking-wider">WEEKLY DIGEST SUMMARY</span>

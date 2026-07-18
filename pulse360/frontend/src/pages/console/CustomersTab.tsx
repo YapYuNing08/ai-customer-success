@@ -30,7 +30,7 @@ export function CustomersTab(props: any) {
                       </div>
                       <div className="bg-earth-cocoa border border-earth-cocoa text-earth-bg rounded-lg px-3 py-1.5 flex items-center gap-1.5">
                         <Clock className="w-3.5 h-3.5" />
-                        <span>Last 24 Hours</span>
+                        <span>Last 30 Days</span>
                       </div>
                     </div>
                   </div>
@@ -75,85 +75,95 @@ export function CustomersTab(props: any) {
                     </div>
                   </div>
 
-                  {/* Customer Table List */}
-                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl overflow-hidden shadow-sm w-full animate-fadeIn">
-                    <div className="overflow-x-auto">
-                      <table className="w-full text-left border-collapse">
-                        <thead>
-                          <tr className="border-b border-earth-sage/20 bg-earth-sage/10 text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">
-                            <th className="py-3 px-4">Customer</th>
-                            <th className="py-3 px-4">Plan</th>
-                            <th className="py-3 px-4">Health Score</th>
-                            <th className="py-3 px-4">Churn Probability</th>
-                            <th className="py-3 px-4">Contract MRR</th>
-                            <th className="py-3 px-4 text-right">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-earth-sage/10 text-xs">
-                          {filteredConsoleUsers.length > 0 ? (
-                            filteredConsoleUsers.map(u => {
-                              const isHighRisk = u.churnProbability > 50;
-                              const isMedRisk = u.churnProbability <= 50 && u.churnProbability > 15;
-                              return (
-                                <tr key={u.id} className="hover:bg-earth-sage/5 transition-colors text-earth-cocoa">
-                                  <td className="py-3 px-4 flex items-center gap-3">
-                                    <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full border border-earth-sage/20 object-cover bg-white" />
-                                    <div>
-                                      <span className="font-extrabold block">{u.name}</span>
-                                      <span className="text-[10px] text-earth-cocoa/65 block mt-0.5">{u.email}</span>
-                                    </div>
-                                  </td>
-                                  <td className="py-3 px-4">
-                                    <span className="text-[10px] px-2 py-0.5 border border-earth-sage/30 rounded-full font-bold uppercase tracking-wider bg-earth-bg">
-                                      {u.plan}
-                                    </span>
-                                  </td>
-                                  <td className="py-3 px-4">
-                                    <span className={`font-black text-sm ${
-                                      u.healthScore > 70 ? 'text-status-healthy' : u.healthScore > 40 ? 'text-status-risk' : 'text-status-critical'
-                                    }`}>
-                                      {u.healthScore}/100
-                                    </span>
-                                  </td>
-                                  <td className="py-3 px-4 w-48">
-                                    <div className="flex items-center gap-2">
-                                      <div className="flex-1 bg-earth-cocoa/10 rounded-full h-1.5">
-                                        <div 
-                                          className={`h-1.5 rounded-full ${
-                                            isHighRisk ? 'bg-status-critical' : isMedRisk ? 'bg-status-risk' : 'bg-status-healthy'
-                                          }`} 
-                                          style={{ width: `${u.churnProbability}%` }}
-                                        />
-                                      </div>
-                                      <span className="font-bold text-[10px] w-8 text-right">{Math.round(u.churnProbability)}%</span>
-                                    </div>
-                                  </td>
-                                  <td className="py-3 px-4">
-                                    <span className="font-extrabold text-earth-clay">RM{u.mrr}/mo</span>
-                                  </td>
-                                  <td className="py-3 px-4 text-right">
-                                    <button 
-                                      onClick={() => {
-                                        setSelectedConsoleUser(u);
-                                      }}
-                                      className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-[10px] px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
+                  {/* Grid Cards Container */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full animate-fadeIn">
+                    {filteredConsoleUsers.length > 0 ? (
+                      filteredConsoleUsers.map(u => {
+                        const isHighRisk = u.churnProbability > 50;
+                        const isMedRisk = u.churnProbability <= 50 && u.churnProbability > 15;
+                        return (
+                          <div 
+                            key={u.id} 
+                            className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all text-earth-cocoa hover:bg-[#efe9d2]/60"
+                          >
+                            <div className="flex flex-col gap-3">
+                              {/* Card Header */}
+                              <div className="flex justify-between items-start gap-2">
+                                <div className="flex items-center gap-3">
+                                  <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full border border-earth-sage/20 object-cover bg-white shrink-0" />
+                                  <div className="text-left">
+                                    <h4 className="font-extrabold text-sm leading-tight line-clamp-1">{u.name}</h4>
+                                    <span className="text-[10px] text-earth-cocoa/50 block mt-0.5">{u.location}</span>
+                                  </div>
+                                </div>
+                                <span className="text-[8px] px-2 py-0.5 border border-earth-sage/35 rounded-full font-bold uppercase tracking-wider bg-earth-bg">
+                                  {u.plan}
+                                </span>
+                              </div>
+
+                              {/* Health & Risk Stats */}
+                              <div className="bg-earth-bg/25 border border-earth-sage/10 p-3 rounded-xl flex justify-between items-center text-xs font-bold mt-1">
+                                <div className="flex flex-col text-left">
+                                  <span className="text-[9px] text-earth-cocoa/50 uppercase">Health Score</span>
+                                  <span className={`text-base font-black ${
+                                    u.healthScore > 70 ? 'text-status-healthy' : u.healthScore > 40 ? 'text-status-risk' : 'text-status-critical'
+                                  }`}>
+                                    {u.healthScore}/100
+                                  </span>
+                                </div>
+                                <div className="flex flex-col text-right">
+                                  <span className="text-[9px] text-earth-cocoa/50 uppercase">Churn Probability</span>
+                                  <span className={`text-base font-black ${
+                                    isHighRisk ? 'text-status-critical' : isMedRisk ? 'text-status-risk' : 'text-status-healthy'
+                                  }`}>
+                                    {Math.round(u.churnProbability)}%
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Warning Flags */}
+                              <div className="flex flex-wrap gap-1.5 min-h-[22px] items-center">
+                                {u.warningFlags.length > 0 ? (
+                                  u.warningFlags.map((flag, idx) => (
+                                    <span 
+                                      key={idx} 
+                                      className={`text-[8px] px-2 py-0.5 rounded font-extrabold uppercase tracking-wider ${
+                                        flag === 'Regional Outage' || flag === 'Failed Payment'
+                                          ? 'bg-status-critical/15 text-status-critical border border-status-critical/35'
+                                          : 'bg-status-risk/15 text-status-risk border border-status-risk/35'
+                                      }`}
                                     >
-                                      View Insights
-                                    </button>
-                                  </td>
-                                </tr>
-                              );
-                            })
-                          ) : (
-                            <tr>
-                              <td colSpan={6} className="py-8 text-center text-earth-cocoa/50 font-bold">
-                                No customers found matching the search criteria.
-                              </td>
-                            </tr>
-                          )}
-                        </tbody>
-                      </table>
-                    </div>
+                                      ⚠️ {flag}
+                                    </span>
+                                  ))
+                                ) : (
+                                  <span className="text-[9px] text-status-healthy font-extrabold uppercase tracking-wider flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 bg-status-healthy rounded-full" />
+                                    Account Stable
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Card Footer Actions */}
+                            <div className="border-t border-earth-sage/10 pt-3 flex gap-2 w-full mt-1">
+                              <button 
+                                onClick={() => {
+                                  setSelectedConsoleUser(u);
+                                }}
+                                className="flex-1 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-[10px] py-2 rounded-xl transition-all cursor-pointer text-center"
+                              >
+                                View Insights
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div className="col-span-full py-12 text-center text-earth-cocoa/50 font-bold">
+                        No customers found matching the search criteria.
+                      </div>
+                    )}
                   </div>
                   </>
                 )

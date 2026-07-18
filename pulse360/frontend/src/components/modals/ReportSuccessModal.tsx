@@ -25,17 +25,19 @@ export function ReportSuccessModal({ data, onClose }: { data: any; onClose: () =
             {/* Modal Body */}
             <div className="text-xs text-earth-cocoa/80 leading-relaxed border-y border-earth-sage/20 py-4 flex flex-col gap-2">
               <p>
-                A new **Churn Rescue Plan & Customer Health Assessment** has been compiled successfully using live telemetry data.
+                A new report has been compiled successfully using live customer success telemetry data.
               </p>
               <div className="bg-earth-bg/40 p-3 rounded-xl border border-earth-sage/15 flex flex-col gap-1.5 mt-1">
                 <div className="flex justify-between font-bold">
                   <span>Report Name:</span>
                   <span className="text-earth-clay font-extrabold truncate max-w-[200px]">{data.reportName}</span>
                 </div>
-                <div className="flex justify-between font-bold">
-                  <span>At-Risk Customers Audited:</span>
-                  <span className="text-status-risk font-extrabold">{data.distressedCount} Accounts</span>
-                </div>
+                {data.distressedCount > 0 && (
+                  <div className="flex justify-between font-bold">
+                    <span>At-Risk Customers Audited:</span>
+                    <span className="text-status-risk font-extrabold">{data.distressedCount} Accounts</span>
+                  </div>
+                )}
                 <div className="flex justify-between font-bold">
                   <span>Report Status:</span>
                   <span className="text-status-healthy font-extrabold">Ready / Downloadable</span>

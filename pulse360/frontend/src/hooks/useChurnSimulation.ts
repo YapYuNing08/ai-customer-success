@@ -35,8 +35,41 @@ export function useChurnSimulation(
         // Skip already churned users
         if (u.state === 'churned') continue;
 
+        // Transition: FRUSTRATED -> ACTIVE (Self-resolution/recovery)
+        if (u.state === 'frustrated' && Math.random() < 0.15) {
+          u.state = 'active';
+          u.healthScore = Math.min(95, u.healthScore + 12);
+          u.churnProbability = Math.max(5, u.churnProbability - 15);
+          u.warningFlags = u.warningFlags.filter(f => f !== 'Using It Less' && f !== 'Failed Payment');
+          u.activityLogs.unshift({
+            date: new Date().toISOString().split('T')[0],
+            type: 'login',
+            details: 'Self-recovery: Customer resolved their query and resumed normal logins.'
+          });
+          updatedList[i] = u;
+          didChange = true;
+          addTelemetry(`[Recovery] ${u.name} resolved their issues and returned to ACTIVE status.`);
+          break;
+        }
+
+        // Transition: DISENGAGED -> FRUSTRATED (Re-engaged activity check)
+        if (u.state === 'disengaged' && Math.random() < 0.10) {
+          u.state = 'frustrated';
+          u.healthScore = Math.min(65, u.healthScore + 10);
+          u.churnProbability = Math.max(25, u.churnProbability - 12);
+          u.activityLogs.unshift({
+            date: new Date().toISOString().split('T')[0],
+            type: 'login',
+            details: 'Re-engagement: Customer logged in after a period of dormancy.'
+          });
+          updatedList[i] = u;
+          didChange = true;
+          addTelemetry(`[Re-engaged] ${u.name} logged back in — state recovered from DISENGAGED to FRUSTRATED.`);
+          break;
+        }
+
         // Transition 1: FRUSTRATED -> DISENGAGED (Quiet Churn due to unresolved bugs)
-        if (u.state === 'frustrated' && Math.random() < 0.25) {
+        if (u.state === 'frustrated' && Math.random() < 0.08) {
           u.state = 'disengaged';
           u.healthScore = Math.max(15, u.healthScore - 15);
           u.churnProbability = Math.min(85, u.churnProbability + 15);
@@ -55,7 +88,7 @@ export function useChurnSimulation(
         }
 
         // Transition 2: DISENGAGED -> CHURNED (Subscription Canceled)
-        if (u.state === 'disengaged' && Math.random() < 0.15) {
+        if (u.state === 'disengaged' && Math.random() < 0.04) {
           u.state = 'churned';
           u.healthScore = 0;
           u.churnProbability = 100;
@@ -78,7 +111,7 @@ export function useChurnSimulation(
       }
 
       // 2. Roll probability for an API failure (Outage Rate) -> Transitions ACTIVE to FRUSTRATED
-      if (Math.random() * 100 < outageRate) {
+      if (Math.random() * 100 < outageRate * 0.4) {
         const activeUsers = updatedList.filter(u => u.state === 'active');
         if (activeUsers.length > 0) {
           const target = activeUsers[Math.floor(Math.random() * activeUsers.length)];
@@ -108,7 +141,7 @@ export function useChurnSimulation(
       }
 
       // 3. Roll probability for credit card / renewal failure (Billing failure Rate) -> Transitions ACTIVE to FRUSTRATED
-      if (Math.random() * 100 < billingFailureRate) {
+      if (Math.random() * 100 < billingFailureRate * 0.4) {
         const activeUsers = updatedList.filter(u => u.state === 'active');
         if (activeUsers.length > 0) {
           const target = activeUsers[Math.floor(Math.random() * activeUsers.length)];
@@ -140,7 +173,22 @@ export function useChurnSimulation(
         }
       }
 
-      // 4. Regular login simulation heartbeat
+      // 4. Minor health fluctuation drift for non-churned users (stay still or add/drop a bit)
+      if (Math.random() < 0.4) {
+        const targetIndex = Math.floor(Math.random() * updatedList.length);
+        const target = { ...updatedList[targetIndex] };
+        if (target.state !== 'churned') {
+          const healthDelta = Math.round((Math.random() - 0.5) * 6); // -3 to +3
+          const churnDelta = Math.round((Math.random() - 0.5) * 4);  // -2 to +2
+          target.healthScore = Math.min(98, Math.max(10, target.healthScore + healthDelta));
+          target.churnProbability = Math.min(95, Math.max(5, target.churnProbability + churnDelta));
+          updatedList[targetIndex] = target;
+          setUsers(updatedList);
+          return;
+        }
+      }
+
+      // 5. Regular login simulation heartbeat
       if (Math.random() > 0.4) {
         const activeUsers = updatedList.filter(u => u.state === 'active');
         if (activeUsers.length > 0) {
