@@ -236,7 +236,7 @@ export function ConsolePage(props: any) {
                 </div>
               </div>
               {consoleTab === 'dashboard' ? (
-                <DashboardTab dist={dist} expScore={expScore} expLabel={expLabel} users={users} />
+                <DashboardTab dist={dist} expScore={expScore} expLabel={expLabel} users={users} addTelemetry={addTelemetry} />
               ) : consoleTab === 'customers' ? (
                 <CustomersTab selectedConsoleUser={selectedConsoleUser} setSelectedConsoleUser={setSelectedConsoleUser} users={users} handleUpdateUser={handleUpdateUser} customerSearch={customerSearch} setCustomerSearch={setCustomerSearch} filterPlan={filterPlan} setFilterPlan={setFilterPlan} filterRisk={filterRisk} setFilterRisk={setFilterRisk} filteredConsoleUsers={filteredConsoleUsers} />
               ) : (

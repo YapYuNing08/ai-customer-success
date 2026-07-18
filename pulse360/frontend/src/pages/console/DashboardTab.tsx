@@ -1,8 +1,93 @@
 import { useState } from 'react';
-import { Cpu, Users, Heart, Clock, Activity, Send } from 'lucide-react';
+import { Cpu, Users, Heart, Clock, Activity, Send, Mail, MessageCircle } from 'lucide-react';
 
 export function DashboardTab(props: any) {
-  const { dist, expScore, expLabel, users } = props;
+  const { dist, expScore, expLabel, users, addTelemetry } = props;
+  const [activeSubTab, setActiveSubTab] = useState<'distribution' | 'interventions'>('distribution');
+  const [activeBroadcast, setActiveBroadcast] = useState<{
+    groupName: string;
+    type: 'email' | 'whatsapp';
+    recipients: any[];
+    subject: string;
+    body: string;
+  } | null>(null);
+  const [isSendingBroadcast, setIsSendingBroadcast] = useState(false);
+  const [broadcastSuccess, setBroadcastSuccess] = useState(false);
+
+  const getBroadcastTemplate = (groupName: string, type: 'email' | 'whatsapp', names: string[]) => {
+    const isBilling = groupName.includes('Billing') || groupName.includes('Payment');
+    const isOutage = groupName.includes('Outage');
+
+    let subject = '';
+    let body = '';
+
+    if (type === 'email') {
+      if (isBilling) {
+        subject = 'Action Required: Updating your SubSentry payment card';
+        body = `Dear SubSentry Customer,
+
+We recently encountered a renewal issue with your subscription payment card on file.
+
+To prevent any interruptions to your service, we have applied a 14-day grace extension on your account. You can securely update your billing details in your customer console.
+
+Please let us know if you need any assistance!
+
+Best regards,
+Customer Success Team`;
+      } else if (isOutage) {
+        subject = 'Resolved: West-US node connectivity recovery';
+        body = `Dear SubSentry Customer,
+
+We are writing to inform you that the regional node connectivity latency spike in West-US has been fully resolved.
+
+System uptime and latency have returned to our baseline SLA levels of 24ms. Thank you for your patience as our network engineering team stabilized the servers.
+
+Best regards,
+SubSentry Infrastructure Team`;
+      } else {
+        subject = 'Unlocking the full value of SubSentry';
+        body = `Dear SubSentry Customer,
+
+We noticed that your team has logged in less frequently this week. We want to make sure you are getting the absolute best value out of your active package plan.
+
+We would love to schedule a quick 10-minute CSM review session to see if we can help optimize your integrations.
+
+Best regards,
+Customer Success Team`;
+      }
+    } else {
+      if (isBilling) {
+        body = `*SubSentry Billing Update* ⚠️\nWe noticed a card renewal failure on your account. We have activated a 14-day grace period to keep your workspace online. Please check your billing dashboard to update details.`;
+      } else if (isOutage) {
+        body = `*SubSentry System Recovery* 🔌\nThe regional West-US connectivity spike is now resolved. All integrations and API rates are back to stable levels (24ms). Thank you for your patience!`;
+      } else {
+        body = `*SubSentry Customer Success check-in* 📈\nWe noticed your usage dropped this week. Would your team like a quick 10-minute review with your Success Manager to help optimize integrations? Let us know!`;
+      }
+    }
+
+    return { subject, body };
+  };
+
+  const warningGroups = (() => {
+    const groups: Record<string, any[]> = {};
+    if (users) {
+      users.forEach((u: any) => {
+        u.warningFlags.forEach((flag: string) => {
+          let cleanName = '';
+          if (flag === 'Failed Payment') cleanName = 'Failed Payments (Billing)';
+          else if (flag === 'Regional Outage') cleanName = 'Regional Outages (Infrastructure)';
+          else if (flag === 'Using It Less' || flag === 'Low Usage') cleanName = 'Low Usage (Engagement)';
+          else cleanName = `${flag} Triggers`;
+
+          if (!groups[cleanName]) {
+            groups[cleanName] = [];
+          }
+          groups[cleanName].push(u);
+        });
+      });
+    }
+    return groups;
+  })();
   const [showAiChat, setShowAiChat] = useState(false);
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'ai'; text: string }>>([
     { sender: 'ai', text: "Hello! I'm your SubSentry AI Portfolio Advisor. Ask me anything about customer health trends, critical account updates, or risk distribution." }
@@ -263,116 +348,197 @@ Is there a specific account or recent system event you would like me to analyze?
 
                       {/* Customer's Health */}
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
-                        <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full">
-                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER'S HEALTH</span>
-                          <span className="text-[10px] font-bold text-earth-sage uppercase">Distribution of customer base</span>
-                        </div>
-
-                        <div className="flex flex-col gap-4 my-2 font-bold text-xs">
-                          {/* Healthy */}
-                          <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-3 h-3 rounded-full bg-status-healthy" />
-                              <span className="font-bold text-earth-cocoa">Healthy (Score 70+)</span>
-                            </div>
-                            <span className="text-status-healthy font-black text-sm">
-                              {users ? users.filter((u: any) => u.healthScore >= 70).length : 0} Accounts
-                            </span>
+                        <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2 w-full">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER'S HEALTH</span>
+                            <span className="text-[10px] font-bold text-earth-sage uppercase">Distribution & Actions</span>
                           </div>
-
-                          {/* Warning */}
-                          <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-3 h-3 rounded-full bg-status-risk" />
-                              <span className="font-bold text-earth-cocoa">Warning (Score 40-69)</span>
-                            </div>
-                            <span className="text-status-risk font-black text-sm">
-                              {users ? users.filter((u: any) => u.healthScore < 70 && u.healthScore >= 40).length : 0} Accounts
-                            </span>
-                          </div>
-
-                          {/* Critical */}
-                          <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
-                            <div className="flex items-center gap-2.5">
-                              <span className="w-3 h-3 rounded-full bg-status-critical" />
-                              <span className="font-bold text-earth-cocoa">Critical (Score &lt; 40)</span>
-                            </div>
-                            <span className="text-status-critical font-black text-sm">
-                              {users ? users.filter((u: any) => u.healthScore < 40).length : 0} Accounts
-                            </span>
+                          
+                          {/* Tabs Pill Selector */}
+                          <div className="flex bg-earth-bg/30 p-1 rounded-xl border border-earth-sage/10 text-[9px] font-bold">
+                            <button
+                              onClick={() => setActiveSubTab('distribution')}
+                              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                                activeSubTab === 'distribution'
+                                  ? 'bg-earth-cocoa text-earth-bg shadow-sm'
+                                  : 'text-earth-cocoa/60 hover:text-earth-cocoa'
+                              }`}
+                            >
+                              Overview
+                            </button>
+                            <button
+                              onClick={() => setActiveSubTab('interventions')}
+                              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
+                                activeSubTab === 'interventions'
+                                  ? 'bg-earth-cocoa text-earth-bg shadow-sm'
+                                  : 'text-earth-cocoa/60 hover:text-earth-cocoa'
+                              }`}
+                            >
+                              Group Actions
+                            </button>
                           </div>
                         </div>
 
-                        {/* AI Advisor Button */}
-                        <button 
-                          onClick={() => setShowAiChat(!showAiChat)}
-                          className="w-full mt-2 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs py-2 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
-                        >
-                          <Cpu className="w-3.5 h-3.5 text-status-healthy animate-pulse" />
-                          <span>{showAiChat ? 'Hide AI Advisor' : 'Ask AI Portfolio Advisor'}</span>
-                        </button>
-
-                        {showAiChat && (
-                          <div className="border-t border-earth-sage/20 pt-4 mt-2 flex flex-col gap-3">
-                            {/* Scrollable messages box */}
-                            <div className="flex flex-col gap-2 max-h-[220px] overflow-y-auto pr-1">
-                              {chatMessages.map((msg, i) => (
-                                <div 
-                                  key={i} 
-                                  className={`flex flex-col max-w-[85%] rounded-2xl p-3 text-[11px] leading-relaxed shadow-sm font-sans ${
-                                    msg.sender === 'user'
-                                      ? 'self-end bg-earth-clay/10 text-earth-cocoa border border-earth-clay/20'
-                                      : 'self-start bg-earth-cocoa text-earth-bg border border-earth-cocoa/10 whitespace-pre-line'
-                                  }`}
-                                >
-                                  {msg.text}
+                        {activeSubTab === 'distribution' ? (
+                          <>
+                            <div className="flex flex-col gap-4 my-2 font-bold text-xs">
+                              {/* Healthy */}
+                              <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
+                                <div className="flex items-center gap-2.5">
+                                  <span className="w-3 h-3 rounded-full bg-status-healthy" />
+                                  <span className="font-bold text-earth-cocoa">Healthy (Score 70+)</span>
                                 </div>
-                              ))}
-                              {isTyping && (
-                                <div className="self-start bg-earth-cocoa/5 text-earth-cocoa/60 rounded-2xl px-3 py-2 text-[10px] italic flex items-center gap-1">
-                                  <span className="w-1.5 h-1.5 rounded-full bg-earth-cocoa/60 animate-bounce" style={{ animationDelay: '0ms' }} />
-                                  <span className="w-1.5 h-1.5 rounded-full bg-earth-cocoa/60 animate-bounce" style={{ animationDelay: '150ms' }} />
-                                  <span className="w-1.5 h-1.5 rounded-full bg-earth-cocoa/60 animate-bounce" style={{ animationDelay: '300ms' }} />
-                                  <span>Advisor is typing...</span>
+                                <span className="text-status-healthy font-black text-sm">
+                                  {users ? users.filter((u: any) => u.healthScore >= 70).length : 0} Accounts
+                                </span>
+                              </div>
+
+                              {/* Warning */}
+                              <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
+                                <div className="flex items-center gap-2.5">
+                                  <span className="w-3 h-3 rounded-full bg-status-risk" />
+                                  <span className="font-bold text-earth-cocoa">Warning (Score 40-69)</span>
                                 </div>
-                              )}
+                                <span className="text-status-risk font-black text-sm">
+                                  {users ? users.filter((u: any) => u.healthScore < 70 && u.healthScore >= 40).length : 0} Accounts
+                                </span>
+                              </div>
+
+                              {/* Critical */}
+                              <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
+                                <div className="flex items-center gap-2.5">
+                                  <span className="w-3 h-3 rounded-full bg-status-critical" />
+                                  <span className="font-bold text-earth-cocoa">Critical (Score &lt; 40)</span>
+                                </div>
+                                <span className="text-status-critical font-black text-sm">
+                                  {users ? users.filter((u: any) => u.healthScore < 40).length : 0} Accounts
+                                </span>
+                              </div>
                             </div>
 
-                            {/* Suggested Questions */}
-                            <div className="flex flex-wrap gap-1.5">
-                              <button 
-                                onClick={() => handleSendMessage("Why did critical users suddenly improve?")}
-                                className="text-[9px] font-bold text-earth-cocoa hover:text-earth-bg hover:bg-earth-cocoa px-2 py-1 rounded-full border border-earth-cocoa/20 transition-all cursor-pointer bg-earth-bg/30"
-                              >
-                                💡 Why did critical improve?
-                              </button>
-                              <button 
-                                onClick={() => handleSendMessage("Which warning accounts need action?")}
-                                className="text-[9px] font-bold text-earth-cocoa hover:text-earth-bg hover:bg-earth-cocoa px-2 py-1 rounded-full border border-earth-cocoa/20 transition-all cursor-pointer bg-earth-bg/30"
-                              >
-                                ⚠️ Which warnings need action?
-                              </button>
-                            </div>
+                            {/* AI Advisor Button */}
+                            <button 
+                              onClick={() => setShowAiChat(!showAiChat)}
+                              className="w-full mt-2 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs py-2 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                            >
+                              <Cpu className="w-3.5 h-3.5 text-status-healthy animate-pulse" />
+                              <span>{showAiChat ? 'Hide AI Advisor' : 'Ask AI Portfolio Advisor'}</span>
+                            </button>
 
-                            {/* Message input bar */}
-                            <div className="flex gap-2">
-                              <input 
-                                type="text" 
-                                placeholder="Ask AI advisor..."
-                                value={userInput}
-                                onChange={(e) => setUserInput(e.target.value)}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') handleSendMessage(userInput);
-                                }}
-                                className="flex-1 bg-earth-bg/35 border border-earth-sage/35 rounded-xl py-2 px-3 text-[11px] outline-none focus:border-earth-clay text-earth-cocoa font-bold placeholder-earth-cocoa/40"
-                              />
-                              <button 
-                                onClick={() => handleSendMessage(userInput)}
-                                className="p-2 bg-earth-cocoa hover:bg-earth-clay text-earth-bg rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0 shadow-sm"
-                              >
-                                <Send className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
+                            {showAiChat && (
+                              <div className="border-t border-earth-sage/20 pt-4 mt-2 flex flex-col gap-3">
+                                {/* Scrollable messages box */}
+                                <div className="flex flex-col gap-2 max-h-[220px] overflow-y-auto pr-1">
+                                  {chatMessages.map((msg, i) => (
+                                    <div 
+                                      key={i} 
+                                      className={`flex flex-col max-w-[85%] rounded-2xl p-3 text-[11px] leading-relaxed shadow-sm font-sans ${
+                                        msg.sender === 'user'
+                                          ? 'self-end bg-earth-clay/10 text-earth-cocoa border border-earth-clay/20'
+                                          : 'self-start bg-earth-cocoa text-earth-bg border border-earth-cocoa/10 whitespace-pre-line'
+                                      }`}
+                                    >
+                                      {msg.text}
+                                    </div>
+                                  ))}
+                                  {isTyping && (
+                                    <div className="self-start bg-earth-cocoa/5 text-earth-cocoa/60 rounded-2xl px-3 py-2 text-[10px] italic flex items-center gap-1">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-earth-cocoa/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                                      <span className="w-1.5 h-1.5 rounded-full bg-earth-cocoa/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                                      <span className="w-1.5 h-1.5 rounded-full bg-earth-cocoa/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+                                      <span>Advisor is typing...</span>
+                                    </div>
+                                  )}
+                                </div>
+
+                                {/* Suggested Questions */}
+                                <div className="flex flex-wrap gap-1.5">
+                                  <button 
+                                    onClick={() => handleSendMessage("Why did critical users suddenly improve?")}
+                                    className="text-[9px] font-bold text-earth-cocoa hover:text-earth-bg hover:bg-earth-cocoa px-2 py-1 rounded-full border border-earth-cocoa/20 transition-all cursor-pointer bg-earth-bg/30"
+                                  >
+                                    💡 Why did critical improve?
+                                  </button>
+                                  <button 
+                                    onClick={() => handleSendMessage("Which warning accounts need action?")}
+                                    className="text-[9px] font-bold text-earth-cocoa hover:text-earth-bg hover:bg-earth-cocoa px-2 py-1 rounded-full border border-earth-cocoa/20 transition-all cursor-pointer bg-earth-bg/30"
+                                  >
+                                    ⚠️ Which warnings need action?
+                                  </button>
+                                </div>
+
+                                {/* Message input bar */}
+                                <div className="flex gap-2">
+                                  <input 
+                                    type="text" 
+                                    placeholder="Ask AI advisor..."
+                                    value={userInput}
+                                    onChange={(e) => setUserInput(e.target.value)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === 'Enter') handleSendMessage(userInput);
+                                    }}
+                                    className="flex-1 bg-earth-bg/35 border border-earth-sage/35 rounded-xl py-2 px-3 text-[11px] outline-none focus:border-earth-clay text-earth-cocoa font-bold placeholder-earth-cocoa/40"
+                                  />
+                                  <button 
+                                    onClick={() => handleSendMessage(userInput)}
+                                    className="p-2 bg-earth-cocoa hover:bg-earth-clay text-earth-bg rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0 shadow-sm"
+                                  >
+                                    <Send className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            )}
+                          </>
+                        ) : (
+                          <div className="flex flex-col gap-4 my-2 font-bold text-xs">
+                            {Object.keys(warningGroups).length === 0 ? (
+                              <div className="p-4 bg-earth-bg/25 border border-earth-sage/10 rounded-xl text-center font-bold text-[11px] text-earth-cocoa/60">
+                                🎉 All active accounts are currently stable and in good standing. No group interventions needed.
+                              </div>
+                            ) : (
+                              Object.entries(warningGroups).map(([groupName, groupUsers]) => (
+                                <div key={groupName} className="p-3.5 bg-earth-bg/25 border border-earth-sage/15 rounded-xl flex flex-col gap-2.5">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-earth-cocoa font-extrabold text-[11px]">{groupName}</span>
+                                    <span className="text-[8px] bg-status-critical/15 text-status-critical px-2 py-0.5 border border-status-critical/30 rounded font-black uppercase">
+                                      {groupUsers.length} Accounts
+                                    </span>
+                                  </div>
+                                  
+                                  <p className="text-[10px] text-earth-cocoa/75 leading-relaxed font-normal">
+                                    <span className="font-bold text-earth-clay/80 uppercase text-[8px] tracking-wider block mb-0.5">Recipients:</span>
+                                    {groupUsers.map((u: any) => u.name).join(', ')}
+                                  </p>
+
+                                  <div className="flex gap-2 mt-1">
+                                    <button 
+                                      onClick={() => {
+                                        const { subject, body } = getBroadcastTemplate(groupName, 'email', groupUsers.map((u: any) => u.name));
+                                        setActiveBroadcast({ groupName, type: 'email', recipients: groupUsers, subject, body });
+                                        setBroadcastSuccess(false);
+                                        setIsSendingBroadcast(false);
+                                      }}
+                                      className="flex-1 bg-earth-bg/60 border border-earth-sage/35 hover:bg-earth-cocoa hover:text-earth-bg text-earth-cocoa font-bold text-[9px] py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer"
+                                    >
+                                      <Mail className="w-3 h-3 text-earth-clay" />
+                                      <span>Email Group</span>
+                                    </button>
+                                    <button 
+                                      onClick={() => {
+                                        const { subject, body } = getBroadcastTemplate(groupName, 'whatsapp', groupUsers.map((u: any) => u.name));
+                                        setActiveBroadcast({ groupName, type: 'whatsapp', recipients: groupUsers, subject, body });
+                                        setBroadcastSuccess(false);
+                                        setIsSendingBroadcast(false);
+                                      }}
+                                      className="flex-1 bg-[#25D366]/10 border border-[#25D366]/30 hover:bg-[#25D366] hover:text-white text-[#128C7E] font-bold text-[9px] py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer"
+                                    >
+                                      <MessageCircle className="w-3 h-3 text-[#128C7E] hover:text-white" />
+                                      <span>WhatsApp Group</span>
+                                    </button>
+                                  </div>
+                                </div>
+                              ))
+                            )}
                           </div>
                         )}
                       </div>
@@ -380,6 +546,118 @@ Is there a specific account or recent system event you would like me to analyze?
                     </div>
 
                   </div>
+
+                  {activeBroadcast && (
+                    <div 
+                      className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-all duration-300 animate-fadeIn"
+                      onClick={() => setActiveBroadcast(null)}
+                    >
+                      <div 
+                        className="bg-[#efe9d2] border-2 border-earth-sage text-earth-cocoa rounded-3xl max-w-lg w-full p-6 text-left relative shadow-2xl flex flex-col gap-4 animate-scaleUp font-sans"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {/* Broadcast Header */}
+                        <div className="flex items-center gap-4">
+                          <div className={`p-3 rounded-full border w-fit ${
+                            activeBroadcast.type === 'email' 
+                              ? 'bg-earth-clay/25 border-earth-clay/35 text-earth-clay' 
+                              : 'bg-[#25D366]/20 border-[#25D366]/40 text-[#128C7E]'
+                          }`}>
+                            {activeBroadcast.type === 'email' ? <Mail className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+                          </div>
+                          <div>
+                            <span className="text-[10px] uppercase font-extrabold text-earth-clay tracking-wider">Group Broadcast Operations</span>
+                            <h2 className="text-base font-bold text-earth-cocoa mt-0.5">
+                              Send Broadcast to {activeBroadcast.groupName}
+                            </h2>
+                          </div>
+                        </div>
+
+                        {/* Recipients list */}
+                        <div className="text-xs border-y border-earth-sage/20 py-3 flex flex-col gap-1">
+                          <span className="font-extrabold text-[10px] text-earth-clay uppercase tracking-wider">RECIPIENT PORTFOLIOS ({activeBroadcast.recipients.length}):</span>
+                          <div className="flex flex-wrap gap-1 mt-1 max-h-[60px] overflow-y-auto">
+                            {activeBroadcast.recipients.map((r: any) => (
+                              <span key={r.id} className="bg-earth-bg/40 border border-earth-sage/15 px-2 py-0.5 rounded text-[10px] font-bold text-earth-cocoa">
+                                {r.name} ({activeBroadcast.type === 'email' ? r.email : 'WhatsApp Live'})
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Editor / Template display */}
+                        <div className="flex flex-col gap-2">
+                          <span className="font-extrabold text-[10px] text-earth-clay uppercase tracking-wider">AI BROADCAST MESSAGE TEMPLATE:</span>
+                          {activeBroadcast.type === 'email' && (
+                            <div className="flex flex-col gap-1 bg-earth-bg/35 border border-earth-sage/15 p-2 rounded-xl text-xs">
+                              <span className="font-bold text-earth-cocoa/60 text-[9px] uppercase">Subject Line:</span>
+                              <div className="font-black text-earth-cocoa border-b border-earth-sage/10 pb-1 mb-1">{activeBroadcast.subject}</div>
+                            </div>
+                          )}
+                          <textarea
+                            readOnly
+                            value={activeBroadcast.body}
+                            className="w-full h-44 bg-earth-bg/35 border border-earth-sage/25 p-3 rounded-xl text-xs font-mono text-earth-cocoa leading-relaxed outline-none resize-none"
+                          />
+                        </div>
+
+                        {/* Success State */}
+                        {broadcastSuccess && (
+                          <div className="bg-[#276B2B]/15 border border-[#276B2B]/35 text-status-healthy p-3.5 rounded-xl text-xs font-bold text-center animate-scaleUp">
+                            ✅ Broadcast transmitted successfully to {activeBroadcast.recipients.length} customer nodes! System logs updated.
+                          </div>
+                        )}
+
+                        <div className="flex gap-3 justify-end mt-2">
+                          {!broadcastSuccess && (
+                            <button 
+                              disabled={isSendingBroadcast}
+                              onClick={() => setActiveBroadcast(null)}
+                              className="px-4 py-2.5 bg-[#e4ddc3] hover:bg-[#d8cfb3] text-earth-cocoa font-bold text-xs rounded-xl transition-all cursor-pointer border border-earth-sage/20 disabled:opacity-50"
+                            >
+                              Cancel
+                            </button>
+                          )}
+                          
+                          {broadcastSuccess ? (
+                            <button 
+                              onClick={() => setActiveBroadcast(null)}
+                              className="px-5 py-2.5 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs rounded-xl transition-all cursor-pointer shadow-md"
+                            >
+                              Close Dialog
+                            </button>
+                          ) : (
+                            <button 
+                              disabled={isSendingBroadcast}
+                              onClick={() => {
+                                setIsSendingBroadcast(true);
+                                setTimeout(() => {
+                                  setIsSendingBroadcast(false);
+                                  setBroadcastSuccess(true);
+                                  if (addTelemetry) {
+                                    addTelemetry(`Transmitted group ${activeBroadcast.type} broadcast to ${activeBroadcast.recipients.length} accounts (${activeBroadcast.groupName}).`);
+                                  }
+                                }, 1500);
+                              }}
+                              className="px-5 py-2.5 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md disabled:opacity-50"
+                            >
+                              {isSendingBroadcast ? (
+                                <>
+                                  <span className="w-3.5 h-3.5 border-2 border-earth-bg border-t-transparent rounded-full animate-spin" />
+                                  <span>Transmitting...</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Send className="w-3.5 h-3.5" />
+                                  <span>Send Broadcast Now</span>
+                                </>
+                              )}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </>
   );
 }
