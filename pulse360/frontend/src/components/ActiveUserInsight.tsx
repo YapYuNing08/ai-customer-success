@@ -474,7 +474,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             </div>
             <div className="flex justify-between items-center w-full">
               <span className="text-xs console-text-muted">Failed Payments (last 30 days)</span>
-              <span className={`font-bold ${user.metrics.failedPayments > 0 ? 'text-status-critical animate-pulse' : 'text-status-healthy'}`}>
+              <span className={`font-bold ${user.metrics.failedPayments > 0 ? 'text-status-critical' : 'text-status-healthy'}`}>
                 {user.metrics.failedPayments} Failed
               </span>
             </div>
