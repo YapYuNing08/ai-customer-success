@@ -80,10 +80,42 @@ export function ConsolePage(props: any) {
     return matchesSearch && matchesPlan && matchesRisk;
   });
 
-  const generateDynamicRescuePlan = () => {
-    const { report, distressedCount } = buildRescuePlanReport(users);
-    setReports(prev => [report, ...prev]);
-    setReportModalData({ isOpen: true, reportName: report.name, distressedCount, report });
+  const generateReport = (type: 'rescue_plan' | 'telemetry' | 'performance' | 'billing') => {
+    let reportName = '';
+    let content = '';
+    let distressedCount = 0;
+    let reportType = '';
+
+    if (type === 'rescue_plan') {
+      const res = buildRescuePlanReport(users);
+      setReports(prev => [res.report, ...prev]);
+      setReportModalData({ isOpen: true, reportName: res.report.name, distressedCount: res.distressedCount, report: res.report });
+      return;
+    } else if (type === 'telemetry') {
+      reportName = 'Daily Telemetry & Outage Audit';
+      reportType = 'System Event';
+      content = `# Daily Telemetry & Outage Audit\n\nGenerated on: ${new Date().toLocaleDateString()}\n\n## Network Summary\n- Server Latency: 24ms (Optimal)\n- SLA Compliance: 99.99%\n- Regional Outage Risks: None detected.`;
+    } else if (type === 'performance') {
+      reportName = 'Enterprise Account Performance Review';
+      reportType = 'CSM Summary';
+      content = `# Enterprise Account Performance Review\n\nGenerated on: ${new Date().toLocaleDateString()}\n\n## Portfolio Growth\n- Top Account Growth: +15% usage velocity\n- Account Stability: 92% of enterprise users active\n- Action items: No immediate upgrades required.`;
+    } else {
+      reportName = 'Billing & Invoice Extension Audit';
+      reportType = 'Billing Report';
+      content = `# Billing & Invoice Extension Audit\n\nGenerated on: ${new Date().toLocaleDateString()}\n\n## Credit Card Renewals\n- Renewal failures: 2 starter accounts\n- Grace periods extended: 2 accounts\n- Impact: Churn risk averted.`;
+    }
+
+    const newReport = {
+      id: String(Date.now()),
+      name: reportName,
+      type: reportType,
+      date: new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+      status: 'Active',
+      content: content
+    };
+
+    setReports(prev => [newReport, ...prev]);
+    setReportModalData({ isOpen: true, reportName: newReport.name, distressedCount: 0, report: newReport });
   };
 
   return (
@@ -316,7 +348,7 @@ export function ConsolePage(props: any) {
               ) : consoleTab === 'customers' ? (
                 <CustomersTab selectedConsoleUser={selectedConsoleUser} setSelectedConsoleUser={setSelectedConsoleUser} users={users} handleUpdateUser={handleUpdateUser} customerSearch={customerSearch} setCustomerSearch={setCustomerSearch} filterPlan={filterPlan} setFilterPlan={setFilterPlan} filterRisk={filterRisk} setFilterRisk={setFilterRisk} filteredConsoleUsers={filteredConsoleUsers} />
               ) : (
-                <ReportsTab reports={reports} users={users} generateDynamicRescuePlan={generateDynamicRescuePlan} />
+                <ReportsTab reports={reports} users={users} generateReport={generateReport} />
               )}
             </div>
           </div>
