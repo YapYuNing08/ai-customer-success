@@ -8,7 +8,7 @@ columns for /simulate) — FastAPI's response_model filters them out.
 from itertools import zip_longest
 from typing import List, Optional
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -73,6 +73,42 @@ def list_customers(db: Session, limit: int = 100, offset: int = 0) -> List[dict]
         return merged
     except SQLAlchemyError:
         return data.list_customers()[offset : offset + limit]
+
+
+def _stats_from_counts(critical: int, at_risk: int, healthy: int, avg_health: float) -> dict:
+    total = critical + at_risk + healthy
+    pct = lambda n: round(n / total * 100, 1) if total else 0.0  # noqa: E731
+    return {
+        "total_customers": total,
+        "healthy_count": healthy,
+        "at_risk_count": at_risk,
+        "critical_count": critical,
+        "healthy_pct": pct(healthy),
+        "at_risk_pct": pct(at_risk),
+        "critical_pct": pct(critical),
+        "avg_health_score": round(avg_health, 1),
+    }
+
+
+def get_stats(db: Session) -> dict:
+    """Health-band counts over the FULL table (the list endpoint is a
+    band-balanced sample, so the dashboard must not aggregate from it)."""
+    try:
+        # _HEALTH_BANDS order: critical, at-risk, healthy.
+        critical, at_risk, healthy = (
+            db.execute(select(func.count()).select_from(Customer).where(cond)).scalar() or 0
+            for cond in _HEALTH_BANDS
+        )
+        avg_health = db.execute(select(func.avg(Customer.health_score))).scalar() or 0.0
+        return _stats_from_counts(critical, at_risk, healthy, float(avg_health))
+    except SQLAlchemyError:
+        rows = data.list_customers()
+        scores = [r.get("health_score") or 0.0 for r in rows]
+        critical = sum(1 for s in scores if s <= 40)
+        at_risk = sum(1 for s in scores if 40 < s <= 70)
+        healthy = sum(1 for s in scores if s > 70)
+        avg_health = sum(scores) / len(scores) if scores else 0.0
+        return _stats_from_counts(critical, at_risk, healthy, avg_health)
 
 
 def get_customer(db: Session, customer_id: str) -> Optional[dict]:
