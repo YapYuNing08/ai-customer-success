@@ -13,6 +13,7 @@ import { getCustomers } from './lib/api';
 function App() {
   const [currentPage, setCurrentPage] = useState<'marketing' | 'client_console' | 'client_dashboard' | 'insight'>('marketing');
   const [consoleTab, setConsoleTab] = useState<'dashboard' | 'live_stream' | 'customers' | 'health' | 'reports'>('live_stream');
+  const [selectedConsoleUser, setSelectedConsoleUser] = useState<ActiveUser | null>(null);
   const [users, setUsers] = useState<ActiveUser[]>(mockUsers);
   const [selectedUser, setSelectedUser] = useState<ActiveUser | null>(null);
   const [clientUserId, setClientUserId] = useState<string>('1');
@@ -411,7 +412,7 @@ function App() {
                 
                 <nav className="flex flex-col gap-2.5 mt-4 text-xs font-bold text-earth-cocoa/75">
                   <button 
-                    onClick={() => setConsoleTab('dashboard')}
+                    onClick={() => { setConsoleTab('dashboard'); setSelectedConsoleUser(null); }}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
                       consoleTab === 'dashboard'
                         ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
@@ -422,7 +423,7 @@ function App() {
                     <span>Dashboard</span>
                   </button>
                   <button 
-                    onClick={() => setConsoleTab('live_stream')}
+                    onClick={() => { setConsoleTab('live_stream'); setSelectedConsoleUser(null); }}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
                       consoleTab === 'live_stream'
                         ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
@@ -433,7 +434,7 @@ function App() {
                     <span>Live Stream</span>
                   </button>
                   <button 
-                    onClick={() => setConsoleTab('customers')}
+                    onClick={() => { setConsoleTab('customers'); setSelectedConsoleUser(null); }}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
                       consoleTab === 'customers'
                         ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
@@ -444,7 +445,7 @@ function App() {
                     <span>Customers</span>
                   </button>
                   <button 
-                    onClick={() => setConsoleTab('health')}
+                    onClick={() => { setConsoleTab('health'); setSelectedConsoleUser(null); }}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
                       consoleTab === 'health'
                         ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
@@ -455,7 +456,7 @@ function App() {
                     <span>Health</span>
                   </button>
                   <button 
-                    onClick={() => setConsoleTab('reports')}
+                    onClick={() => { setConsoleTab('reports'); setSelectedConsoleUser(null); }}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
                       consoleTab === 'reports'
                         ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
@@ -469,7 +470,7 @@ function App() {
               </div>
 
               <button 
-                onClick={() => setConsoleTab('reports')}
+                onClick={() => { setConsoleTab('reports'); setSelectedConsoleUser(null); }}
                 className="w-full bg-earth-cocoa hover:bg-earth-clay text-earth-bg py-3 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
               >
                 New Report
@@ -969,9 +970,19 @@ function App() {
                   </div>
                 </>
               ) : consoleTab === 'customers' ? (
-                <>
-                  {/* Customers View */}
-                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full animate-fadeIn">
+                selectedConsoleUser ? (
+                  <ActiveUserInsight 
+                    user={selectedConsoleUser} 
+                    onBack={() => setSelectedConsoleUser(null)} 
+                    onUpdateUser={(updatedUser) => {
+                      handleUpdateUser(updatedUser);
+                      setSelectedConsoleUser(updatedUser);
+                    }}
+                  />
+                ) : (
+                  <>
+                    {/* Customers View */}
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full animate-fadeIn">
                     <div>
                       <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight font-serif">Customer Directory</h1>
                       <p className="text-xs text-earth-cocoa/75 mt-1 max-w-xl">
@@ -1089,8 +1100,7 @@ function App() {
                                   <td className="py-3 px-4 text-right">
                                     <button 
                                       onClick={() => {
-                                        setSelectedUser(u);
-                                        setCurrentPage('insight');
+                                        setSelectedConsoleUser(u);
                                       }}
                                       className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-[10px] px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap animate-pulse"
                                     >
@@ -1111,7 +1121,8 @@ function App() {
                       </table>
                     </div>
                   </div>
-                </>
+                  </>
+                )
               ) : consoleTab === 'health' ? (
                 <>
                   {/* Health View */}
