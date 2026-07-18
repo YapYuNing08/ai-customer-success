@@ -59,7 +59,7 @@ export function HealthTab(props: any) {
                         <CreditCard className="w-4 h-4 text-earth-clay" />
                       </div>
                       <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-earth-cocoa">${totalMRR.toLocaleString()}</span>
+                        <span className="text-2xl font-black text-earth-cocoa">RM{totalMRR.toLocaleString()}</span>
                       </div>
                       <span className="text-[9px] text-earth-cocoa/65">Active monthly recurring revenue</span>
                     </div>

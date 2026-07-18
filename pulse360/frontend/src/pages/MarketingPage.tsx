@@ -218,7 +218,7 @@ export function MarketingPage(props: any) {
                           <td className={`py-3 px-4 ${isDark ? 'text-earth-bg/90' : 'text-earth-cocoa/90'}`}>{u.location}</td>
                           <td className="py-3 px-4">
                             <span className={`font-semibold block ${textPrimary}`}>{u.plan}</span>
-                            <span className={`text-[10px] ${textMuted}`}>${u.mrr}/mo</span>
+                            <span className={`text-[10px] ${textMuted}`}>RM{u.mrr}/mo</span>
                           </td>
                           <td className="py-3 px-4 text-center">
                             <span className={`inline-block font-bold px-2 py-0.5 rounded ${

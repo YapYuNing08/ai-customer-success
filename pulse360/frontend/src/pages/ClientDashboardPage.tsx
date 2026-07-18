@@ -1,24 +1,48 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { downgradeSavings } from '../utils/mockData';
+import { suggestPlanChange } from '../utils/mockData';
 import { PortalNotificationModal } from '../components/modals/PortalNotificationModal';
+import { OnboardingWizard, LIFESTYLE_CONFIG, type WizardResult } from '../components/OnboardingWizard';
 
 export function ClientDashboardPage(props: any) {
-  const { users, clientUserId, setClientUserId, handleClientAction, addTelemetry, setCurrentPage } = props;
+  const { users, clientUserId, setClientUserId, handleClientAction, addTelemetry, setCurrentPage, signupCompleted, onSignup, onSignupSkip } = props;
   const [chatbotMessages, setChatbotMessages] = useState<{ sender: 'user' | 'bot'; text: string }[]>([
     { sender: 'bot', text: "Hello! I'm your SubSentry AI assistant. Ask me anything about your mobile plan, billing renewal, data usage, or roaming add-ons!" }
   ]);
   const [chatInput, setChatInput] = useState('');
-  const [onboardingSteps, setOnboardingSteps] = useState([
-    { id: 'esim', label: 'Activate eSIM Profile', done: true },
-    { id: '5g', label: 'Configure 5G VoLTE Calling', done: true },
-    { id: 'autopay', label: 'Setup Auto-pay Billing', done: false },
-    { id: 'app', label: 'Install Mobile Companion App', done: false }
-  ]);
   const [portalNotification, setPortalNotification] = useState<{ title: string; message: string; type: 'success' | 'info' | 'warning' } | null>(null);
+  const [showWizard, setShowWizard] = useState(false);
 
   const loggedInUser = users.find((u: any) => u.id === clientUserId) || users[0];
   const hasFailedPayment = loggedInUser?.warningFlags?.includes('Failed Payment');
+  const usageVelocity = loggedInUser?.metrics.usageVelocity || 0;
+  const planSuggestion = suggestPlanChange(loggedInUser?.plan || '', usageVelocity, loggedInUser?.mrr || 0);
+
+  // First visit runs the guided setup as a sign-up before the dashboard is
+  // usable; completing or skipping it releases the dashboard for the session.
+  // The AI onboarding agent lives inside the wizard itself (idle/repeated-click
+  // helper) — there are no agent triggers on the dashboard.
+  useEffect(() => {
+    if (!signupCompleted) {
+      setShowWizard(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleWizardComplete = (result: WizardResult) => {
+    setShowWizard(false);
+    const cfg = LIFESTYLE_CONFIG[result.lifestyle];
+    onSignup(result);
+    setChatbotMessages(prev => [...prev, {
+      sender: 'bot',
+      text: `🎉 Welcome to Pulse360, ${(result.name || 'friend').split(' ')[0]}! Your ${result.simChoice === 'esim' ? 'eSIM' : 'physical SIM'} is active, and because you told me you're "${cfg.label}", I've configured your roaming, notifications, and data alerts to match. Ask me anything about your new plan!`
+    }]);
+    setPortalNotification({
+      title: 'Welcome to Pulse360!',
+      message: `Your account is live. The AI agent activated your SIM and configured your preferences for "${cfg.label}". A summary is waiting in the chat assistant.`,
+      type: 'success'
+    });
+  };
   return (
     <>
           <div className="w-full max-w-7xl mx-auto px-6 py-12 text-left flex flex-col gap-8 animate-fadeIn bg-earth-bg min-h-[calc(100vh-80px)]">
@@ -50,7 +74,7 @@ export function ClientDashboardPage(props: any) {
                 onChange={(e) => setClientUserId(e.target.value)}
                 className="bg-earth-bg border border-earth-sage/35 rounded-lg p-2 text-xs text-earth-cocoa font-bold outline-none cursor-pointer focus:border-earth-clay min-w-[200px]"
               >
-                {users.map(u => (
+                {users.map((u: any) => (
                   <option key={u.id} value={u.id}>{u.name} ({u.plan})</option>
                 ))}
               </select>
@@ -94,9 +118,9 @@ export function ClientDashboardPage(props: any) {
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
-                      <span className="text-earth-cocoa/65">Monthly Contract MRR:</span>
+                      <span className="text-earth-cocoa/65">Monthly Price:</span>
                       <span className="font-bold text-earth-clay">
-                        ${loggedInUser?.mrr}/mo
+                        RM{loggedInUser?.mrr}/mo
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
@@ -107,6 +131,18 @@ export function ClientDashboardPage(props: any) {
                           : 'bg-[#276B2B]/15 border border-[#276B2B]/30 text-status-healthy'
                       }`}>
                         {hasFailedPayment ? 'Past Due' : 'Active'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-earth-cocoa/65">Next Billing Date:</span>
+                      <span className="font-bold text-earth-cocoa/85">
+                        {new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </span>
+                    </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span className="text-earth-cocoa/65">Payment Method:</span>
+                      <span className={`font-bold ${hasFailedPayment ? 'text-status-critical' : 'text-earth-cocoa/85'}`}>
+                        Visa •••• 4242{hasFailedPayment ? ' (declined)' : ''}
                       </span>
                     </div>
                   </div>
@@ -193,69 +229,16 @@ export function ClientDashboardPage(props: any) {
               {/* Row 2: Interaction Actions, AI Optimization, & Chatbot (3 uniform columns) */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full items-stretch">
                 
-                {/* Module 1: Self-Service & Onboarding */}
+                {/* Module 1: Self-Service Add-ons */}
                 <div className="flex flex-col gap-6 w-full">
-                  {/* Onboarding Checklist Card */}
-                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm text-left flex-1 justify-between">
-                    <div>
-                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">AI ONBOARDING CHECKLIST</span>
-                      <div className="flex flex-col gap-2 mt-3">
-                        {onboardingSteps.map((step) => {
-                          const isAutopay = step.id === 'autopay';
-                          const isDone = isAutopay ? !hasFailedPayment : step.done;
-                          return (
-                            <button 
-                              key={step.id}
-                              onClick={() => {
-                                if (isAutopay) {
-                                  if (hasFailedPayment) {
-                                    handleClientAction(loggedInUser.id, 'extend_grace');
-                                    setPortalNotification({
-                                      title: 'Grace Extension Activated',
-                                      message: 'Your payment delinquency has been updated to a 7-day grace extension successfully.',
-                                      type: 'success'
-                                    });
-                                  } else {
-                                    setPortalNotification({
-                                      title: 'Payment Status Healthy',
-                                      message: 'Auto-pay is active and operates in good standing.',
-                                      type: 'info'
-                                    });
-                                  }
-                                } else {
-                                  setOnboardingSteps(prev => prev.map(s => s.id === step.id ? { ...s, done: !s.done } : s));
-                                }
-                              }}
-                              className="flex items-center gap-2.5 text-xs text-earth-cocoa font-bold text-left cursor-pointer hover:bg-earth-sage/10 p-1.5 rounded-xl transition-all w-full"
-                            >
-                              <span className={`w-4.5 h-4.5 rounded-lg border flex items-center justify-center font-bold text-[10px] shrink-0 ${
-                                isDone 
-                                  ? 'bg-[#276B2B] text-earth-bg border-[#276B2B]' 
-                                  : 'border-earth-sage bg-earth-bg/50'
-                              }`}>
-                                {isDone ? '✓' : ''}
-                              </span>
-                              <span className={isDone ? 'line-through opacity-60 font-medium' : ''}>
-                                {step.label}
-                              </span>
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <span className="text-[9px] text-earth-cocoa/50 mt-3 leading-tight block">
-                      💡 Click items to complete onboarding. Setup Auto-pay resolves payment warnings instantly.
-                    </span>
-                  </div>
-
                   {/* Add-on deals card */}
-                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm text-left justify-between min-h-[170px]">
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm text-left justify-between min-h-[170px] flex-1">
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">PERSONALIZED ADD-ON DEALS</span>
                     <div className="flex flex-col gap-3 mt-1.5">
                       <div className="flex justify-between items-center border-b border-earth-sage/10 pb-2">
                         <div className="flex flex-col">
                           <span className="text-[11px] font-extrabold text-earth-cocoa">Roaming Pass</span>
-                          <span className="text-[9px] text-earth-cocoa/65">APAC & Europe • $15/mo</span>
+                          <span className="text-[9px] text-earth-cocoa/65">APAC & Europe • RM15/mo</span>
                         </div>
                         <button 
                           onClick={() => {
@@ -279,7 +262,7 @@ export function ClientDashboardPage(props: any) {
                       <div className="flex justify-between items-center">
                         <div className="flex flex-col">
                           <span className="text-[11px] font-extrabold text-earth-cocoa">5G Extra Quota</span>
-                          <span className="text-[9px] text-earth-cocoa/65">+10 GB High-Speed • $10/mo</span>
+                          <span className="text-[9px] text-earth-cocoa/65">+10 GB High-Speed • RM10/mo</span>
                         </div>
                         <button 
                           onClick={() => {
@@ -309,38 +292,61 @@ export function ClientDashboardPage(props: any) {
                   <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm text-left justify-between flex-1">
                     <div>
                       <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">AI PLAN OPTIMIZATION</span>
-                      
-                      {((loggedInUser?.metrics.usageVelocity || 0) < 0.35 && loggedInUser?.plan !== 'Starter') || hasFailedPayment ? (
+
+                      {planSuggestion || hasFailedPayment ? (
                         <div className="flex flex-col gap-3 mt-3">
-                          {/* Case A: Underutilization */}
-                          {(loggedInUser?.metrics.usageVelocity || 0) < 0.35 && loggedInUser?.plan !== 'Starter' && (
+                          {/* Case A: Underutilization — right-size down */}
+                          {planSuggestion?.direction === 'downgrade' && (
                             <div className="bg-status-healthy/10 border border-[#276B2B]/20 p-3.5 rounded-xl flex flex-col gap-2">
                               <span className="text-[10px] font-extrabold text-[#276B2B] uppercase">Saving Opportunity</span>
                               <p className="text-[10px] text-earth-cocoa leading-relaxed">
-                                Usage is at {Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%. Downgrade to **Starter Plan** to save **${downgradeSavings(loggedInUser?.mrr || 0).toLocaleString()}/mo**.
+                                You're only using {Math.round(usageVelocity * 100)}% of your {loggedInUser?.plan} plan. Switch to the <strong>{planSuggestion.targetPlan} Plan</strong> to save <strong>RM{planSuggestion.monthlyDelta.toLocaleString()}/mo</strong> — same features you actually use, smaller bill.
                               </p>
-                              <button 
+                              <button
                                 onClick={() => {
                                   handleClientAction(clientUserId, 'downgrade');
                                   setPortalNotification({
                                     title: 'Plan Downgrade Applied',
-                                    message: '📉 1-Click Downgrade applied successfully! Plan set to Starter.',
+                                    message: `📉 1-Click Downgrade applied successfully! Plan set to ${planSuggestion.targetPlan}.`,
                                     type: 'success'
                                   });
                                 }}
                                 className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-[9px] py-1.5 rounded-lg transition-all w-full cursor-pointer text-center"
                               >
-                                Downgrade plan to save
+                                Downgrade to {planSuggestion.targetPlan} & save
                               </button>
                             </div>
                           )}
 
-                          {/* Case B: Billing Delinquency */}
+                          {/* Case B: Near-capacity usage — right-size up */}
+                          {planSuggestion?.direction === 'upgrade' && (
+                            <div className="bg-status-risk/10 border border-status-risk/30 p-3.5 rounded-xl flex flex-col gap-2">
+                              <span className="text-[10px] font-extrabold text-earth-clay uppercase">Running Near Capacity</span>
+                              <p className="text-[10px] text-earth-cocoa leading-relaxed">
+                                You've used {Math.round(usageVelocity * 100)}% of your {loggedInUser?.plan} plan quota. Upgrade to the <strong>{planSuggestion.targetPlan} Plan</strong> for <strong>+RM{planSuggestion.monthlyDelta.toLocaleString()}/mo</strong> to avoid speed throttling and overage charges.
+                              </p>
+                              <button
+                                onClick={() => {
+                                  handleClientAction(clientUserId, 'upgrade');
+                                  setPortalNotification({
+                                    title: 'Plan Upgrade Applied',
+                                    message: `📈 1-Click Upgrade applied successfully! Plan set to ${planSuggestion.targetPlan} with extra headroom.`,
+                                    type: 'success'
+                                  });
+                                }}
+                                className="bg-earth-clay hover:bg-earth-cocoa text-earth-bg font-extrabold text-[9px] py-1.5 rounded-lg transition-all w-full cursor-pointer text-center"
+                              >
+                                Upgrade to {planSuggestion.targetPlan}
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Case C: Billing Delinquency */}
                           {hasFailedPayment && (
                             <div className="bg-status-critical/10 border border-status-critical/30 p-3.5 rounded-xl flex flex-col gap-2">
                               <span className="text-[10px] font-extrabold text-status-critical uppercase">Payment Grace alert</span>
                               <p className="text-[10px] text-earth-cocoa leading-relaxed">
-                                Transaction declined. Request a **7-day grace extension** to prevent service lock.
+                                Transaction declined. Request a <strong>7-day grace extension</strong> to prevent service lock.
                               </p>
                               <button 
                                 onClick={() => {
@@ -376,7 +382,7 @@ export function ClientDashboardPage(props: any) {
                   <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm text-left min-h-[170px] justify-between">
                     <span className="text-[10px] font-bold uppercase tracking-wider text-earth-cocoa/65">YOUR RECENT ACCOUNT HISTORY LOG</span>
                     <div className="flex-1 flex flex-col gap-2 overflow-y-auto mt-2 max-h-[100px] border border-earth-sage/10 rounded-xl p-2 bg-earth-bg/30">
-                      {(loggedInUser?.activityLogs || []).map((log, idx) => (
+                      {(loggedInUser?.activityLogs || []).map((log: any, idx: number) => (
                         <div key={idx} className="flex gap-2 text-[9px] text-earth-cocoa/80 items-start">
                           <span className="font-bold text-earth-sage shrink-0">{log.date}</span>
                           <span className="text-earth-cocoa/30 shrink-0">|</span>
@@ -424,13 +430,17 @@ export function ClientDashboardPage(props: any) {
                         if (lower.includes("bill") || lower.includes("invoice") || lower.includes("charge") || lower.includes("pay")) {
                           botReply = hasFailedPayment 
                             ? `⚠️ ALERT: Your last credit card renewal declined. Please request a Grace Extension or update payment details.`
-                            : `Your account is healthy! Current subscription costs $${loggedInUser.mrr}/mo and auto-renews via credit card.`;
+                            : `Your account is healthy! Current subscription costs RM${loggedInUser.mrr}/mo and auto-renews via credit card.`;
                         } else if (lower.includes("limit") || lower.includes("data") || lower.includes("usage") || lower.includes("quota")) {
-                          botReply = `You are currently utilizing ${Math.round((loggedInUser.metrics.usageVelocity || 0) * 100)}% of your plan thresholds. Recommend buying 5G Extra Data (+10 GB) for $10 to prevent speed drops.`;
+                          botReply = `You are currently utilizing ${Math.round((loggedInUser.metrics.usageVelocity || 0) * 100)}% of your plan thresholds. Recommend buying 5G Extra Data (+10 GB) for RM10 to prevent speed drops.`;
                         } else if (lower.includes("roaming") || lower.includes("travel") || lower.includes("abroad")) {
-                          botReply = "Planning a trip? Buy our APAC & Europe Roaming Pass add-on for $15/mo to get high-speed connection abroad!";
+                          botReply = "Planning a trip? Buy our APAC & Europe Roaming Pass add-on for RM15/mo to get high-speed connection abroad!";
                         } else if (lower.includes("upgrade") || lower.includes("downgrade") || lower.includes("plan")) {
-                          botReply = `You are on the ${loggedInUser.plan} subscription plan. If you need plan suggestions, our optimization dashboard recommends right-sizing to match your telemetry metrics.`;
+                          botReply = planSuggestion
+                            ? planSuggestion.direction === 'downgrade'
+                              ? `You're on the ${loggedInUser.plan} plan but only using ${Math.round(usageVelocity * 100)}% of it. I'd recommend switching to the ${planSuggestion.targetPlan} plan — you'd save RM${planSuggestion.monthlyDelta.toLocaleString()}/mo. There's a 1-click button in the AI Plan Optimization panel.`
+                              : `You're on the ${loggedInUser.plan} plan and using ${Math.round(usageVelocity * 100)}% of your quota — you're close to the cap. Upgrading to ${planSuggestion.targetPlan} (+RM${planSuggestion.monthlyDelta.toLocaleString()}/mo) would prevent throttling. See the AI Plan Optimization panel for the 1-click option.`
+                            : `You are on the ${loggedInUser.plan} subscription plan and your usage (${Math.round(usageVelocity * 100)}%) fits it well — no plan change needed right now.`;
                         }
                         setChatbotMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
                       }, 500);
@@ -457,6 +467,19 @@ export function ClientDashboardPage(props: any) {
 
             </div>
           </div>
+      {showWizard && (
+        <OnboardingWizard
+          customerName={loggedInUser?.name || 'there'}
+          mode="signup"
+          onComplete={handleWizardComplete}
+          onClose={() => {
+            setShowWizard(false);
+            onSignupSkip();
+            addTelemetry('Visitor skipped sign-up — browsing portal as a demo profile.');
+          }}
+          addTelemetry={addTelemetry}
+        />
+      )}
       {portalNotification && (
         <PortalNotificationModal notification={portalNotification} onDismiss={() => setPortalNotification(null)} />
       )}

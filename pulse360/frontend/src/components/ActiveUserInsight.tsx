@@ -300,14 +300,14 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           <div>
             <span className="console-text-muted text-xs block mb-1">Contract Value</span>
             <span className="text-lg font-bold console-text-primary flex items-center">
-              <DollarSign className="w-4 h-4 text-earth-clay -mr-0.5" />
+              <span className="text-sm text-earth-clay mr-0.5">RM</span>
               {user.mrr.toLocaleString()}/mo
             </span>
           </div>
           <div>
             <span className="console-text-muted text-xs block mb-1">Lifetime Value</span>
             <span className="text-lg font-bold console-text-primary flex items-center">
-              <DollarSign className="w-4 h-4 text-earth-clay -mr-0.5" />
+              <span className="text-sm text-earth-clay mr-0.5">RM</span>
               {(user.mrr * Math.round(user.metrics.daysSinceOnboarding / 30)).toLocaleString()}
             </span>
           </div>
@@ -751,10 +751,10 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                   <span className={`text-2xl font-extrabold mt-1 ${
                     Math.round(annualRevenueDelta) > 0 ? 'text-status-healthy' : Math.round(annualRevenueDelta) < 0 ? 'text-status-critical' : 'console-text-primary'
                   }`}>
-                    {Math.round(annualRevenueDelta) > 0 ? `+$${fmtMoney(annualRevenueDelta)} protected` : Math.round(annualRevenueDelta) < 0 ? `-$${fmtMoney(annualRevenueDelta)} at risk` : 'No revenue change'}
+                    {Math.round(annualRevenueDelta) > 0 ? `+RM${fmtMoney(annualRevenueDelta)} protected` : Math.round(annualRevenueDelta) < 0 ? `-RM${fmtMoney(annualRevenueDelta)} at risk` : 'No revenue change'}
                   </span>
                   <span className="text-[10px] console-text-muted leading-normal mt-1">
-                    How we got this: the {Math.round(Math.abs(simResult.delta_churn) * 100)}% change in leave-risk × this customer's ${fmtMoney(revenueBasisMonthly)}/mo bill × 12 months. Keeping a customer is far cheaper than winning a new one.
+                    How we got this: the {Math.round(Math.abs(simResult.delta_churn) * 100)}% change in leave-risk × this customer's RM{fmtMoney(revenueBasisMonthly)}/mo bill × 12 months. Keeping a customer is far cheaper than winning a new one.
                   </span>
                 </div>
 
