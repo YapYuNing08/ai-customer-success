@@ -1,6 +1,6 @@
 export interface UserActivityLog {
   date: string;
-  type: 'login' | 'payment_success' | 'payment_fail' | 'support_open' | 'support_resolve' | 'feature_use';
+  type: 'login' | 'payment_success' | 'payment_fail' | 'support_open' | 'support_resolve' | 'feature_use' | 'plan_change';
   details: string;
 }
 
@@ -26,7 +26,7 @@ export interface ActiveUser {
   location: string;
   lat: number;
   lng: number;
-  plan: 'Starter' | 'Pro' | 'Enterprise';
+  plan: 'Starter' | 'Growth' | 'Pro' | 'Enterprise';
   mrr: number;
   healthScore: number;
   churnProbability: number;
@@ -413,6 +413,83 @@ const pseudoGeo = (customerId: string) => {
   return { location: city.city, lat: city.lat + jitterLat, lng: city.lng + jitterLng };
 };
 
+// Estimated monthly savings from right-sizing to a lower plan tier (~40% of
+// current charges), so the figure is always consistent with the customer's
+// real monthly_charges instead of a hardcoded amount.
+export const downgradeSavings = (mrr: number): number =>
+  Math.max(5, Math.round(mrr * 0.4));
+
+const dateDaysAgo = (n: number): string => {
+  const d = new Date();
+  d.setDate(d.getDate() - n);
+  return d.toISOString().split('T')[0];
+};
+
+// Deterministic activity timeline derived from the customer's REAL signals
+// (login_frequency, payment_status, support_ticket_count, feedback_score,
+// feature_usage, monthly_charges). Dates are seeded from the customer id so
+// re-renders always produce the identical timeline.
+const deriveActivityLogs = (c: any): UserActivityLog[] => {
+  const h = hashId(c.customer_id || '');
+  const logs: UserActivityLog[] = [];
+
+  const loginFreq: number | null = c.login_frequency ?? null;
+  if (loginFreq != null) {
+    // More frequent logins → more recent last-seen date.
+    const gap = loginFreq >= 5 ? h % 2 : loginFreq >= 3 ? 1 + (h % 3) : loginFreq >= 1.5 ? 4 + (h % 4) : 9 + (h % 7);
+    logs.push({
+      date: dateDaysAgo(gap),
+      type: 'login',
+      details: `Signed in — averaging ${loginFreq.toFixed(1)} logins/week`,
+    });
+  }
+
+  if (c.feature_usage != null && c.feature_usage >= 0.5) {
+    logs.push({
+      date: dateDaysAgo(2 + (h % 5)),
+      type: 'feature_use',
+      details: `Actively using ${Math.round(c.feature_usage * 100)}% of plan features this month`,
+    });
+  }
+
+  const charges = c.monthly_charges != null ? `$${Number(c.monthly_charges).toFixed(2)}` : 'monthly invoice';
+  if (c.payment_status === 'past_due') {
+    logs.push({
+      date: dateDaysAgo(3 + (h % 8)),
+      type: 'payment_fail',
+      details: `Card payment of ${charges} declined — account past due`,
+    });
+  } else {
+    logs.push({
+      date: dateDaysAgo(6 + (h % 22)),
+      type: 'payment_success',
+      details: `Paid ${charges} invoice (${c.contract || 'Month-to-month'} contract)`,
+    });
+  }
+
+  const tickets: number = c.support_ticket_count ?? 0;
+  if (tickets > 0) {
+    const openGap = 5 + (h % 9);
+    logs.push({
+      date: dateDaysAgo(openGap),
+      type: 'support_open',
+      details: `Opened support ticket #${1000 + (h % 900)} — ${tickets} ticket${tickets > 1 ? 's' : ''} in the last 90 days`,
+    });
+    if (c.feedback_score != null) {
+      // Resolution always lands after the open date.
+      logs.push({
+        date: dateDaysAgo(Math.max(1, openGap - 1 - (h % 3))),
+        type: 'support_resolve',
+        details: `Ticket resolved — customer rated the experience ${Number(c.feedback_score).toFixed(1)}/10`,
+      });
+    }
+  }
+
+  return logs
+    .sort((a, b) => (a.date < b.date ? 1 : -1))
+    .slice(0, 6);
+};
+
 export const mergeBackendCustomer = (backendCust: any): ActiveUser => {
   const geo = pseudoGeo(backendCust.customer_id);
   const meta = staticCustomerMetadata[backendCust.customer_id] || {
@@ -441,19 +518,33 @@ export const mergeBackendCustomer = (backendCust: any): ActiveUser => {
     mrr: backendCust.monthly_charges != null ? Math.round(backendCust.monthly_charges) : meta.mrr,
     healthScore: Math.round(backendCust.health_score),
     churnProbability: Math.round(backendCust.churn_probability * 100),
-    warningFlags: backendCust.risk_tier === 'high' ? [...new Set([...meta.warningFlags, 'Likely to Leave'])] : meta.warningFlags,
+    warningFlags: (() => {
+      const flags = new Set(meta.warningFlags);
+      if (backendCust.risk_tier === 'high') flags.add('Likely to Leave');
+      if (backendCust.payment_status === 'past_due') flags.add('Failed Payment');
+      if (backendCust.login_frequency != null && backendCust.login_frequency < 2) flags.add('Using It Less');
+      return [...flags];
+    })(),
     metrics: {
       usageVelocity: backendCust.monthly_usage_pct ? Number((backendCust.monthly_usage_pct / 100).toFixed(2)) : 0.8,
-      featureAdoption: 0.5,
-      frictionIndex: 2.0,
+      featureAdoption: backendCust.feature_usage != null
+        ? Number(Number(backendCust.feature_usage).toFixed(2))
+        : 0.5,
+      frictionIndex: backendCust.support_ticket_count != null
+        ? Math.min(10, Math.max(0, backendCust.support_ticket_count))
+        : 2.0,
       failedPayments: backendCust.payment_status === 'past_due' ? 1 : 0,
-      daysSinceOnboarding: 120,
+      daysSinceOnboarding: backendCust.signup_date
+        ? Math.max(1, Math.round((Date.now() - new Date(backendCust.signup_date).getTime()) / 86400000))
+        : 120,
     },
     churnFactors: (backendCust.shap_reasons || []).map((r: any) => ({
       name: r.feature.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
       impact: Math.round(r.contribution * 100)
     })),
-    activityLogs: meta.activityLogs,
+    // Hand-written logs for the offline mock users; real customers get a
+    // deterministic timeline derived from their actual signals.
+    activityLogs: meta.activityLogs.length > 0 ? meta.activityLogs : deriveActivityLogs(backendCust),
     pastJourneys: meta.pastJourneys,
     state: backendCust.state || (
       backendCust.health_score < 40 ? 'frustrated' :

@@ -2,6 +2,7 @@
 
 Field names here MUST match what the Stitch-exported UI expects.
 """
+from datetime import date
 from typing import List, Literal, Optional
 
 from pydantic import BaseModel
@@ -26,6 +27,14 @@ class CustomerSummary(BaseModel):
     monthly_usage_pct: float
     payment_status: Optional[str] = None
     monthly_charges: Optional[float] = None
+    # Raw signals + account facts, so the dashboard derives its detail metrics
+    # (feature adoption, friction, tenure, activity timeline) from real data.
+    login_frequency: Optional[float] = None
+    feature_usage: Optional[float] = None
+    support_ticket_count: Optional[int] = None
+    feedback_score: Optional[float] = None
+    signup_date: Optional[date] = None
+    contract: Optional[str] = None
 
 
 class Customer(BaseModel):
@@ -48,6 +57,26 @@ class Customer(BaseModel):
     feature_usage: Optional[float] = None
     support_ticket_count: Optional[int] = None
     feedback_score: Optional[float] = None
+    signup_date: Optional[date] = None
+    contract: Optional[str] = None
+
+
+class HealthStats(BaseModel):
+    """Population-wide health-band aggregates for the dashboard.
+
+    Computed over the FULL customers table — the /customers list endpoint
+    returns a deliberately band-balanced sample, so the frontend must not
+    derive these numbers from the list it renders.
+    """
+
+    total_customers: int
+    healthy_count: int
+    at_risk_count: int
+    critical_count: int
+    healthy_pct: float
+    at_risk_pct: float
+    critical_pct: float
+    avg_health_score: float
 
 
 class Recommendation(BaseModel):

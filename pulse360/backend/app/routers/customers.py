@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 
 from app import repository
 from app.db.session import get_db
-from app.models import Customer, CustomerSummary
+from app.models import Customer, CustomerSummary, HealthStats
 
 router = APIRouter(prefix="/customers", tags=["customers"])
 
@@ -18,6 +18,13 @@ def list_customers(
     """Highest-risk customers first — the dashboard opens on the accounts
     that need attention."""
     return repository.list_customers(db, limit=limit, offset=offset)
+
+
+# NOTE: must be registered before /{customer_id} so "stats" isn't matched as an id.
+@router.get("/stats", response_model=HealthStats)
+def customer_stats(db: Session = Depends(get_db)):
+    """Health-band distribution over the full customer population."""
+    return repository.get_stats(db)
 
 
 @router.get("/{customer_id}", response_model=Customer)

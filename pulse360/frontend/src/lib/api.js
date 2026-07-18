@@ -21,6 +21,12 @@ export function getCustomers() {
   return request("/customers");
 }
 
+// GET /customers/stats — health-band distribution over the FULL population
+// (the /customers list is a band-balanced sample; never aggregate from it)
+export function getCustomerStats() {
+  return request("/customers/stats");
+}
+
 // GET /customers/{id}
 export function getCustomer(customerId) {
   return request(`/customers/${customerId}`);
