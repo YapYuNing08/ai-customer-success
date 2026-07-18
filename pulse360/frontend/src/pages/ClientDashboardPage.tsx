@@ -6,7 +6,7 @@ import { PortalNotificationModal } from '../components/modals/PortalNotification
 export function ClientDashboardPage(props: any) {
   const { users, clientUserId, setClientUserId, handleClientAction, addTelemetry, setCurrentPage } = props;
   const [chatbotMessages, setChatbotMessages] = useState<{ sender: 'user' | 'bot'; text: string }[]>([
-    { sender: 'bot', text: "Hello! I'm your CelcomDigi AI assistant. Ask me anything about your mobile plan, billing renewal, data usage, or roaming add-ons!" }
+    { sender: 'bot', text: "Hello! I'm your Telco AI assistant. Ask me anything about your mobile plan, billing renewal, data usage, or roaming add-ons!" }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [onboardingSteps, setOnboardingSteps] = useState([
@@ -22,12 +22,12 @@ export function ClientDashboardPage(props: any) {
 
   return (
     <>
-      <div className="w-full max-w-7xl mx-auto px-6 py-12 text-left flex flex-col gap-8 animate-fadeIn bg-[#f4f7fa] min-h-[calc(100vh-80px)] font-sans">
+      <div className="w-full max-w-7xl mx-auto px-6 py-12 text-left flex flex-col gap-8 animate-fadeIn bg-white min-h-[calc(100vh-80px)] font-sans">
         {/* Header section */}
-        <div className="flex justify-between items-center border-b pb-4 border-slate-300/60">
+        <div className="flex justify-between items-center border-b pb-4 border-slate-200">
           <div>
             <span className="text-xs uppercase font-bold text-[#0064DC] tracking-wider">Subscriber Portal</span>
-            <h2 className="text-3xl font-extrabold mt-1 text-[#001871] font-serif">CelcomDigi Customer Console</h2>
+            <h2 className="text-3xl font-extrabold mt-1 text-[#001871] font-serif">Telco Customer Console</h2>
           </div>
           <button 
             onClick={() => setCurrentPage('marketing')}
@@ -351,13 +351,13 @@ export function ClientDashboardPage(props: any) {
 
             {/* Right Column: AI Chatbot Assistant */}
             <div className="w-full">
-              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all h-full justify-between text-left min-h-[480px]">
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all text-left h-[480px] justify-between">
                 <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                   <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">AI PLAN ASSISTANT CHATBOT</span>
                   <span className="w-2 h-2 rounded-full bg-[#0064DC] animate-pulse" />
                 </div>
 
-                <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 py-2 font-sans pr-1 text-xs max-h-[450px]">
+                <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 py-2 font-sans pr-1 text-xs">
                   {chatbotMessages.map((msg, idx) => (
                     <div 
                       key={idx} 
