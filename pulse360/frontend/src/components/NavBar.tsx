@@ -86,7 +86,7 @@ export function NavBar(props: any) {
                   : 'bg-earth-cocoa hover:bg-earth-clay text-earth-bg'
               }`}
             >
-              Client Dashboard
+              Client UI
             </button>
           )}
         </div>
