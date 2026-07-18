@@ -12,9 +12,27 @@ export function ClientDashboardPage(props: any) {
   const [chatInput, setChatInput] = useState('');
   const [portalNotification, setPortalNotification] = useState<{ title: string; message: string; type: 'success' | 'info' | 'warning' } | null>(null);
   const [showWizard, setShowWizard] = useState(false);
+  const [onboardingSteps, setOnboardingSteps] = useState([
+    { id: 'esim', label: 'Activate eSIM Profile', done: true },
+    { id: '5g', label: 'Configure 5G VoLTE Calling', done: true },
+    { id: 'autopay', label: 'Setup Auto-pay Billing', done: false },
+    { id: 'app', label: 'Install Mobile Companion App', done: false }
+  ]);
 
   const loggedInUser = users.find((u: any) => u.id === clientUserId) || users[0];
   const hasFailedPayment = loggedInUser?.warningFlags?.includes('Failed Payment');
+
+  useEffect(() => {
+    if (!signupCompleted) {
+      setShowWizard(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleWizardComplete = (result: WizardResult) => {
+    setShowWizard(false);
+    onSignup(result);
+  };
 
   return (
     <>
@@ -415,6 +433,19 @@ export function ClientDashboardPage(props: any) {
           </div>
         </div>
       </div>
+      {showWizard && (
+        <OnboardingWizard
+          customerName={loggedInUser?.name || 'there'}
+          mode="signup"
+          onComplete={handleWizardComplete}
+          onClose={() => {
+            setShowWizard(false);
+            onSignupSkip();
+            addTelemetry('Visitor skipped sign-up — browsing portal as a demo profile.');
+          }}
+          addTelemetry={addTelemetry}
+        />
+      )}
       {portalNotification && (
         <PortalNotificationModal notification={portalNotification} onDismiss={() => setPortalNotification(null)} />
       )}
