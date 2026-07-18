@@ -996,7 +996,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
 
           {/* Action Alert Banner */}
           {activePlaybook ? (
-            <div className="bg-earth-sage/20 border console-border console-text-primary text-[11px] p-3 rounded-xl flex items-center gap-2 animate-bounce font-bold shadow-sm">
+            <div className="bg-earth-sage/20 border console-border console-text-primary text-[11px] p-3 rounded-xl flex items-center gap-2 animate-fadeIn font-bold shadow-sm">
               <CheckCircle className="w-4 h-4 shrink-0 console-text-primary" />
               <span>{activePlaybook}</span>
             </div>
