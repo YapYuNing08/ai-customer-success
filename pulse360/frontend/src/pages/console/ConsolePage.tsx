@@ -1,13 +1,11 @@
 import { useState } from 'react';
-import { Settings, Radio, LayoutDashboard, Users, Heart, FileText, Search, Bell } from 'lucide-react';
+import { Settings, LayoutDashboard, Users, Heart, FileText, Search, Bell } from 'lucide-react';
 import type { ActiveUser } from '../../utils/mockData';
 import type { Report } from '../../types';
 import { buildRescuePlanReport } from '../../utils/reports';
 import { ReportSuccessModal } from '../../components/modals/ReportSuccessModal';
 import { OutageAlertModal } from '../../components/modals/OutageAlertModal';
 import { GridView } from './GridView';
-import { LiveDataView } from './LiveDataView';
-import { LiveStreamTab } from './LiveStreamTab';
 import { DashboardTab } from './DashboardTab';
 import { CustomersTab } from './CustomersTab';
 import { HealthTab } from './HealthTab';
@@ -16,13 +14,12 @@ import { ReportsTab } from './ReportsTab';
 export function ConsolePage(props: any) {
   const { users, setUsers, telemetryFeed, setTelemetryFeed, isSimulating, setIsSimulating, outageRate, setOutageRate, billingFailureRate, setBillingFailureRate, addTelemetry, handleUpdateUser, dist, expScore, expLabel } = props;
 
-  const [consoleTab, setConsoleTab] = useState<'dashboard' | 'live_stream' | 'customers' | 'health' | 'reports'>('live_stream');
+  const [consoleTab, setConsoleTab] = useState<'dashboard' | 'customers' | 'health' | 'reports'>('dashboard');
   const [selectedConsoleUser, setSelectedConsoleUser] = useState<ActiveUser | null>(null);
   const [customerSearch, setCustomerSearch] = useState<string>('');
   const [filterPlan, setFilterPlan] = useState<string>('all');
   const [filterRisk, setFilterRisk] = useState<string>('all');
-  const [workspaceMode, setWorkspaceMode] = useState<'successhub' | 'grid' | 'live_data'>('successhub');
-  const [inspectorUserId, setInspectorUserId] = useState<string>('');
+  const [workspaceMode, setWorkspaceMode] = useState<'successhub' | 'grid'>('successhub');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showOutageAlertModal, setShowOutageAlertModal] = useState(false);
@@ -120,17 +117,6 @@ export function ConsolePage(props: any) {
                     <span>Dashboard</span>
                   </button>
                   <button 
-                    onClick={() => { setConsoleTab('live_stream'); setSelectedConsoleUser(null); }}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
-                      consoleTab === 'live_stream'
-                        ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
-                        : 'hover:bg-earth-sage/10'
-                    }`}
-                  >
-                    <Radio className="w-4 h-4 text-earth-clay" />
-                    <span>Live Stream</span>
-                  </button>
-                  <button 
                     onClick={() => { setConsoleTab('customers'); setSelectedConsoleUser(null); }}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
                       consoleTab === 'customers'
@@ -202,19 +188,7 @@ export function ConsolePage(props: any) {
                     Grid
                   </button>
                   
-                  <button 
-                    onClick={() => {
-                      setWorkspaceMode('live_data');
-                      if (users[0]) setInspectorUserId(users[0].id);
-                    }}
-                    className={`cursor-pointer transition-all hover:text-earth-clay pb-1 ${
-                      workspaceMode === 'live_data' 
-                        ? 'text-earth-clay border-b-2 border-earth-clay font-black' 
-                        : 'text-earth-cocoa/65'
-                    }`}
-                  >
-                    Live Data
-                  </button>
+
                 </div>
                 
                 <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -387,10 +361,6 @@ export function ConsolePage(props: any) {
               </div>
               {workspaceMode === 'grid' ? (
                 <GridView filteredConsoleUsers={filteredConsoleUsers} customerSearch={customerSearch} setCustomerSearch={setCustomerSearch} filterPlan={filterPlan} setFilterPlan={setFilterPlan} filterRisk={filterRisk} setFilterRisk={setFilterRisk} setSelectedConsoleUser={setSelectedConsoleUser} setConsoleTab={setConsoleTab} setWorkspaceMode={setWorkspaceMode} />
-              ) : workspaceMode === 'live_data' ? (
-                <LiveDataView telemetryFeed={telemetryFeed} setTelemetryFeed={setTelemetryFeed} outageRate={outageRate} billingFailureRate={billingFailureRate} users={users} inspectorUserId={inspectorUserId} setInspectorUserId={setInspectorUserId} />
-              ) : consoleTab === 'live_stream' ? (
-                <LiveStreamTab />
               ) : consoleTab === 'dashboard' ? (
                 <DashboardTab dist={dist} expScore={expScore} expLabel={expLabel} />
               ) : consoleTab === 'customers' ? (
@@ -408,7 +378,15 @@ export function ConsolePage(props: any) {
       {showOutageAlertModal && (
         <OutageAlertModal
           onClose={() => setShowOutageAlertModal(false)}
-          onNavigate={(tab) => { setShowOutageAlertModal(false); setConsoleTab(tab); }}
+          onNavigate={(tab) => {
+            setShowOutageAlertModal(false);
+            if (tab === 'grid') {
+              setConsoleTab('dashboard');
+              setWorkspaceMode('grid');
+            } else {
+              setConsoleTab(tab);
+            }
+          }}
         />
       )}
     </>
