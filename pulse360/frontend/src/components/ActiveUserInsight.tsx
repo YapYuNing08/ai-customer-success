@@ -465,7 +465,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             </span>
           </div>
           <p className="text-xs console-text-secondary leading-relaxed">
-            Each factor below shows how much it is pushing this customer toward leaving (red) or helping keep them around (green), compared with a typical customer.
+            The factors below show what is causing this customer to consider leaving (red) versus what is keeping them happy and loyal (green).
           </p>
 
           <div className="flex flex-col gap-4 my-2">
@@ -480,25 +480,20 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                     </span>
                   </div>
                   {/* Slider bar */}
-                  <div className="w-full h-2 bg-earth-cocoa/15 rounded-full relative overflow-hidden">
+                  <div className="w-full h-2 bg-earth-cocoa/10 rounded-full overflow-hidden">
                     <div
-                      className={`h-full absolute rounded-full ${isPositive ? 'bg-status-critical right-1/2 left-auto' : 'bg-status-healthy left-1/2 right-auto'}`}
-                      style={
-                        isPositive 
-                          ? { left: '50%', width: `${factor.impact * 2}%` } 
-                          : { right: '50%', width: `${Math.abs(factor.impact) * 2}%` }
-                      }
+                      className={`h-full rounded-full ${isPositive ? 'bg-status-critical' : 'bg-status-healthy'}`}
+                      style={{ width: `${Math.min(100, Math.abs(factor.impact) * 2)}%` }}
                     />
-                    <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-earth-cocoa/30" /> {/* Center line */}
                   </div>
                 </div>
               );
             })}
           </div>
 
-          <div className="console-card-dark-inner rounded-lg p-3 text-[10px] console-text-muted flex justify-between">
-            <span>&larr; Helping keep this customer</span>
-            <span>Pushing them toward leaving &rarr;</span>
+          <div className="console-card-dark-inner rounded-lg p-3 text-[10px] console-text-muted flex justify-between items-center">
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-status-healthy" /> Green = Helps retain this customer</span>
+            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-status-critical" /> Red = Increases cancellation risk</span>
           </div>
         </div>
 
