@@ -6,7 +6,7 @@ import { PortalNotificationModal } from '../components/modals/PortalNotification
 export function ClientDashboardPage(props: any) {
   const { users, clientUserId, setClientUserId, handleClientAction, addTelemetry, setCurrentPage } = props;
   const [chatbotMessages, setChatbotMessages] = useState<{ sender: 'user' | 'bot'; text: string }[]>([
-    { sender: 'bot', text: "Hello! I'm your SubSentry AI assistant. Ask me anything about your mobile plan, billing renewal, data usage, or roaming add-ons!" }
+    { sender: 'bot', text: "Hello! I'm your CelcomDigi AI assistant. Ask me anything about your mobile plan, billing renewal, data usage, or roaming add-ons!" }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [onboardingSteps, setOnboardingSteps] = useState([
@@ -22,16 +22,16 @@ export function ClientDashboardPage(props: any) {
 
   return (
     <>
-      <div className="w-full max-w-7xl mx-auto px-6 py-12 text-left flex flex-col gap-8 animate-fadeIn bg-earth-bg min-h-[calc(100vh-80px)]">
+      <div className="w-full max-w-7xl mx-auto px-6 py-12 text-left flex flex-col gap-8 animate-fadeIn bg-[#f4f7fa] min-h-[calc(100vh-80px)] font-sans">
         {/* Header section */}
-        <div className="flex justify-between items-center border-b pb-4 border-earth-sage/35">
+        <div className="flex justify-between items-center border-b pb-4 border-slate-300/60">
           <div>
-            <span className="text-xs uppercase font-bold text-earth-clay tracking-wider">Subscriber Portal</span>
-            <h2 className="text-3xl font-extrabold mt-1 text-earth-cocoa font-serif">Client Self-Service Console</h2>
+            <span className="text-xs uppercase font-bold text-[#0064DC] tracking-wider">Subscriber Portal</span>
+            <h2 className="text-3xl font-extrabold mt-1 text-[#001871] font-serif">CelcomDigi Customer Console</h2>
           </div>
           <button 
             onClick={() => setCurrentPage('marketing')}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold border transition-all duration-200 cursor-pointer bg-earth-cocoa border-earth-cocoa/20 text-earth-bg hover:bg-earth-clay"
+            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 cursor-pointer bg-[#001871] text-white hover:bg-[#0064DC] shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Overview</span>
@@ -39,17 +39,17 @@ export function ClientDashboardPage(props: any) {
         </div>
 
         {/* Profile Switcher dropdown */}
-        <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
+        <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
           <div className="flex-1">
-            <h3 className="text-sm font-bold text-earth-cocoa">Switch Client View (CSM Sandbox Tool)</h3>
-            <p className="text-xs text-earth-cocoa/75 mt-1">
+            <h3 className="text-sm font-bold text-[#001871]">Switch Client View (CSM Sandbox Tool)</h3>
+            <p className="text-xs text-slate-600 mt-1">
               Change active customer profiles to preview different billing or underutilization states.
             </p>
           </div>
           <select
             value={clientUserId}
             onChange={(e) => setClientUserId(e.target.value)}
-            className="bg-earth-bg border border-earth-sage/35 rounded-lg p-2 text-xs text-earth-cocoa font-bold outline-none cursor-pointer focus:border-earth-clay min-w-[200px]"
+            className="bg-slate-50 border border-slate-300 rounded-lg p-2 text-xs text-slate-800 font-bold outline-none cursor-pointer focus:border-[#0064DC] min-w-[200px]"
           >
             {users.map(u => (
               <option key={u.id} value={u.id}>{u.name} ({u.plan})</option>
@@ -64,44 +64,44 @@ export function ClientDashboardPage(props: any) {
           <div className="flex flex-col md:flex-row gap-6 w-full items-stretch">
             
             {/* Profile Card */}
-            <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col justify-between flex-1 shadow-sm text-left">
+            <div className="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between flex-1 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
               <div>
-                <span className="text-xs uppercase font-bold text-earth-clay tracking-wider">Account Identity</span>
+                <span className="text-xs uppercase font-bold text-[#0064DC] tracking-wider">Account Identity</span>
                 <div className="flex items-center gap-4 mt-3">
                   <img 
                     src={loggedInUser?.avatar} 
                     alt={loggedInUser?.name} 
-                    className="w-14 h-14 rounded-full border border-earth-sage/40 object-cover bg-white shrink-0" 
+                    className="w-14 h-14 rounded-full border border-slate-200 object-cover bg-white shrink-0" 
                   />
                   <div>
-                    <h3 className="font-extrabold text-earth-cocoa text-base leading-tight">
+                    <h3 className="font-extrabold text-[#001871] text-base leading-tight">
                       {loggedInUser?.name}
                     </h3>
-                    <span className="text-xs text-earth-cocoa/65 mt-1 block">
+                    <span className="text-xs text-slate-600 mt-1 block">
                       {loggedInUser?.email}
                     </span>
-                    <span className="text-xs text-earth-cocoa/50 mt-0.5 block">
+                    <span className="text-xs text-slate-500 mt-0.5 block">
                       {loggedInUser?.location}
                     </span>
                   </div>
                 </div>
               </div>
 
-              <div className="border-t border-earth-sage/20 pt-4 flex flex-col gap-2 mt-4 font-bold">
+              <div className="border-t border-slate-100 pt-4 flex flex-col gap-2 mt-4 font-bold">
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-earth-cocoa/65">Subscription Plan:</span>
-                  <span className="font-extrabold text-earth-cocoa uppercase tracking-wider text-xs bg-earth-bg border border-earth-sage/20 px-2 py-0.5 rounded-full">
+                  <span className="text-slate-600">Subscription Plan:</span>
+                  <span className="font-extrabold text-[#001871] uppercase tracking-wider text-xs bg-slate-50 border border-slate-200 px-2.5 py-0.5 rounded-full">
                     {loggedInUser?.plan} Plan
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-earth-cocoa/65">Monthly Contract MRR:</span>
-                  <span className="font-bold text-earth-clay">
+                  <span className="text-slate-600">Monthly Contract MRR:</span>
+                  <span className="font-bold text-[#0064DC]">
                     ${loggedInUser?.mrr}/mo
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
-                  <span className="text-earth-cocoa/65">Billing Status:</span>
+                  <span className="text-slate-600">Billing Status:</span>
                   <span className={`text-xs px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
                     hasFailedPayment
                       ? 'bg-status-critical/15 border border-status-critical/30 text-status-critical'
@@ -114,20 +114,20 @@ export function ClientDashboardPage(props: any) {
             </div>
 
             {/* Usage statistics card */}
-            <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col justify-between flex-1 shadow-sm text-left">
+            <div className="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between flex-1 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
               <div>
-                <span className="text-xs uppercase font-bold text-earth-clay tracking-wider">Data Thresholds</span>
+                <span className="text-xs uppercase font-bold text-[#0064DC] tracking-wider">Data Thresholds</span>
                 <div className="flex flex-col gap-2 mt-4">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="font-bold text-earth-cocoa/75 uppercase tracking-wider">Monthly Bandwidth Used</span>
-                    <span className="font-extrabold text-earth-clay">
+                    <span className="font-bold text-[#001871] uppercase tracking-wider">Monthly Bandwidth Used</span>
+                    <span className="font-extrabold text-[#0064DC]">
                       {Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%
                     </span>
                   </div>
-                  <div className="w-full bg-earth-cocoa/10 rounded-full h-2">
+                  <div className="w-full bg-slate-100 rounded-full h-2">
                     <div 
                       className={`h-2 rounded-full transition-all duration-500 ${
-                        (loggedInUser?.metrics.usageVelocity || 0) < 0.35 ? 'bg-status-risk' : 'bg-[#276B2B]'
+                        (loggedInUser?.metrics.usageVelocity || 0) < 0.35 ? 'bg-status-risk' : 'bg-[#0064DC]'
                       }`}
                       style={{ width: `${Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%` }}
                     />
@@ -135,17 +135,17 @@ export function ClientDashboardPage(props: any) {
                 </div>
               </div>
 
-              <div className="border-t border-earth-sage/20 pt-4 flex flex-col gap-2 mt-4 text-xs font-bold text-earth-cocoa/85">
+              <div className="border-t border-slate-100 pt-4 flex flex-col gap-2 mt-4 text-xs font-bold text-slate-700">
                 <div className="flex justify-between">
-                  <span className="text-earth-cocoa/65">Data Used:</span>
+                  <span className="text-slate-500">Data Used:</span>
                   <span>{Math.round((loggedInUser?.metrics.usageVelocity || 0) * 50)} GB / 50 GB</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-earth-cocoa/65">Call Minutes:</span>
+                  <span className="text-slate-500">Call Minutes:</span>
                   <span>420 min / 500 min</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-earth-cocoa/65">Assigned Seats:</span>
+                  <span className="text-slate-500">Assigned Seats:</span>
                   <span>{loggedInUser?.plan === 'Starter' ? '3 / 5' : loggedInUser?.plan === 'Growth' ? '14 / 20' : '45 / Unlimited'}</span>
                 </div>
               </div>
@@ -159,9 +159,9 @@ export function ClientDashboardPage(props: any) {
             {/* Module 1: Self-Service & Onboarding */}
             <div className="flex flex-col gap-6 w-full">
               {/* Onboarding Checklist Card */}
-              <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm text-left flex-1 justify-between">
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all text-left flex-1 justify-between">
                 <div>
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-earth-clay">AI ONBOARDING CHECKLIST</span>
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">AI ONBOARDING CHECKLIST</span>
                   <div className="flex flex-col gap-2 mt-3">
                     {onboardingSteps.map((step) => {
                       const isAutopay = step.id === 'autopay';
@@ -189,12 +189,12 @@ export function ClientDashboardPage(props: any) {
                               setOnboardingSteps(prev => prev.map(s => s.id === step.id ? { ...s, done: !s.done } : s));
                             }
                           }}
-                          className="flex items-center gap-2.5 text-xs text-earth-cocoa font-bold text-left cursor-pointer hover:bg-earth-sage/10 p-1.5 rounded-xl transition-all w-full"
+                          className="flex items-center gap-2.5 text-xs text-[#001871] font-bold text-left cursor-pointer hover:bg-slate-50 p-1.5 rounded-xl transition-all w-full"
                         >
                           <span className={`w-4.5 h-4.5 rounded-lg border flex items-center justify-center font-bold text-xs shrink-0 ${
                             isDone 
-                              ? 'bg-[#276B2B] text-earth-bg border-[#276B2B]' 
-                              : 'border-earth-sage bg-earth-bg/50'
+                              ? 'bg-[#0064DC] text-white border-[#0064DC]' 
+                              : 'border-slate-300 bg-slate-50'
                           }`}>
                             {isDone ? '✓' : ''}
                           </span>
@@ -206,19 +206,19 @@ export function ClientDashboardPage(props: any) {
                     })}
                   </div>
                 </div>
-                <span className="text-xs text-earth-cocoa/50 mt-3 leading-tight block">
+                <span className="text-xs text-slate-500 mt-3 leading-tight block">
                   💡 Click items to complete onboarding. Setup Auto-pay resolves payment warnings instantly.
                 </span>
               </div>
 
               {/* Add-on deals card */}
-              <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm text-left justify-between min-h-[170px]">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-earth-clay">PERSONALIZED ADD-ON DEALS</span>
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all text-left justify-between min-h-[170px]">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">PERSONALIZED ADD-ON DEALS</span>
                 <div className="flex flex-col gap-3 mt-1.5">
-                  <div className="flex justify-between items-center border-b border-earth-sage/10 pb-2">
+                  <div className="flex justify-between items-center border-b border-slate-100 pb-2">
                     <div className="flex flex-col">
-                      <span className="text-xs font-extrabold text-earth-cocoa">Roaming Pass</span>
-                      <span className="text-xs text-earth-cocoa/65">APAC & Europe • $15/mo</span>
+                      <span className="text-xs font-extrabold text-[#001871]">Roaming Pass</span>
+                      <span className="text-xs text-slate-500">APAC & Europe • $15/mo</span>
                     </div>
                     <button 
                       onClick={() => {
@@ -233,7 +233,7 @@ export function ClientDashboardPage(props: any) {
                           type: 'success'
                         });
                       }}
-                      className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs px-2.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
+                      className="bg-[#001871] hover:bg-[#0064DC] text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap shadow-sm"
                     >
                       Buy Pass
                     </button>
@@ -241,8 +241,8 @@ export function ClientDashboardPage(props: any) {
 
                   <div className="flex justify-between items-center">
                     <div className="flex flex-col">
-                      <span className="text-xs font-extrabold text-earth-cocoa">5G Extra Quota</span>
-                      <span className="text-xs text-earth-cocoa/65">+10 GB High-Speed • $10/mo</span>
+                      <span className="text-xs font-extrabold text-[#001871]">5G Extra Quota</span>
+                      <span className="text-xs text-slate-500">+10 GB High-Speed • $10/mo</span>
                     </div>
                     <button 
                       onClick={() => {
@@ -257,7 +257,7 @@ export function ClientDashboardPage(props: any) {
                           type: 'success'
                         });
                       }}
-                      className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs px-2.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
+                      className="bg-[#001871] hover:bg-[#0064DC] text-white font-bold text-xs px-3.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap shadow-sm"
                     >
                       Buy Data
                     </button>
@@ -269,17 +269,17 @@ export function ClientDashboardPage(props: any) {
             {/* Module 2: AI Plan Optimization Suggestions & Logs */}
             <div className="flex flex-col gap-6 w-full">
               {/* Suggestions block */}
-              <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm text-left justify-between flex-1">
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3 shadow-sm hover:border-[#0064DC]/20 transition-all text-left justify-between flex-1">
                 <div>
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-earth-clay">AI PLAN OPTIMIZATION</span>
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">AI PLAN OPTIMIZATION</span>
                   
                   {((loggedInUser?.metrics.usageVelocity || 0) < 0.35 && loggedInUser?.plan !== 'Starter') || hasFailedPayment ? (
                     <div className="flex flex-col gap-3 mt-3">
                       {/* Case A: Underutilization */}
                       {(loggedInUser?.metrics.usageVelocity || 0) < 0.35 && loggedInUser?.plan !== 'Starter' && (
-                        <div className="bg-status-healthy/10 border border-[#276B2B]/20 p-3.5 rounded-xl flex flex-col gap-2">
-                          <span className="text-xs font-extrabold text-[#276B2B] uppercase">Saving Opportunity</span>
-                          <p className="text-xs text-earth-cocoa leading-relaxed">
+                        <div className="bg-[#FFD400]/10 border border-[#FFD400]/45 p-3.5 rounded-xl flex flex-col gap-2">
+                          <span className="text-xs font-extrabold text-[#001871] uppercase">Saving Opportunity</span>
+                          <p className="text-xs text-[#001871] leading-relaxed">
                             Usage is at {Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%. Downgrade to **Starter Plan** to save **${downgradeSavings(loggedInUser?.mrr || 0).toLocaleString()}/mo**.
                           </p>
                           <button 
@@ -291,7 +291,7 @@ export function ClientDashboardPage(props: any) {
                                 type: 'success'
                               });
                             }}
-                            className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-xs py-1.5 rounded-lg transition-all w-full cursor-pointer text-center"
+                            className="bg-[#FFD400] hover:bg-[#e6be00] text-slate-900 font-extrabold text-xs py-1.5 rounded-lg transition-all w-full cursor-pointer text-center shadow-sm"
                           >
                             Downgrade plan to save
                           </button>
@@ -302,7 +302,7 @@ export function ClientDashboardPage(props: any) {
                       {hasFailedPayment && (
                         <div className="bg-status-critical/10 border border-status-critical/30 p-3.5 rounded-xl flex flex-col gap-2">
                           <span className="text-xs font-extrabold text-status-critical uppercase">Payment Grace alert</span>
-                          <p className="text-xs text-earth-cocoa leading-relaxed">
+                          <p className="text-xs text-slate-800 leading-relaxed">
                             Transaction declined. Request a **7-day grace extension** to prevent service lock.
                           </p>
                           <button 
@@ -314,7 +314,7 @@ export function ClientDashboardPage(props: any) {
                                 type: 'success'
                               });
                             }}
-                            className="bg-status-critical hover:bg-[#8F2618] text-earth-bg font-extrabold text-xs py-1.5 rounded-lg transition-all w-full cursor-pointer text-center"
+                            className="bg-status-critical hover:bg-red-700 text-white font-extrabold text-xs py-1.5 rounded-lg transition-all w-full cursor-pointer text-center shadow-sm"
                           >
                             Request 7-Day Extension
                           </button>
@@ -322,27 +322,27 @@ export function ClientDashboardPage(props: any) {
                       )}
                     </div>
                   ) : (
-                    <div className="bg-[#276B2B]/5 border border-[#276B2B]/20 p-5 rounded-2xl flex flex-col gap-2.5 mt-3">
-                      <span className="text-xs font-extrabold uppercase tracking-wider text-[#276B2B]">System Status: Stable</span>
-                      <p className="text-xs text-earth-cocoa/95 leading-relaxed">
+                    <div className="bg-[#0064DC]/5 border border-[#0064DC]/20 p-5 rounded-2xl flex flex-col gap-2.5 mt-3">
+                      <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">System Status: Stable</span>
+                      <p className="text-xs text-slate-700 leading-relaxed">
                         All systems operating optimally. Your plan settings perfectly align with current usage telemetry limits.
                       </p>
                     </div>
                   )}
                 </div>
-                <span className="text-xs text-earth-cocoa/50 mt-3 leading-tight block">
+                <span className="text-xs text-slate-500 mt-3 leading-tight block">
                   💡 Optimization recommendation algorithm auto-syncs every 60 seconds to right-size contracts.
                 </span>
               </div>
 
               {/* Service Log Ticker */}
-              <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm text-left min-h-[170px] justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-earth-cocoa/65">YOUR RECENT ACCOUNT HISTORY LOG</span>
-                <div className="flex-1 flex flex-col gap-2 overflow-y-auto mt-2 max-h-[100px] border border-earth-sage/10 rounded-xl p-2 bg-earth-bg/30">
+              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3 shadow-sm hover:border-[#0064DC]/20 transition-all text-left min-h-[170px] justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-600">YOUR RECENT ACCOUNT HISTORY LOG</span>
+                <div className="flex-1 flex flex-col gap-2 overflow-y-auto mt-2 max-h-[100px] border border-slate-200 rounded-xl p-2 bg-slate-50">
                   {(loggedInUser?.activityLogs || []).map((log, idx) => (
-                    <div key={idx} className="flex gap-2 text-xs text-earth-cocoa/80 items-start">
-                      <span className="font-bold text-earth-sage shrink-0">{log.date}</span>
-                      <span className="text-earth-cocoa/30 shrink-0">|</span>
+                    <div key={idx} className="flex gap-2 text-xs text-slate-700 items-start">
+                      <span className="font-bold text-[#0064DC] shrink-0">{log.date}</span>
+                      <span className="text-slate-300 shrink-0">|</span>
                       <span className="text-left flex-1 leading-normal">{log.details}</span>
                     </div>
                   ))}
@@ -351,10 +351,10 @@ export function ClientDashboardPage(props: any) {
             </div>
 
             {/* Module 3: AI Chatbot Assistant */}
-            <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm h-full justify-between text-left min-h-[380px]">
-              <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
-                <span className="text-xs font-extrabold uppercase tracking-wider text-earth-clay">AI PLAN ASSISTANT CHATBOT</span>
-                <span className="w-2 h-2 rounded-full bg-[#276B2B] animate-pulse" />
+            <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all h-full justify-between text-left min-h-[380px]">
+              <div className="flex justify-between items-center border-b border-slate-200 pb-2">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">AI PLAN ASSISTANT CHATBOT</span>
+                <span className="w-2 h-2 rounded-full bg-[#0064DC] animate-pulse" />
               </div>
 
               <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 py-2 font-sans pr-1 text-xs max-h-[250px]">
@@ -363,8 +363,8 @@ export function ClientDashboardPage(props: any) {
                     key={idx} 
                     className={`p-2.5 rounded-2xl max-w-[85%] leading-relaxed ${
                       msg.sender === 'user' 
-                        ? 'bg-earth-cocoa text-earth-bg ml-auto rounded-tr-none shadow-sm' 
-                        : 'bg-earth-bg/75 text-earth-cocoa mr-auto rounded-tl-none border border-earth-sage/15 shadow-sm'
+                        ? 'bg-[#0064DC] text-white ml-auto rounded-tr-none shadow-sm' 
+                        : 'bg-slate-100 text-[#001871] mr-auto rounded-tl-none border border-slate-200/80 shadow-sm'
                     }`}
                   >
                     {msg.text}
@@ -398,18 +398,18 @@ export function ClientDashboardPage(props: any) {
                     setChatbotMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
                   }, 500);
                 }}
-                className="flex gap-2 border-t border-earth-sage/20 pt-2.5"
+                className="flex gap-2 border-t border-slate-200 pt-2.5"
               >
                 <input 
                   type="text" 
                   placeholder="Ask about plan, billing, roaming..." 
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
-                  className="flex-1 bg-earth-bg border border-earth-sage/35 rounded-xl px-3 py-2 text-xs text-earth-cocoa font-bold outline-none focus:border-earth-clay placeholder-earth-cocoa/50"
+                  className="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-800 font-bold outline-none focus:border-[#0064DC] placeholder-slate-400"
                 />
                 <button 
                   type="submit"
-                  className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-xs px-3.5 rounded-xl transition-all cursor-pointer shadow-sm"
+                  className="bg-[#001871] hover:bg-[#0064DC] text-white font-extrabold text-xs px-4 rounded-xl transition-all cursor-pointer shadow-sm"
                 >
                   Send
                 </button>
