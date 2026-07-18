@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { 
   ShieldCheck, Play, Pause, Settings, Radio, ArrowDown, ChevronRight, 
   MessageSquare, Cpu, HeartHandshake, ArrowLeft, LayoutDashboard,
-  Users, Heart, FileText, Search, Bell, Clock, RefreshCw, CreditCard
+  Users, Heart, FileText, Search, Bell, Clock, RefreshCw, CreditCard,
+  Activity, ShieldAlert
 } from 'lucide-react';
 import { mockUsers, mergeBackendCustomer, type ActiveUser } from './utils/mockData';
 import { Globe } from './components/Globe';
@@ -11,9 +12,13 @@ import { getCustomers } from './lib/api';
 
 function App() {
   const [currentPage, setCurrentPage] = useState<'marketing' | 'client_console' | 'client_dashboard' | 'insight'>('marketing');
+  const [consoleTab, setConsoleTab] = useState<'dashboard' | 'live_stream' | 'customers' | 'health'>('live_stream');
   const [users, setUsers] = useState<ActiveUser[]>(mockUsers);
   const [selectedUser, setSelectedUser] = useState<ActiveUser | null>(null);
   const [clientUserId, setClientUserId] = useState<string>('1');
+  const [customerSearch, setCustomerSearch] = useState<string>('');
+  const [filterPlan, setFilterPlan] = useState<string>('all');
+  const [filterRisk, setFilterRisk] = useState<string>('all');
 
   // Fetch live customer summaries from FastAPI backend
   useEffect(() => {
@@ -272,6 +277,18 @@ function App() {
   const totalMRR = users.reduce((acc, u) => acc + u.mrr, 0);
   const criticalCount = users.filter(u => u.healthScore < 40).length;
 
+  const filteredConsoleUsers = users.filter(u => {
+    const matchesSearch = u.name.toLowerCase().includes(customerSearch.toLowerCase()) || 
+                          u.email.toLowerCase().includes(customerSearch.toLowerCase()) ||
+                          u.location.toLowerCase().includes(customerSearch.toLowerCase());
+    const matchesPlan = filterPlan === 'all' || u.plan.toLowerCase() === filterPlan.toLowerCase();
+    const matchesRisk = filterRisk === 'all' || 
+                        (filterRisk === 'high' && u.churnProbability > 50) ||
+                        (filterRisk === 'medium' && u.churnProbability <= 50 && u.churnProbability > 15) ||
+                        (filterRisk === 'low' && u.churnProbability <= 15);
+    return matchesSearch && matchesPlan && matchesRisk;
+  });
+
   const isDark = currentPage === 'console' || currentPage === 'insight';
   const textMuted = isDark ? 'console-text-muted' : 'text-earth-cocoa/60';
   const textSecondary = isDark ? 'console-text-secondary' : 'text-earth-cocoa/80';
@@ -393,23 +410,51 @@ function App() {
                 </div>
                 
                 <nav className="flex flex-col gap-2.5 mt-4 text-xs font-bold text-earth-cocoa/75">
-                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-earth-sage/10 text-left cursor-pointer">
+                  <button 
+                    onClick={() => setConsoleTab('dashboard')}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
+                      consoleTab === 'dashboard'
+                        ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
+                        : 'hover:bg-earth-sage/10'
+                    }`}
+                  >
                     <LayoutDashboard className="w-4 h-4 text-earth-clay" />
                     <span>Dashboard</span>
                   </button>
-                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage text-left cursor-pointer">
+                  <button 
+                    onClick={() => setConsoleTab('live_stream')}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
+                      consoleTab === 'live_stream'
+                        ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
+                        : 'hover:bg-earth-sage/10'
+                    }`}
+                  >
                     <Radio className="w-4 h-4 text-earth-clay" />
                     <span>Live Stream</span>
                   </button>
-                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-earth-sage/10 text-left cursor-pointer">
+                  <button 
+                    onClick={() => setConsoleTab('customers')}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
+                      consoleTab === 'customers'
+                        ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
+                        : 'hover:bg-earth-sage/10'
+                    }`}
+                  >
                     <Users className="w-4 h-4 text-earth-clay" />
                     <span>Customers</span>
                   </button>
-                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-earth-sage/10 text-left cursor-pointer">
+                  <button 
+                    onClick={() => setConsoleTab('health')}
+                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
+                      consoleTab === 'health'
+                        ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
+                        : 'hover:bg-earth-sage/10'
+                    }`}
+                  >
                     <Heart className="w-4 h-4 text-earth-clay" />
                     <span>Health</span>
                   </button>
-                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-earth-sage/10 text-left cursor-pointer">
+                  <button className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-earth-sage/10 text-left cursor-pointer opacity-50 cursor-not-allowed">
                     <FileText className="w-4 h-4 text-earth-clay" />
                     <span>Reports</span>
                   </button>
@@ -451,261 +496,815 @@ function App() {
                   <img src={users[0]?.avatar} className="w-6 h-6 rounded-full border border-earth-sage/40 object-cover" />
                 </div>
               </div>
-
-              {/* Title & Subtitle block */}
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full">
-                <div>
-                  <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight">Client Experience Console</h1>
-                  <p className="text-xs text-earth-cocoa/75 mt-1 max-w-xl">
-                    Real-time transparency into your end-user ecosystem. Track sentiment, health, and automated system wins.
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 text-xs font-bold shrink-0">
-                  <div className="bg-[#276B2B]/15 border border-[#276B2B]/30 rounded-lg px-3 py-1.5 text-status-healthy flex items-center gap-1.5">
-                    <span className="w-2 h-2 rounded-full bg-status-healthy animate-pulse" />
-                    <span>System Live</span>
-                  </div>
-                  <div className="bg-earth-cocoa border border-earth-cocoa text-earth-bg rounded-lg px-3 py-1.5 flex items-center gap-1.5">
-                    <Clock className="w-3.5 h-3.5" />
-                    <span>Last 24 Hours</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Grid Layout for dashboard items */}
-              <div className="grid grid-cols-1 md:grid-cols-12 gap-6 w-full items-stretch">
-                
-                {/* Left side column: Live Experience Stream & Heatmap (Span 7) */}
-                <div className="md:col-span-7 flex flex-col gap-6 w-full">
-                  
-                  {/* Card 1: Live Experience Stream */}
-                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
-                    <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
-                      <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">LIVE EXPERIENCE STREAM</span>
-                      <span className="text-[10px] font-bold text-earth-sage uppercase">Active Users: 1,422</span>
+              {consoleTab === 'live_stream' ? (
+                <>
+                  {/* Title & Subtitle block */}
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full">
+                    <div>
+                      <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight">Client Experience Console</h1>
+                      <p className="text-xs text-earth-cocoa/75 mt-1 max-w-xl">
+                        Real-time transparency into your end-user ecosystem. Track sentiment, health, and automated system wins.
+                      </p>
                     </div>
-
-                    <div className="flex flex-col gap-3">
-                      {/* Item 1 */}
-                      <div className="border border-earth-sage/20 bg-earth-bg/30 p-3.5 rounded-xl flex gap-3.5 items-start">
-                        <div className="bg-earth-sage/25 p-1.5 rounded-lg text-earth-cocoa shrink-0">
-                          <Users className="w-4 h-4 text-earth-clay" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-baseline">
-                            <h4 className="text-xs font-bold text-earth-cocoa">User #8821 initiated Checkout</h4>
-                            <span className="text-[9px] text-earth-cocoa/50">Just now</span>
-                          </div>
-                          <p className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
-                            Cart Value: $248.00 • High Intent Score detected
-                          </p>
-                        </div>
+                    <div className="flex items-center gap-3 text-xs font-bold shrink-0">
+                      <div className="bg-[#276B2B]/15 border border-[#276B2B]/30 rounded-lg px-3 py-1.5 text-status-healthy flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-status-healthy animate-pulse" />
+                        <span>System Live</span>
                       </div>
-
-                      {/* Item 2 */}
-                      <div className="border border-earth-sage/20 bg-earth-bg/30 p-3.5 rounded-xl flex gap-3.5 items-start">
-                        <div className="bg-earth-sage/25 p-1.5 rounded-lg text-earth-cocoa shrink-0">
-                          <Cpu className="w-4 h-4 text-earth-clay animate-pulse" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-baseline">
-                            <h4 className="text-xs font-bold text-earth-cocoa">Automated Support Intervention</h4>
-                            <span className="text-[9px] text-earth-cocoa/50">2m ago</span>
-                          </div>
-                          <p className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
-                            Resolved potential churn event for Client 'Atlas Corp'. Sentiment recovered to 85%.
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Item 3 */}
-                      <div className="border border-earth-sage/20 bg-earth-bg/30 p-3.5 rounded-xl flex gap-3.5 items-start">
-                        <div className="bg-earth-sage/25 p-1.5 rounded-lg text-earth-cocoa shrink-0">
-                          <FileText className="w-4 h-4 text-earth-clay" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-baseline">
-                            <h4 className="text-xs font-bold text-earth-cocoa">Page View: Documentation Portal</h4>
-                            <span className="text-[9px] text-earth-cocoa/50">5m ago</span>
-                          </div>
-                          <p className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
-                            User searching for 'API Keys'. Interaction duration: 4m 12s.
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Item 4 */}
-                      <div className="border border-earth-sage/20 bg-earth-bg/30 p-3.5 rounded-xl flex gap-3.5 items-start">
-                        <div className="bg-earth-sage/25 p-1.5 rounded-lg text-earth-cocoa shrink-0">
-                          <CreditCard className="w-4 h-4 text-earth-clay" />
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex justify-between items-baseline">
-                            <h4 className="text-xs font-bold text-earth-cocoa">Conversion: Premium Plan Upgrade</h4>
-                            <span className="text-[9px] text-earth-cocoa/50">8m ago</span>
-                          </div>
-                          <p className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
-                            Client 'Stellar Inc' upgraded seats from 50 to 100.
-                          </p>
-                        </div>
+                      <div className="bg-earth-cocoa border border-earth-cocoa text-earth-bg rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>Last 24 Hours</span>
                       </div>
                     </div>
-
-                    <button className="self-center mt-2 bg-earth-cocoa hover:bg-earth-clay text-earth-bg px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all duration-200 cursor-pointer shadow-md">
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                      <span>Updating Live Stream</span>
-                    </button>
                   </div>
 
-                  {/* Card 2: Heatmap */}
-                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
-                    <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
-                      <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER SENTIMENT HEATMAP</span>
-                      <span className="text-[10px] font-bold text-earth-sage uppercase">Regional emotional response density</span>
-                    </div>
+                  {/* Grid Layout for dashboard items */}
+                  <div className="grid grid-cols-1 md:grid-cols-12 gap-6 w-full items-stretch">
                     
-                    <div className="relative rounded-xl border border-earth-sage/20 overflow-hidden h-[180px] bg-[#efe9d2]/25 flex items-center justify-center">
-                      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(90,111,84,0.08),transparent)]" />
+                    {/* Left side column: Live Experience Stream & Heatmap (Span 7) */}
+                    <div className="md:col-span-7 flex flex-col gap-6 w-full">
                       
-                      <div className="text-[10px] text-earth-cocoa/40 font-mono tracking-widest text-center select-none uppercase">
-                        [ Interactive Sentiment Globe Layer ]
+                      {/* Card 1: Live Experience Stream */}
+                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+                        <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">LIVE EXPERIENCE STREAM</span>
+                          <span className="text-[10px] font-bold text-earth-sage uppercase">Active Users: 1,422</span>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                          {/* Item 1 */}
+                          <div className="border border-earth-sage/20 bg-earth-bg/30 p-3.5 rounded-xl flex gap-3.5 items-start">
+                            <div className="bg-earth-sage/25 p-1.5 rounded-lg text-earth-cocoa shrink-0">
+                              <Users className="w-4 h-4 text-earth-clay" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex justify-between items-baseline">
+                                <h4 className="text-xs font-bold text-earth-cocoa">User #8821 initiated Checkout</h4>
+                                <span className="text-[9px] text-earth-cocoa/50">Just now</span>
+                              </div>
+                              <p className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
+                                Cart Value: $248.00 • High Intent Score detected
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Item 2 */}
+                          <div className="border border-earth-sage/20 bg-earth-bg/30 p-3.5 rounded-xl flex gap-3.5 items-start">
+                            <div className="bg-earth-sage/25 p-1.5 rounded-lg text-earth-cocoa shrink-0">
+                              <Cpu className="w-4 h-4 text-earth-clay animate-pulse" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex justify-between items-baseline">
+                                <h4 className="text-xs font-bold text-earth-cocoa">Automated Support Intervention</h4>
+                                <span className="text-[9px] text-earth-cocoa/50">2m ago</span>
+                              </div>
+                              <p className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
+                                Resolved potential churn event for Client 'Atlas Corp'. Sentiment recovered to 85%.
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Item 3 */}
+                          <div className="border border-earth-sage/20 bg-earth-bg/30 p-3.5 rounded-xl flex gap-3.5 items-start">
+                            <div className="bg-earth-sage/25 p-1.5 rounded-lg text-earth-cocoa shrink-0">
+                              <FileText className="w-4 h-4 text-earth-clay" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex justify-between items-baseline">
+                                <h4 className="text-xs font-bold text-earth-cocoa">Page View: Documentation Portal</h4>
+                                <span className="text-[9px] text-earth-cocoa/50">5m ago</span>
+                              </div>
+                              <p className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
+                                User searching for 'API Keys'. Interaction duration: 4m 12s.
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Item 4 */}
+                          <div className="border border-earth-sage/20 bg-earth-bg/30 p-3.5 rounded-xl flex gap-3.5 items-start">
+                            <div className="bg-earth-sage/25 p-1.5 rounded-lg text-earth-cocoa shrink-0">
+                              <CreditCard className="w-4 h-4 text-earth-clay" />
+                            </div>
+                            <div className="flex-1">
+                              <div className="flex justify-between items-baseline">
+                                <h4 className="text-xs font-bold text-earth-cocoa">Conversion: Premium Plan Upgrade</h4>
+                                <span className="text-[9px] text-earth-cocoa/50">8m ago</span>
+                              </div>
+                              <p className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
+                                Client 'Stellar Inc' upgraded seats from 50 to 100.
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <button className="self-center mt-2 bg-earth-cocoa hover:bg-earth-clay text-earth-bg px-5 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all duration-200 cursor-pointer shadow-md">
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Updating Live Stream</span>
+                        </button>
                       </div>
 
-                      {/* Tooltip Overlay */}
-                      <div className="absolute bottom-4 left-6 bg-earth-cocoa border border-earth-cocoa/30 p-3 rounded-xl text-left shadow-lg">
-                        <span className="text-[8px] uppercase tracking-wider text-earth-sage font-extrabold block">North America</span>
-                        <span className="text-xs font-extrabold text-earth-bg block mt-0.5">89% POSITIVE SENTIMENT</span>
+                      {/* Card 2: Heatmap */}
+                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+                        <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER SENTIMENT HEATMAP</span>
+                          <span className="text-[10px] font-bold text-earth-sage uppercase">Regional emotional response density</span>
+                        </div>
+                        
+                        <div className="relative rounded-xl border border-earth-sage/20 overflow-hidden h-[180px] bg-[#efe9d2]/25 flex items-center justify-center">
+                          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(90,111,84,0.08),transparent)]" />
+                          
+                          <div className="text-[10px] text-earth-cocoa/40 font-mono tracking-widest text-center select-none uppercase">
+                            [ Interactive Sentiment Globe Layer ]
+                          </div>
+
+                          {/* Tooltip Overlay */}
+                          <div className="absolute bottom-4 left-6 bg-earth-cocoa border border-earth-cocoa/30 p-3 rounded-xl text-left shadow-lg">
+                            <span className="text-[8px] uppercase tracking-wider text-earth-sage font-extrabold block">North America</span>
+                            <span className="text-xs font-extrabold text-earth-bg block mt-0.5">89% POSITIVE SENTIMENT</span>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* Right side column: Brand Health circular gauge & Automated wins (Span 5) */}
+                    <div className="md:col-span-5 flex flex-col gap-6 w-full">
+                      
+                      {/* Card 3: Brand Health Circular progress gauge */}
+                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col justify-between items-center text-center relative overflow-hidden shadow-sm h-fit">
+                        <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 text-left w-full">
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">BRAND HEALTH SCORE</span>
+                          <span className="text-[10px] font-bold text-earth-sage uppercase">Aggregate loyalty & performance index</span>
+                        </div>
+
+                        <div className="relative flex items-center justify-center my-6">
+                          <svg className="w-32 h-32 transform -rotate-90">
+                            <circle 
+                              cx="64" cy="64" r="54" 
+                              className="stroke-earth-cocoa/15" strokeWidth="10" fill="transparent" 
+                            />
+                            <circle 
+                              cx="64" cy="64" r="54" 
+                              className="stroke-earth-clay" strokeWidth="10" fill="transparent" 
+                              strokeDasharray={2 * Math.PI * 54}
+                              strokeDashoffset={2 * Math.PI * 54 * (1 - 0.92)}
+                              strokeLinecap="round"
+                            />
+                          </svg>
+                          <div className="absolute flex flex-col items-center">
+                            <span className="text-3xl font-black text-earth-cocoa">92</span>
+                            <span className="text-[8px] uppercase font-bold text-earth-cocoa/60">OUT OF 100</span>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 border-t border-earth-sage/20 pt-4 w-full">
+                          <div className="flex flex-col items-center">
+                            <span className="text-lg font-extrabold text-earth-cocoa">8.4k</span>
+                            <span className="text-[8px] text-earth-cocoa/50 font-bold uppercase tracking-wider">Active Users</span>
+                          </div>
+                          <div className="flex flex-col items-center">
+                            <span className="text-lg font-extrabold text-status-healthy">+12%</span>
+                            <span className="text-[8px] text-earth-cocoa/50 font-bold uppercase tracking-wider">MoM Growth</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Card 4: Automated Engagement Wins progress bars */}
+                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+                        <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full text-left">
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">AUTOMATED ENGAGEMENT WINS</span>
+                          <span className="text-[10px] font-bold text-earth-sage uppercase">Where the platform worked for you</span>
+                        </div>
+
+                        <div className="flex flex-col gap-4.5 text-left">
+                          {/* Item 1 */}
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <span className="font-bold text-earth-cocoa">Cart Recovery Bots</span>
+                              <span className="font-extrabold text-earth-clay">+$14.2k</span>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '72%' }} />
+                            </div>
+                            <div className="flex justify-between text-[8px] text-earth-cocoa/50 uppercase font-bold">
+                              <span>Progress</span>
+                              <span>72% Efficiency</span>
+                            </div>
+                          </div>
+
+                          {/* Item 2 */}
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <span className="font-bold text-earth-cocoa">Churn Prediction (AI)</span>
+                              <span className="font-extrabold text-earth-clay">112 Saved</span>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '45%' }} />
+                            </div>
+                            <div className="flex justify-between text-[8px] text-earth-cocoa/50 uppercase font-bold">
+                              <span>Progress</span>
+                              <span>45% Efficiency</span>
+                            </div>
+                          </div>
+
+                          {/* Item 3 */}
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <span className="font-bold text-earth-cocoa">Dynamic Pricing Engine</span>
+                              <span className="font-extrabold text-earth-clay">+4.5% Lift</span>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '89%' }} />
+                            </div>
+                            <div className="flex justify-between text-[8px] text-earth-cocoa/50 uppercase font-bold">
+                              <span>Progress</span>
+                              <span>89% Efficiency</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-[9px] italic text-earth-cocoa/60 text-center border-t border-earth-sage/10 pt-3 leading-normal">
+                          Platform automation handled 82% of all repetitive support events today.
+                        </p>
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  {/* Bottom stats bar: 4 items */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mt-2">
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-3 flex flex-col gap-1 shadow-sm">
+                      <span className="text-[8px] font-bold text-earth-cocoa/50 uppercase">API RESPONSE</span>
+                      <span className="text-xs font-black text-earth-cocoa">24ms</span>
+                    </div>
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-3 flex flex-col gap-1 shadow-sm">
+                      <span className="text-[8px] font-bold text-earth-cocoa/50 uppercase">DATA FRESHNESS</span>
+                      <span className="text-xs font-black text-status-healthy">Real-time</span>
+                    </div>
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-3 flex flex-col gap-1 shadow-sm">
+                      <span className="text-[8px] font-bold text-earth-cocoa/50 uppercase">TRANSPARENCY INDEX</span>
+                      <span className="text-xs font-black text-earth-cocoa font-mono">Level 5</span>
+                    </div>
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-3 flex flex-col gap-1 shadow-sm">
+                      <span className="text-[8px] font-bold text-earth-cocoa/50 uppercase">PREMIUM ADVANTAGE</span>
+                      <span className="text-xs font-black text-earth-clay">Enabled</span>
+                    </div>
+                  </div>
+                </>
+              ) : consoleTab === 'dashboard' ? (
+                <>
+                  {/* Dashboard View */}
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full">
+                    <div>
+                      <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight">Client Experience Dashboard</h1>
+                      <p className="text-xs text-earth-cocoa/75 mt-1 max-w-xl">
+                        Strategic metrics, health distribution, and experience analytics across your customer base.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-bold shrink-0">
+                      <div className="bg-[#276B2B]/15 border border-[#276B2B]/30 rounded-lg px-3 py-1.5 text-status-healthy flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-status-healthy animate-pulse" />
+                        <span>System Live</span>
+                      </div>
+                      <div className="bg-earth-cocoa border border-earth-cocoa text-earth-bg rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>Last 24 Hours</span>
                       </div>
                     </div>
                   </div>
 
-                </div>
-
-                {/* Right side column: Brand Health circular gauge & Automated wins (Span 5) */}
-                <div className="md:col-span-5 flex flex-col gap-6 w-full">
-                  
-                  {/* Card 3: Brand Health Circular progress gauge */}
-                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col justify-between items-center text-center relative overflow-hidden shadow-sm h-fit">
-                    <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 text-left w-full">
-                      <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">BRAND HEALTH SCORE</span>
-                      <span className="text-[10px] font-bold text-earth-sage uppercase">Aggregate loyalty & performance index</span>
+                  {/* Metric Cards Row */}
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+                    {/* Card 1 */}
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Experience Score</span>
+                        <Heart className="w-4 h-4 text-status-healthy" />
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-earth-cocoa">92</span>
+                        <span className="text-[9px] bg-status-healthy/15 text-status-healthy px-1.5 py-0.5 rounded font-extrabold uppercase">Excellent</span>
+                      </div>
+                      <span className="text-[9px] text-earth-cocoa/65">+2.4% from last week</span>
                     </div>
 
-                    <div className="relative flex items-center justify-center my-6">
-                      <svg className="w-32 h-32 transform -rotate-90">
-                        <circle 
-                          cx="64" cy="64" r="54" 
-                          className="stroke-earth-cocoa/15" strokeWidth="10" fill="transparent" 
-                        />
-                        <circle 
-                          cx="64" cy="64" r="54" 
-                          className="stroke-earth-clay" strokeWidth="10" fill="transparent" 
-                          strokeDasharray={2 * Math.PI * 54}
-                          strokeDashoffset={2 * Math.PI * 54 * (1 - 0.92)}
-                          strokeLinecap="round"
-                        />
-                      </svg>
-                      <div className="absolute flex flex-col items-center">
-                        <span className="text-3xl font-black text-earth-cocoa">92</span>
-                        <span className="text-[8px] uppercase font-bold text-earth-cocoa/60">OUT OF 100</span>
+                    {/* Card 2 */}
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Active Accounts</span>
+                        <Users className="w-4 h-4 text-earth-clay" />
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-earth-cocoa">8,412</span>
+                      </div>
+                      <span className="text-[9px] text-earth-cocoa/65">82 active today</span>
+                    </div>
+
+                    {/* Card 3 */}
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Automated Wins Saved</span>
+                        <Cpu className="w-4 h-4 text-status-healthy" />
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-earth-cocoa">$14,200</span>
+                      </div>
+                      <span className="text-[9px] text-earth-cocoa/65">82% win rate</span>
+                    </div>
+
+                    {/* Card 4 */}
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Avg Response Time</span>
+                        <Activity className="w-4 h-4 text-earth-clay" />
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-earth-cocoa">24ms</span>
+                      </div>
+                      <span className="text-[9px] text-earth-cocoa/65">99.99% uptime</span>
+                    </div>
+                  </div>
+
+                  {/* Main section grid */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch">
+                    
+                    {/* Left Column (Span 8) */}
+                    <div className="lg:col-span-8 flex flex-col gap-6 w-full">
+                      {/* Health distribution block */}
+                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+                        <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER HEALTH DISTRIBUTION</span>
+                          <span className="text-[10px] font-bold text-earth-sage uppercase">Segmentation by active user count</span>
+                        </div>
+
+                        {/* Stacked bar chart representation */}
+                        <div className="flex flex-col gap-4">
+                          <div className="w-full h-5 rounded-lg flex overflow-hidden border border-earth-sage/20">
+                            <div className="h-full bg-status-healthy" style={{ width: '73.8%' }} title="Healthy: 73.8%" />
+                            <div className="h-full bg-status-risk" style={{ width: '20.0%' }} title="Warning: 20.0%" />
+                            <div className="h-full bg-status-critical" style={{ width: '6.2%' }} title="Critical: 6.2%" />
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-4 text-xs font-bold text-earth-cocoa/80">
+                            <div className="flex flex-col gap-0.5 border-l-4 border-status-healthy pl-2">
+                              <span className="text-[9px] text-earth-cocoa/50 uppercase">Healthy</span>
+                              <span className="text-sm font-black">6,210 users</span>
+                              <span className="text-[9px] text-status-healthy font-extrabold">73.8%</span>
+                            </div>
+                            <div className="flex flex-col gap-0.5 border-l-4 border-status-risk pl-2">
+                              <span className="text-[9px] text-earth-cocoa/50 uppercase">Warning</span>
+                              <span className="text-sm font-black">1,682 users</span>
+                              <span className="text-[9px] text-status-risk font-extrabold">20.0%</span>
+                            </div>
+                            <div className="flex flex-col gap-0.5 border-l-4 border-status-critical pl-2">
+                              <span className="text-[9px] text-earth-cocoa/50 uppercase">Critical</span>
+                              <span className="text-sm font-black">520 users</span>
+                              <span className="text-[9px] text-status-critical font-extrabold">6.2%</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Recent resolutions log */}
+                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
+                        <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">RECENT RESOLUTIONS</span>
+                          <span className="text-[10px] font-bold text-earth-sage uppercase">Automated support interventions</span>
+                        </div>
+
+                        <div className="flex flex-col gap-3">
+                          <div className="border border-earth-sage/20 bg-earth-bg/30 p-3 rounded-xl flex justify-between items-center">
+                            <div className="flex gap-3 items-center">
+                              <span className="w-2.5 h-2.5 rounded-full bg-status-healthy" />
+                              <div>
+                                <h4 className="text-xs font-bold text-earth-cocoa">Atlas Corp</h4>
+                                <p className="text-[10px] text-earth-cocoa/75">Sentiment recovered to 85% after grace period extension.</p>
+                              </div>
+                            </div>
+                            <span className="text-[9px] bg-status-healthy/15 text-status-healthy border border-status-healthy/30 px-2 py-0.5 rounded font-extrabold uppercase">Success</span>
+                          </div>
+
+                          <div className="border border-earth-sage/20 bg-earth-bg/30 p-3 rounded-xl flex justify-between items-center">
+                            <div className="flex gap-3 items-center">
+                              <span className="w-2.5 h-2.5 rounded-full bg-status-healthy" />
+                              <div>
+                                <h4 className="text-xs font-bold text-earth-cocoa">Lagos Ventures</h4>
+                                <p className="text-[10px] text-earth-cocoa/75">Invoice issue resolved via automated grace period extension.</p>
+                              </div>
+                            </div>
+                            <span className="text-[9px] bg-status-healthy/15 text-status-healthy border border-status-healthy/30 px-2 py-0.5 rounded font-extrabold uppercase">Success</span>
+                          </div>
+
+                          <div className="border border-earth-sage/20 bg-earth-bg/30 p-3 rounded-xl flex justify-between items-center">
+                            <div className="flex gap-3 items-center">
+                              <span className="w-2.5 h-2.5 rounded-full bg-earth-clay" />
+                              <div>
+                                <h4 className="text-xs font-bold text-earth-cocoa">Northwind Traders</h4>
+                                <p className="text-[10px] text-earth-cocoa/75">Cost-optimization downgrade advice executed.</p>
+                              </div>
+                            </div>
+                            <span className="text-[9px] bg-earth-clay/15 text-earth-clay border border-earth-clay/30 px-2 py-0.5 rounded font-extrabold uppercase">Optimized</span>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+
+                    {/* Right Column (Span 4) */}
+                    <div className="lg:col-span-4 flex flex-col gap-6 w-full">
+                      {/* Experience drivers */}
+                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm h-full">
+                        <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full text-left">
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">EXPERIENCE DRIVERS</span>
+                          <span className="text-[10px] font-bold text-earth-sage uppercase">Impact on brand loyalty</span>
+                        </div>
+
+                        <div className="flex flex-col gap-4 text-xs font-bold text-earth-cocoa/80 text-left">
+                          <div className="flex justify-between items-center p-2 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
+                            <div>
+                              <span>Uptime SLA</span>
+                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">Sustained 99.9% uptime</span>
+                            </div>
+                            <span className="text-status-healthy font-extrabold">+18%</span>
+                          </div>
+
+                          <div className="flex justify-between items-center p-2 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
+                            <div>
+                              <span>Usage Volume Growth</span>
+                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">SaaS active feature growth</span>
+                            </div>
+                            <span className="text-status-healthy font-extrabold">+12%</span>
+                          </div>
+
+                          <div className="flex justify-between items-center p-2 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
+                            <div>
+                              <span>CSM Check-Ins</span>
+                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">Quarterly business reviews</span>
+                            </div>
+                            <span className="text-status-healthy font-extrabold">+15%</span>
+                          </div>
+
+                          <div className="flex justify-between items-center p-2 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
+                            <div>
+                              <span>Failed Invoices</span>
+                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">Declined card frequency</span>
+                            </div>
+                            <span className="text-status-critical font-extrabold">-8%</span>
+                          </div>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 border-t border-earth-sage/20 pt-4 w-full">
-                      <div className="flex flex-col items-center">
-                        <span className="text-lg font-extrabold text-earth-cocoa">8.4k</span>
-                        <span className="text-[8px] text-earth-cocoa/50 font-bold uppercase tracking-wider">Active Users</span>
+                  </div>
+                </>
+              ) : consoleTab === 'customers' ? (
+                <>
+                  {/* Customers View */}
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full animate-fadeIn">
+                    <div>
+                      <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight font-serif">Customer Directory</h1>
+                      <p className="text-xs text-earth-cocoa/75 mt-1 max-w-xl">
+                        Manage, search, and monitor active customer accounts, contract value, and health standings.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-bold shrink-0">
+                      <div className="bg-[#276B2B]/15 border border-[#276B2B]/30 rounded-lg px-3 py-1.5 text-status-healthy flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-status-healthy animate-pulse" />
+                        <span>System Live</span>
                       </div>
-                      <div className="flex flex-col items-center">
-                        <span className="text-lg font-extrabold text-status-healthy">+12%</span>
-                        <span className="text-[8px] text-earth-cocoa/50 font-bold uppercase tracking-wider">MoM Growth</span>
+                      <div className="bg-earth-cocoa border border-earth-cocoa text-earth-bg rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>Last 24 Hours</span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Card 4: Automated Engagement Wins progress bars */}
-                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
-                    <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full text-left">
-                      <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">AUTOMATED ENGAGEMENT WINS</span>
-                      <span className="text-[10px] font-bold text-earth-sage uppercase">Where the platform worked for you</span>
+                  {/* Filter & Search Bar */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-4 rounded-2xl flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 shadow-sm w-full animate-fadeIn">
+                    <div className="relative flex-1">
+                      <input 
+                        type="text" 
+                        placeholder="Search customers by name, email, or location..."
+                        value={customerSearch}
+                        onChange={(e) => setCustomerSearch(e.target.value)}
+                        className="w-full bg-earth-bg border border-earth-sage/35 rounded-xl py-2 pl-9 pr-4 text-xs outline-none focus:border-earth-clay text-earth-cocoa font-bold placeholder-earth-cocoa/50"
+                      />
+                      <Search className="w-4 h-4 text-earth-cocoa/50 absolute left-3 top-2.5" />
                     </div>
 
-                    <div className="flex flex-col gap-4.5 text-left">
-                      {/* Item 1 */}
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex justify-between items-baseline text-xs">
-                          <span className="font-bold text-earth-cocoa">Cart Recovery Bots</span>
-                          <span className="font-extrabold text-earth-clay">+$14.2k</span>
-                        </div>
-                        <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
-                          <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '72%' }} />
-                        </div>
-                        <div className="flex justify-between text-[8px] text-earth-cocoa/50 uppercase font-bold">
-                          <span>Progress</span>
-                          <span>72% Efficiency</span>
-                        </div>
-                      </div>
+                    <div className="flex gap-3">
+                      {/* Filter by Plan */}
+                      <select
+                        value={filterPlan}
+                        onChange={(e) => setFilterPlan(e.target.value)}
+                        className="bg-earth-bg border border-earth-sage/35 rounded-xl px-3 py-2 text-xs text-earth-cocoa font-bold outline-none cursor-pointer focus:border-earth-clay min-w-[120px]"
+                      >
+                        <option value="all">All Plans</option>
+                        <option value="enterprise">Enterprise</option>
+                        <option value="growth">Growth</option>
+                        <option value="starter">Starter</option>
+                      </select>
 
-                      {/* Item 2 */}
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex justify-between items-baseline text-xs">
-                          <span className="font-bold text-earth-cocoa">Churn Prediction (AI)</span>
-                          <span className="font-extrabold text-earth-clay">112 Saved</span>
-                        </div>
-                        <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
-                          <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '45%' }} />
-                        </div>
-                        <div className="flex justify-between text-[8px] text-earth-cocoa/50 uppercase font-bold">
-                          <span>Progress</span>
-                          <span>45% Efficiency</span>
-                        </div>
-                      </div>
-
-                      {/* Item 3 */}
-                      <div className="flex flex-col gap-1.5">
-                        <div className="flex justify-between items-baseline text-xs">
-                          <span className="font-bold text-earth-cocoa">Dynamic Pricing Engine</span>
-                          <span className="font-extrabold text-earth-clay">+4.5% Lift</span>
-                        </div>
-                        <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
-                          <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '89%' }} />
-                        </div>
-                        <div className="flex justify-between text-[8px] text-earth-cocoa/50 uppercase font-bold">
-                          <span>Progress</span>
-                          <span>89% Efficiency</span>
-                        </div>
-                      </div>
+                      {/* Filter by Risk */}
+                      <select
+                        value={filterRisk}
+                        onChange={(e) => setFilterRisk(e.target.value)}
+                        className="bg-earth-bg border border-earth-sage/35 rounded-xl px-3 py-2 text-xs text-earth-cocoa font-bold outline-none cursor-pointer focus:border-earth-clay min-w-[120px]"
+                      >
+                        <option value="all">All Risks</option>
+                        <option value="low">Low Risk</option>
+                        <option value="medium">Medium Risk</option>
+                        <option value="high">High Risk</option>
+                      </select>
                     </div>
-
-                    <p className="text-[9px] italic text-earth-cocoa/60 text-center border-t border-earth-sage/10 pt-3 leading-normal">
-                      Platform automation handled 82% of all repetitive support events today.
-                    </p>
                   </div>
 
-                </div>
+                  {/* Customer Table List */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl overflow-hidden shadow-sm w-full animate-fadeIn">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-left border-collapse">
+                        <thead>
+                          <tr className="border-b border-earth-sage/20 bg-earth-sage/10 text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">
+                            <th className="py-3 px-4">Customer</th>
+                            <th className="py-3 px-4">Plan</th>
+                            <th className="py-3 px-4">Health Score</th>
+                            <th className="py-3 px-4">Churn Probability</th>
+                            <th className="py-3 px-4">Contract MRR</th>
+                            <th className="py-3 px-4 text-right">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-earth-sage/10 text-xs">
+                          {filteredConsoleUsers.length > 0 ? (
+                            filteredConsoleUsers.map(u => {
+                              const isHighRisk = u.churnProbability > 50;
+                              const isMedRisk = u.churnProbability <= 50 && u.churnProbability > 15;
+                              return (
+                                <tr key={u.id} className="hover:bg-earth-sage/5 transition-colors text-earth-cocoa">
+                                  <td className="py-3 px-4 flex items-center gap-3">
+                                    <img src={u.avatar} alt={u.name} className="w-8 h-8 rounded-full border border-earth-sage/20 object-cover bg-white" />
+                                    <div>
+                                      <span className="font-extrabold block">{u.name}</span>
+                                      <span className="text-[10px] text-earth-cocoa/65 block mt-0.5">{u.email}</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4">
+                                    <span className="text-[10px] px-2 py-0.5 border border-earth-sage/30 rounded-full font-bold uppercase tracking-wider bg-earth-bg">
+                                      {u.plan}
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-4">
+                                    <span className={`font-black text-sm ${
+                                      u.healthScore > 70 ? 'text-status-healthy' : u.healthScore > 40 ? 'text-status-risk' : 'text-status-critical'
+                                    }`}>
+                                      {u.healthScore}/100
+                                    </span>
+                                  </td>
+                                  <td className="py-3 px-4 w-48">
+                                    <div className="flex items-center gap-2">
+                                      <div className="flex-1 bg-earth-cocoa/10 rounded-full h-1.5">
+                                        <div 
+                                          className={`h-1.5 rounded-full ${
+                                            isHighRisk ? 'bg-status-critical' : isMedRisk ? 'bg-status-risk' : 'bg-status-healthy'
+                                          }`} 
+                                          style={{ width: `${u.churnProbability}%` }}
+                                        />
+                                      </div>
+                                      <span className="font-bold text-[10px] w-8 text-right">{Math.round(u.churnProbability)}%</span>
+                                    </div>
+                                  </td>
+                                  <td className="py-3 px-4">
+                                    <span className="font-extrabold text-earth-clay">${u.mrr}/mo</span>
+                                  </td>
+                                  <td className="py-3 px-4 text-right">
+                                    <button 
+                                      onClick={() => {
+                                        setSelectedUser(u);
+                                        setCurrentPage('insight');
+                                      }}
+                                      className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-[10px] px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap animate-pulse"
+                                    >
+                                      View Insights
+                                    </button>
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          ) : (
+                            <tr>
+                              <td colSpan={6} className="py-8 text-center text-earth-cocoa/50 font-bold">
+                                No customers found matching the search criteria.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Health View */}
+                  <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full animate-fadeIn">
+                    <div>
+                      <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight font-serif">Customer Health Analytics</h1>
+                      <p className="text-xs text-earth-cocoa/75 mt-1 max-w-xl">
+                        Aggregated metrics, health trends, and telemetry breakdowns across active cohorts.
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs font-bold shrink-0">
+                      <div className="bg-[#276B2B]/15 border border-[#276B2B]/30 rounded-lg px-3 py-1.5 text-status-healthy flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-status-healthy animate-pulse" />
+                        <span>System Live</span>
+                      </div>
+                      <div className="bg-earth-cocoa border border-earth-cocoa text-earth-bg rounded-lg px-3 py-1.5 flex items-center gap-1.5">
+                        <Clock className="w-3.5 h-3.5" />
+                        <span>Last 24 Hours</span>
+                      </div>
+                    </div>
+                  </div>
 
-              </div>
+                  {/* Health Metric Cards Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full animate-fadeIn">
+                    {/* Card 1 */}
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Average Portfolio Health</span>
+                        <Heart className="w-4 h-4 text-status-healthy" />
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-earth-cocoa">{avgHealth}</span>
+                        <span className="text-[9px] bg-status-healthy/15 text-status-healthy px-1.5 py-0.5 rounded font-extrabold uppercase">Stable</span>
+                      </div>
+                      <span className="text-[9px] text-earth-cocoa/65">Across all active accounts</span>
+                    </div>
 
-              {/* Bottom stats bar: 4 items */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full mt-2">
-                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-3 flex flex-col gap-1 shadow-sm">
-                  <span className="text-[8px] font-bold text-earth-cocoa/50 uppercase">API RESPONSE</span>
-                  <span className="text-xs font-black text-earth-cocoa">24ms</span>
-                </div>
-                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-3 flex flex-col gap-1 shadow-sm">
-                  <span className="text-[8px] font-bold text-earth-cocoa/50 uppercase">DATA FRESHNESS</span>
-                  <span className="text-xs font-black text-status-healthy">Real-time</span>
-                </div>
-                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-3 flex flex-col gap-1 shadow-sm">
-                  <span className="text-[8px] font-bold text-earth-cocoa/50 uppercase">TRANSPARENCY INDEX</span>
-                  <span className="text-xs font-black text-earth-cocoa font-mono">Level 5</span>
-                </div>
-                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-3 flex flex-col gap-1 shadow-sm">
-                  <span className="text-[8px] font-bold text-earth-cocoa/50 uppercase">PREMIUM ADVANTAGE</span>
-                  <span className="text-xs font-black text-earth-clay">Enabled</span>
-                </div>
-              </div>
+                    {/* Card 2 */}
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Critical Health Alerts</span>
+                        <ShieldAlert className="w-4 h-4 text-status-critical" />
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-earth-cocoa">{criticalCount}</span>
+                        <span className="text-[9px] bg-status-critical/15 text-status-critical px-1.5 py-0.5 rounded font-extrabold uppercase">Action Needed</span>
+                      </div>
+                      <span className="text-[9px] text-earth-cocoa/65">Users below 40% health score</span>
+                    </div>
 
+                    {/* Card 3 */}
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+                      <div className="flex justify-between items-center">
+                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Total Portfolio MRR</span>
+                        <CreditCard className="w-4 h-4 text-earth-clay" />
+                      </div>
+                      <div className="flex items-baseline gap-2">
+                        <span className="text-2xl font-black text-earth-cocoa">${totalMRR.toLocaleString()}</span>
+                      </div>
+                      <span className="text-[9px] text-earth-cocoa/65">Active monthly recurring revenue</span>
+                    </div>
+                  </div>
+
+                  {/* Main health analytics panels */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch animate-fadeIn">
+                    
+                    {/* Left Column (Span 7) */}
+                    <div className="lg:col-span-7 flex flex-col gap-6 w-full">
+                      {/* Telemetry Status Breakdown */}
+                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
+                        <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">TELEMETRY STATUS BREAKDOWN</span>
+                          <span className="text-[10px] font-bold text-earth-sage uppercase">System checks</span>
+                        </div>
+
+                        <div className="flex flex-col gap-4">
+                          {/* Item 1 */}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <span className="font-bold text-earth-cocoa">Login Frequency (Engagement)</span>
+                              <span className="font-extrabold text-status-healthy">82%</span>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '82%' }} />
+                            </div>
+                          </div>
+
+                          {/* Item 2 */}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <span className="font-bold text-earth-cocoa">Feature Utilization (Usage)</span>
+                              <span className="font-extrabold text-earth-clay">64%</span>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '64%' }} />
+                            </div>
+                          </div>
+
+                          {/* Item 3 */}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <span className="font-bold text-earth-cocoa">Support Ticket Resolution (Response)</span>
+                              <span className="font-extrabold text-status-healthy">91%</span>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '91%' }} />
+                            </div>
+                          </div>
+
+                          {/* Item 4 */}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <span className="font-bold text-earth-cocoa">Payment & Invoicing (Billing)</span>
+                              <span className="font-extrabold text-status-healthy">94%</span>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '94%' }} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Recent transitions log */}
+                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
+                        <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">HEALTH STATE TRANSITIONS</span>
+                          <span className="text-[10px] font-bold text-earth-sage uppercase">Distressed Users</span>
+                        </div>
+
+                        <div className="flex flex-col gap-3 max-h-[220px] overflow-y-auto pr-1">
+                          {users.filter(u => u.healthScore < 70).map(u => (
+                            <div key={u.id} className="border border-earth-sage/20 bg-earth-bg/30 p-3 rounded-xl flex justify-between items-center">
+                              <div className="flex gap-3 items-center">
+                                <span className={`w-2.5 h-2.5 rounded-full ${u.healthScore < 40 ? 'bg-status-critical' : 'bg-status-risk'}`} />
+                                <div>
+                                  <h4 className="text-xs font-bold text-earth-cocoa">{u.name}</h4>
+                                  <p className="text-[10px] text-earth-cocoa/75 mt-0.5">
+                                    Risk Factor: {u.warningFlags.join(', ') || 'Low Usage'}
+                                  </p>
+                                </div>
+                              </div>
+                              <span className={`text-[10px] font-black ${u.healthScore < 40 ? 'text-status-critical' : 'text-status-risk'}`}>
+                                {u.healthScore}/100
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right Column (Span 5) */}
+                    <div className="lg:col-span-5 flex flex-col gap-6 w-full text-left">
+                      {/* Health Cohort Segmentation */}
+                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm h-full justify-between">
+                        <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full">
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">HEALTH COHORTS</span>
+                          <span className="text-[10px] font-bold text-earth-sage uppercase">Distribution of customer base</span>
+                        </div>
+
+                        <div className="flex flex-col gap-4 my-2">
+                          {/* Healthy */}
+                          <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-3 h-3 rounded-full bg-status-healthy" />
+                              <span className="font-bold text-earth-cocoa">Healthy (Score 70+)</span>
+                            </div>
+                            <span className="text-status-healthy font-black text-sm">
+                              {users.filter(u => u.healthScore >= 70).length} Accounts
+                            </span>
+                          </div>
+
+                          {/* Warning */}
+                          <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-3 h-3 rounded-full bg-status-risk" />
+                              <span className="font-bold text-earth-cocoa">Warning (Score 40-69)</span>
+                            </div>
+                            <span className="text-status-risk font-black text-sm">
+                              {users.filter(u => u.healthScore < 70 && u.healthScore >= 40).length} Accounts
+                            </span>
+                          </div>
+
+                          {/* Critical */}
+                          <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
+                            <div className="flex items-center gap-2.5">
+                              <span className="w-3 h-3 rounded-full bg-status-critical" />
+                              <span className="font-bold text-earth-cocoa">Critical (Score &lt; 40)</span>
+                            </div>
+                            <span className="text-status-critical font-black text-sm">
+                              {users.filter(u => u.healthScore < 40).length} Accounts
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className="bg-earth-sage/10 p-3 rounded-xl border border-earth-sage/20 text-[10px] text-earth-cocoa/75 leading-relaxed mt-2 italic text-center">
+                          ℹ️ Telemetry thresholds and state changes are simulated live and updated dynamically via WebSocket and FastAPI ML pipelines.
+                        </div>
+                      </div>
+                    </div>
+
+                  </div>
+                </>
+              )}
             </div>
           </div>
         ) : currentPage === 'client_dashboard' ? (
