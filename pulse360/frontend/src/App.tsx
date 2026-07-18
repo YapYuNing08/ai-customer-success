@@ -392,7 +392,7 @@ function App() {
       <main className="flex-1 w-full flex flex-col relative">
         {currentPage === 'insight' && selectedUser ? (
           <ActiveUserInsight 
-            user={selectedUser} 
+            user={users.find(u => u.id === selectedUser.id) || selectedUser} 
             onBack={() => {
               setCurrentPage('marketing');
               setSelectedUser(null);
@@ -972,7 +972,7 @@ function App() {
               ) : consoleTab === 'customers' ? (
                 selectedConsoleUser ? (
                   <ActiveUserInsight 
-                    user={selectedConsoleUser} 
+                    user={users.find(u => u.id === selectedConsoleUser.id) || selectedConsoleUser} 
                     onBack={() => setSelectedConsoleUser(null)} 
                     onUpdateUser={(updatedUser) => {
                       handleUpdateUser(updatedUser);
@@ -1102,7 +1102,7 @@ function App() {
                                       onClick={() => {
                                         setSelectedConsoleUser(u);
                                       }}
-                                      className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-[10px] px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap animate-pulse"
+                                      className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-[10px] px-3 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
                                     >
                                       View Insights
                                     </button>

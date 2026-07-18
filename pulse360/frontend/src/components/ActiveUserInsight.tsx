@@ -258,7 +258,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
         </button>
 
         <div className="flex items-center gap-3">
-          <div className="bg-earth-sage/20 border console-border rounded-full px-3 py-1 text-xs console-text-primary font-medium flex items-center gap-1.5 animate-pulse-glow-earth">
+          <div className="bg-earth-sage/20 border console-border rounded-full px-3 py-1 text-xs console-text-primary font-medium flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-earth-sage" />
             <span>Customer Is Online Now</span>
           </div>
