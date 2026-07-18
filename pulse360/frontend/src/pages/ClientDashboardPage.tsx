@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { suggestPlanChange } from '../utils/mockData';
+import { downgradeSavings } from '../utils/mockData';
 import { PortalNotificationModal } from '../components/modals/PortalNotificationModal';
 import { OnboardingWizard, LIFESTYLE_CONFIG, type WizardResult } from '../components/OnboardingWizard';
 
@@ -12,12 +12,6 @@ export function ClientDashboardPage(props: any) {
   const [chatInput, setChatInput] = useState('');
   const [portalNotification, setPortalNotification] = useState<{ title: string; message: string; type: 'success' | 'info' | 'warning' } | null>(null);
   const [showWizard, setShowWizard] = useState(false);
-  const [onboardingSteps, setOnboardingSteps] = useState([
-    { id: 'esim', label: 'Activate eSIM Profile', done: true },
-    { id: '5g', label: 'Configure 5G VoLTE Calling', done: true },
-    { id: 'autopay', label: 'Setup Auto-pay Billing', done: false },
-    { id: 'app', label: 'Install Mobile Companion App', done: false }
-  ]);
 
   const loggedInUser = users.find((u: any) => u.id === clientUserId) || users[0];
   const hasFailedPayment = loggedInUser?.warningFlags?.includes('Failed Payment');
@@ -173,59 +167,6 @@ export function ClientDashboardPage(props: any) {
             {/* Left Column: Stack of Checklist, Plan Optimization, Add-ons, and History Log */}
             <div className="flex flex-col gap-6 w-full">
               
-              {/* Onboarding Checklist Card */}
-              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
-                <div>
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">AI ONBOARDING CHECKLIST</span>
-                  <div className="flex flex-col gap-2 mt-3">
-                    {onboardingSteps.map((step) => {
-                      const isAutopay = step.id === 'autopay';
-                      const isDone = isAutopay ? !hasFailedPayment : step.done;
-                      return (
-                        <button 
-                          key={step.id}
-                          onClick={() => {
-                            if (isAutopay) {
-                              if (hasFailedPayment) {
-                                handleClientAction(loggedInUser.id, 'extend_grace');
-                                setPortalNotification({
-                                  title: 'Grace Extension Activated',
-                                  message: 'Your payment delinquency has been updated to a 7-day grace extension successfully.',
-                                  type: 'success'
-                                });
-                              } else {
-                                setPortalNotification({
-                                  title: 'Payment Status Healthy',
-                                  message: 'Auto-pay is active and operates in good standing.',
-                                  type: 'info'
-                                });
-                              }
-                            } else {
-                              setOnboardingSteps(prev => prev.map(s => s.id === step.id ? { ...s, done: !s.done } : s));
-                            }
-                          }}
-                          className="flex items-center gap-2.5 text-xs text-[#001871] font-bold text-left cursor-pointer hover:bg-slate-50 p-1.5 rounded-xl transition-all w-full"
-                        >
-                          <span className={`w-4.5 h-4.5 rounded-lg border flex items-center justify-center font-bold text-xs shrink-0 ${
-                            isDone 
-                              ? 'bg-[#0064DC] text-white border-[#0064DC]' 
-                              : 'border-slate-300 bg-slate-50'
-                          }`}>
-                            {isDone ? '✓' : ''}
-                          </span>
-                          <span className={isDone ? 'line-through opacity-60 font-medium' : ''}>
-                            {step.label}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-                <span className="text-xs text-slate-500 mt-2 leading-tight block">
-                  💡 Click items to complete onboarding. Setup Auto-pay resolves payment warnings instantly.
-                </span>
-              </div>
-
               {/* Suggestions block / AI Plan Optimization Card */}
               <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
                 <div>
@@ -238,7 +179,7 @@ export function ClientDashboardPage(props: any) {
                         <div className="bg-[#FFD400]/10 border border-[#FFD400]/45 p-3.5 rounded-xl flex flex-col gap-2">
                           <span className="text-xs font-extrabold text-[#001871] uppercase">Saving Opportunity</span>
                           <p className="text-xs text-[#001871] leading-relaxed">
-                            Usage is at {Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%. Downgrade to **Starter Plan** to save **${downgradeSavings(loggedInUser?.mrr || 0).toLocaleString()}/mo**.
+                            Usage is at {Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%. Downgrade to **Starter Plan** to save **RM{downgradeSavings(loggedInUser?.mrr || 0).toLocaleString()}/mo**.
                           </p>
                           <button 
                             onClick={() => {
