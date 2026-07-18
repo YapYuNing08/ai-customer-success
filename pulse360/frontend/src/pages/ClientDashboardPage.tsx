@@ -112,43 +112,6 @@ export function ClientDashboardPage(props: any) {
                   </div>
                 </div>
 
-                {/* Service SLA card */}
-                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col justify-between flex-1 shadow-sm text-left font-sans">
-                  <div>
-                    <span className="text-[9px] uppercase font-bold text-earth-clay tracking-wider">Service Quality</span>
-                    <div className="flex flex-col gap-2 mt-4">
-                      <div className="flex justify-between items-center text-xs">
-                        <span className="font-bold text-earth-cocoa/75 uppercase tracking-wider">Connection SLA Uptime</span>
-                        <span className="font-extrabold text-status-healthy">
-                          {loggedInUser?.healthScore}/100
-                        </span>
-                      </div>
-                      <div className="w-full bg-earth-cocoa/10 rounded-full h-2">
-                        <div 
-                          className="h-2 rounded-full bg-status-healthy transition-all duration-500"
-                          style={{ width: `${loggedInUser?.healthScore}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="border-t border-earth-sage/20 pt-4 flex flex-col gap-2 mt-4 text-[11px] font-bold text-earth-cocoa/85">
-                    <div className="flex justify-between">
-                      <span className="text-earth-cocoa/65">Network Ping:</span>
-                      <span>14ms (Optimal)</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-earth-cocoa/65">Routing Channel:</span>
-                      <span>5G VoLTE Tier-1</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-earth-cocoa/65">Active Warnings:</span>
-                      <span className={hasFailedPayment ? 'text-status-critical font-extrabold animate-pulse' : 'text-status-healthy'}>
-                        {hasFailedPayment ? '⚠️ Billing Delinquent' : 'None'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
 
                 {/* Usage statistics card */}
                 <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col justify-between flex-1 shadow-sm text-left">
