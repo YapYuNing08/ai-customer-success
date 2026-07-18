@@ -3,7 +3,7 @@ import {
   ShieldCheck, Play, Pause, Settings, Radio, ArrowDown, ChevronRight, 
   MessageSquare, Cpu, HeartHandshake, ArrowLeft, LayoutDashboard,
   Users, Heart, FileText, Search, Bell, Clock, RefreshCw, CreditCard,
-  Activity, ShieldAlert, Download
+  Activity, ShieldAlert, Download, Check, Info
 } from 'lucide-react';
 import { mockUsers, mergeBackendCustomer, type ActiveUser } from './utils/mockData';
 import { Globe } from './components/Globe';
@@ -205,6 +205,7 @@ System Status: Live
     { id: 'autopay', label: 'Setup Auto-pay Billing', done: false },
     { id: 'app', label: 'Install Mobile Companion App', done: false }
   ]);
+  const [portalNotification, setPortalNotification] = useState<{ title: string; message: string; type: 'success' | 'info' | 'warning' } | null>(null);
 
   const consoleRef = useRef<HTMLDivElement>(null);
 
@@ -2130,35 +2131,39 @@ System Status: Live
             </div>
 
             {/* Main dashboard grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch font-sans animate-fadeIn">
+            <div className="flex flex-col gap-6 w-full font-sans animate-fadeIn">
               
-              {/* Column 1: Profile & Onboarding (Span 4) */}
-              <div className="lg:col-span-4 flex flex-col gap-6 w-full text-left">
+              {/* Row 1: Key Profile & Telco Spec metrics (Equal heights, balanced flex row) */}
+              <div className="flex flex-col md:flex-row gap-6 w-full items-stretch">
+                
                 {/* Profile Card */}
-                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-4 shadow-sm">
-                  <div className="flex items-center gap-4">
-                    <img 
-                      src={loggedInUser?.avatar} 
-                      alt={loggedInUser?.name} 
-                      className="w-16 h-16 rounded-full border border-earth-sage/40 object-cover bg-white animate-fadeIn" 
-                    />
-                    <div>
-                      <h3 className="font-bold text-earth-cocoa text-base leading-tight">
-                        {loggedInUser?.name}
-                      </h3>
-                      <span className="text-[10px] text-earth-cocoa/65 mt-1 block">
-                        {loggedInUser?.email}
-                      </span>
-                      <span className="text-[10px] text-earth-cocoa/65 mt-0.5 block">
-                        {loggedInUser?.location}
-                      </span>
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col justify-between flex-1 shadow-sm text-left">
+                  <div>
+                    <span className="text-[9px] uppercase font-bold text-earth-clay tracking-wider">Account Identity</span>
+                    <div className="flex items-center gap-4 mt-3">
+                      <img 
+                        src={loggedInUser?.avatar} 
+                        alt={loggedInUser?.name} 
+                        className="w-14 h-14 rounded-full border border-earth-sage/40 object-cover bg-white shrink-0" 
+                      />
+                      <div>
+                        <h3 className="font-extrabold text-earth-cocoa text-base leading-tight">
+                          {loggedInUser?.name}
+                        </h3>
+                        <span className="text-[10px] text-earth-cocoa/65 mt-1 block">
+                          {loggedInUser?.email}
+                        </span>
+                        <span className="text-[10px] text-earth-cocoa/50 mt-0.5 block">
+                          {loggedInUser?.location}
+                        </span>
+                      </div>
                     </div>
                   </div>
 
-                  <div className="border-t border-earth-sage/20 pt-4 flex flex-col gap-2.5">
+                  <div className="border-t border-earth-sage/20 pt-4 flex flex-col gap-2 mt-4 font-bold">
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-earth-cocoa/65">Subscription Plan:</span>
-                      <span className="font-bold text-earth-cocoa uppercase tracking-wider text-[11px]">
+                      <span className="font-extrabold text-earth-cocoa uppercase tracking-wider text-[10px] bg-earth-bg border border-earth-sage/20 px-2 py-0.5 rounded-full">
                         {loggedInUser?.plan} Plan
                       </span>
                     </div>
@@ -2173,7 +2178,7 @@ System Status: Live
                       <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
                         hasFailedPayment
                           ? 'bg-status-critical/15 border border-status-critical/30 text-status-critical'
-                          : 'bg-status-healthy/15 border border-status-healthy/30 text-status-healthy'
+                          : 'bg-[#276B2B]/15 border border-[#276B2B]/30 text-status-healthy'
                       }`}>
                         {hasFailedPayment ? 'Past Due' : 'Active'}
                       </span>
@@ -2181,209 +2186,296 @@ System Status: Live
                   </div>
                 </div>
 
-                {/* AI Onboarding Checklist Card */}
-                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">AI ONBOARDING CHECKLIST</span>
-                  <div className="flex flex-col gap-2.5 mt-1">
-                    {onboardingSteps.map((step) => {
-                      const isAutopay = step.id === 'autopay';
-                      const isDone = isAutopay ? !hasFailedPayment : step.done;
-                      return (
-                        <button 
-                          key={step.id}
-                          onClick={() => {
-                            if (isAutopay) {
-                              if (hasFailedPayment) {
-                                // 1-click action helper to resolve payment issue!
-                                handleClientAction(loggedInUser.id, 'extend_grace');
-                                alert("💳 Simulated credit card credentials refreshed! 7-day grace extension applied.");
-                              } else {
-                                alert("💳 Auto-pay is active and in good standing!");
-                              }
-                            } else {
-                              setOnboardingSteps(prev => prev.map(s => s.id === step.id ? { ...s, done: !s.done } : s));
-                            }
-                          }}
-                          className="flex items-center gap-2.5 text-xs text-earth-cocoa font-bold text-left cursor-pointer hover:bg-earth-sage/10 p-1.5 rounded-xl transition-all w-full"
-                        >
-                          <span className={`w-4.5 h-4.5 rounded-lg border flex items-center justify-center font-bold text-[10px] shrink-0 ${
-                            isDone 
-                              ? 'bg-[#276B2B] text-earth-bg border-[#276B2B]' 
-                              : 'border-earth-sage bg-earth-bg/50'
-                          }`}>
-                            {isDone ? '✓' : ''}
-                          </span>
-                          <span className={isDone ? 'line-through opacity-60 font-medium' : ''}>
-                            {step.label}
-                          </span>
-                        </button>
-                      );
-                    })}
+                {/* Service SLA card */}
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col justify-between flex-1 shadow-sm text-left font-sans">
+                  <div>
+                    <span className="text-[9px] uppercase font-bold text-earth-clay tracking-wider">Service Quality</span>
+                    <div className="flex flex-col gap-2 mt-4">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-bold text-earth-cocoa/75 uppercase tracking-wider">Connection SLA Uptime</span>
+                        <span className="font-extrabold text-status-healthy">
+                          {loggedInUser?.healthScore}/100
+                        </span>
+                      </div>
+                      <div className="w-full bg-earth-cocoa/10 rounded-full h-2">
+                        <div 
+                          className="h-2 rounded-full bg-status-healthy transition-all duration-500"
+                          style={{ width: `${loggedInUser?.healthScore}%` }}
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Column 2: Health, Plan Suggestions & Add-ons (Span 4) */}
-              <div className="lg:col-span-4 flex flex-col gap-6 w-full text-left">
-                {/* Usage & Health Stats */}
-                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-5 shadow-sm">
-                  {/* Gauge 1: Usage Limits */}
-                  <div className="flex flex-col gap-2">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-bold text-earth-cocoa/75 uppercase tracking-wider">MONTHLY DATA UTILIZATION</span>
-                      <span className="font-extrabold text-earth-clay">
-                        {Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%
+                  <div className="border-t border-earth-sage/20 pt-4 flex flex-col gap-2 mt-4 text-[11px] font-bold text-earth-cocoa/85">
+                    <div className="flex justify-between">
+                      <span className="text-earth-cocoa/65">Network Ping:</span>
+                      <span>14ms (Optimal)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-earth-cocoa/65">Routing Channel:</span>
+                      <span>5G VoLTE Tier-1</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-earth-cocoa/65">Active Warnings:</span>
+                      <span className={hasFailedPayment ? 'text-status-critical font-extrabold animate-pulse' : 'text-status-healthy'}>
+                        {hasFailedPayment ? '⚠️ Billing Delinquent' : 'None'}
                       </span>
                     </div>
-                    <div className="w-full bg-earth-cocoa/10 rounded-full h-2">
-                      <div 
-                        className={`h-2 rounded-full transition-all duration-500 ${
-                          (loggedInUser?.metrics.usageVelocity || 0) < 0.35 ? 'bg-status-risk' : 'bg-status-healthy'
-                        }`}
-                        style={{ width: `${Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%` }}
-                      />
+                  </div>
+                </div>
+
+                {/* Usage statistics card */}
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col justify-between flex-1 shadow-sm text-left">
+                  <div>
+                    <span className="text-[9px] uppercase font-bold text-earth-clay tracking-wider">Data Thresholds</span>
+                    <div className="flex flex-col gap-2 mt-4">
+                      <div className="flex justify-between items-center text-xs">
+                        <span className="font-bold text-earth-cocoa/75 uppercase tracking-wider">Monthly Bandwidth Used</span>
+                        <span className="font-extrabold text-earth-clay">
+                          {Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-earth-cocoa/10 rounded-full h-2">
+                        <div 
+                          className={`h-2 rounded-full transition-all duration-500 ${
+                            (loggedInUser?.metrics.usageVelocity || 0) < 0.35 ? 'bg-status-risk' : 'bg-[#276B2B]'
+                          }`}
+                          style={{ width: `${Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%` }}
+                        />
+                      </div>
                     </div>
-                    <span className="text-[10px] text-earth-cocoa/60 leading-normal">
-                      High-speed 5G network throughput used this monthly billing period.
+                  </div>
+
+                  <div className="border-t border-earth-sage/20 pt-4 flex flex-col gap-2 mt-4 text-[11px] font-bold text-earth-cocoa/85">
+                    <div className="flex justify-between">
+                      <span className="text-earth-cocoa/65">Data Used:</span>
+                      <span>{Math.round((loggedInUser?.metrics.usageVelocity || 0) * 50)} GB / 50 GB</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-earth-cocoa/65">Call Minutes:</span>
+                      <span>420 min / 500 min</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-earth-cocoa/65">Assigned Seats:</span>
+                      <span>{loggedInUser?.plan === 'Starter' ? '3 / 5' : loggedInUser?.plan === 'Growth' ? '14 / 20' : '45 / Unlimited'}</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Row 2: Interaction Actions, AI Optimization, & Chatbot (3 uniform columns) */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full items-stretch">
+                
+                {/* Module 1: Self-Service & Onboarding */}
+                <div className="flex flex-col gap-6 w-full">
+                  {/* Onboarding Checklist Card */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm text-left flex-1 justify-between">
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">AI ONBOARDING CHECKLIST</span>
+                      <div className="flex flex-col gap-2 mt-3">
+                        {onboardingSteps.map((step) => {
+                          const isAutopay = step.id === 'autopay';
+                          const isDone = isAutopay ? !hasFailedPayment : step.done;
+                          return (
+                            <button 
+                              key={step.id}
+                              onClick={() => {
+                                if (isAutopay) {
+                                  if (hasFailedPayment) {
+                                    handleClientAction(loggedInUser.id, 'extend_grace');
+                                    setPortalNotification({
+                                      title: 'Grace Extension Activated',
+                                      message: 'Your payment delinquency has been updated to a 7-day grace extension successfully.',
+                                      type: 'success'
+                                    });
+                                  } else {
+                                    setPortalNotification({
+                                      title: 'Payment Status Healthy',
+                                      message: 'Auto-pay is active and operates in good standing.',
+                                      type: 'info'
+                                    });
+                                  }
+                                } else {
+                                  setOnboardingSteps(prev => prev.map(s => s.id === step.id ? { ...s, done: !s.done } : s));
+                                }
+                              }}
+                              className="flex items-center gap-2.5 text-xs text-earth-cocoa font-bold text-left cursor-pointer hover:bg-earth-sage/10 p-1.5 rounded-xl transition-all w-full"
+                            >
+                              <span className={`w-4.5 h-4.5 rounded-lg border flex items-center justify-center font-bold text-[10px] shrink-0 ${
+                                isDone 
+                                  ? 'bg-[#276B2B] text-earth-bg border-[#276B2B]' 
+                                  : 'border-earth-sage bg-earth-bg/50'
+                              }`}>
+                                {isDone ? '✓' : ''}
+                              </span>
+                              <span className={isDone ? 'line-through opacity-60 font-medium' : ''}>
+                                {step.label}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <span className="text-[9px] text-earth-cocoa/50 mt-3 leading-tight block">
+                      💡 Click items to complete onboarding. Setup Auto-pay resolves payment warnings instantly.
                     </span>
                   </div>
 
-                  {/* Gauge 2: Service SLA health score */}
-                  <div className="flex flex-col gap-2 border-t border-earth-sage/10 pt-4">
-                    <div className="flex justify-between items-center text-xs">
-                      <span className="font-bold text-earth-cocoa/75 uppercase tracking-wider">SERVICE HEALTH SLA</span>
-                      <span className="font-extrabold text-status-healthy">
-                        {loggedInUser?.healthScore}/100
-                      </span>
+                  {/* Add-on deals card */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm text-left justify-between min-h-[170px]">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">PERSONALIZED ADD-ON DEALS</span>
+                    <div className="flex flex-col gap-3 mt-1.5">
+                      <div className="flex justify-between items-center border-b border-earth-sage/10 pb-2">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-extrabold text-earth-cocoa">Roaming Pass</span>
+                          <span className="text-[9px] text-earth-cocoa/65">APAC & Europe • $15/mo</span>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            loggedInUser.activityLogs = [
+                              { date: new Date().toLocaleDateString(), details: 'Purchased APAC & Europe Roaming Pass Add-on.' },
+                              ...(loggedInUser.activityLogs || [])
+                            ];
+                            addTelemetry(`Customer ${loggedInUser.name} purchased Roaming Pass add-on.`);
+                            setPortalNotification({
+                              title: 'Add-on Pass Activated',
+                              message: '✈_ APAC & Europe Roaming Pass activated successfully! Added to your next monthly bill.',
+                              type: 'success'
+                            });
+                          }}
+                          className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-[9px] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
+                        >
+                          Buy Pass
+                        </button>
+                      </div>
+
+                      <div className="flex justify-between items-center">
+                        <div className="flex flex-col">
+                          <span className="text-[11px] font-extrabold text-earth-cocoa">5G Extra Quota</span>
+                          <span className="text-[9px] text-earth-cocoa/65">+10 GB High-Speed • $10/mo</span>
+                        </div>
+                        <button 
+                          onClick={() => {
+                            loggedInUser.activityLogs = [
+                              { date: new Date().toLocaleDateString(), details: 'Added 10 GB 5G Extra Data Quota.' },
+                              ...(loggedInUser.activityLogs || [])
+                            ];
+                            addTelemetry(`Customer ${loggedInUser.name} added 10 GB data quota.`);
+                            setPortalNotification({
+                              title: 'Data Quota Added',
+                              message: '⚡ 10 GB Extra Data Quota added successfully! Added to your next invoice.',
+                              type: 'success'
+                            });
+                          }}
+                          className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-[9px] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
+                        >
+                          Buy Data
+                        </button>
+                      </div>
                     </div>
-                    <div className="w-full bg-earth-cocoa/10 rounded-full h-2">
-                      <div 
-                        className="h-2 rounded-full bg-status-healthy transition-all duration-500"
-                        style={{ width: `${loggedInUser?.healthScore}%` }}
-                      />
+                  </div>
+                </div>
+
+                {/* Module 2: AI Plan Optimization Suggestions & Logs */}
+                <div className="flex flex-col gap-6 w-full">
+                  {/* Suggestions block */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm text-left justify-between flex-1">
+                    <div>
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">AI PLAN OPTIMIZATION</span>
+                      
+                      {((loggedInUser?.metrics.usageVelocity || 0) < 0.35 && loggedInUser?.plan !== 'Starter') || hasFailedPayment ? (
+                        <div className="flex flex-col gap-3 mt-3">
+                          {/* Case A: Underutilization */}
+                          {(loggedInUser?.metrics.usageVelocity || 0) < 0.35 && loggedInUser?.plan !== 'Starter' && (
+                            <div className="bg-status-healthy/10 border border-[#276B2B]/20 p-3.5 rounded-xl flex flex-col gap-2">
+                              <span className="text-[10px] font-extrabold text-[#276B2B] uppercase">Saving Opportunity</span>
+                              <p className="text-[10px] text-earth-cocoa leading-relaxed">
+                                Usage is at {Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%. Downgrade to **Starter Plan** to save **$1,500/mo**.
+                              </p>
+                              <button 
+                                onClick={() => {
+                                  handleClientAction(clientUserId, 'downgrade');
+                                  setPortalNotification({
+                                    title: 'Plan Downgrade Applied',
+                                    message: '📉 1-Click Downgrade applied successfully! Plan set to Starter.',
+                                    type: 'success'
+                                  });
+                                }}
+                                className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-[9px] py-1.5 rounded-lg transition-all w-full cursor-pointer text-center"
+                              >
+                                Downgrade plan to save
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Case B: Billing Delinquency */}
+                          {hasFailedPayment && (
+                            <div className="bg-status-critical/10 border border-status-critical/30 p-3.5 rounded-xl flex flex-col gap-2">
+                              <span className="text-[10px] font-extrabold text-status-critical uppercase">Payment Grace alert</span>
+                              <p className="text-[10px] text-earth-cocoa leading-relaxed">
+                                Transaction declined. Request a **7-day grace extension** to prevent service lock.
+                              </p>
+                              <button 
+                                onClick={() => {
+                                  handleClientAction(clientUserId, 'extend_grace');
+                                  setPortalNotification({
+                                    title: 'Grace Period Extended',
+                                    message: '🔌 Grace extension requested successfully! Status set to Grace Period.',
+                                    type: 'success'
+                                  });
+                                }}
+                                className="bg-status-critical hover:bg-[#8F2618] text-earth-bg font-extrabold text-[9px] py-1.5 rounded-lg transition-all w-full cursor-pointer text-center"
+                              >
+                                Request 7-Day Extension
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="bg-[#276B2B]/5 border border-[#276B2B]/20 p-5 rounded-2xl flex flex-col gap-2.5 mt-3">
+                          <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#276B2B]">System Status: Stable</span>
+                          <p className="text-[11px] text-earth-cocoa/95 leading-relaxed">
+                            All systems operating optimally. Your plan settings perfectly align with current usage telemetry limits.
+                          </p>
+                        </div>
+                      )}
                     </div>
-                    <span className="text-[10px] text-earth-cocoa/60 leading-normal">
-                      Real-time connection stability rating. Current regional uptime SLA is at **99.98%**.
+                    <span className="text-[9px] text-earth-cocoa/50 mt-3 leading-tight block">
+                      💡 Optimization recommendation algorithm auto-syncs every 60 seconds to right-size contracts.
                     </span>
                   </div>
-                </div>
 
-                {/* AI Plan Optimization Advice */}
-                {((loggedInUser?.metrics.usageVelocity || 0) < 0.35 && loggedInUser?.plan !== 'Starter') || hasFailedPayment ? (
-                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">AI PLAN OPTIMIZATION</span>
-                    
-                    {/* Case A: Underutilization */}
-                    {(loggedInUser?.metrics.usageVelocity || 0) < 0.35 && loggedInUser?.plan !== 'Starter' && (
-                      <div className="bg-status-healthy/10 border border-[#276B2B]/30 p-3.5 rounded-xl flex flex-col gap-2">
-                        <span className="text-[10px] font-extrabold text-[#276B2B] uppercase">Saving Opportunity</span>
-                        <p className="text-[10px] text-earth-cocoa leading-relaxed">
-                          Usage is at {Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%. Downgrade to **Starter Plan** to save **$1,500/mo**.
-                        </p>
-                        <button 
-                          onClick={() => {
-                            handleClientAction(clientUserId, 'downgrade');
-                            alert("📉 1-Click Downgrade applied successfully! Plan set to Starter.");
-                          }}
-                          className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-[9px] py-1.5 rounded-lg transition-all w-full cursor-pointer"
-                        >
-                          Downgrade plan to save
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Case B: Billing Delinquency */}
-                    {hasFailedPayment && (
-                      <div className="bg-status-critical/10 border border-status-critical/30 p-3.5 rounded-xl flex flex-col gap-2 mt-1">
-                        <span className="text-[10px] font-extrabold text-status-critical uppercase">Payment Grace alert</span>
-                        <p className="text-[10px] text-earth-cocoa leading-relaxed">
-                          Transaction declined. Request a **7-day grace extension** to prevent service lock.
-                        </p>
-                        <button 
-                          onClick={() => {
-                            handleClientAction(clientUserId, 'extend_grace');
-                            alert("🔌 Grace extension requested successfully! Status: Grace Period.");
-                          }}
-                          className="bg-status-critical hover:bg-[#8F2618] text-earth-bg font-extrabold text-[9px] py-1.5 rounded-lg transition-all w-full cursor-pointer"
-                        >
-                          Request 7-Day Extension
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="bg-status-healthy/10 border border-[#276B2B]/20 p-5 rounded-2xl flex flex-col gap-2.5 shadow-sm text-left">
-                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#276B2B]">System Status: Stable</span>
-                    <p className="text-[11px] text-earth-cocoa/90 leading-relaxed">
-                      All systems operating optimally. Your plan settings perfectly align with current usage telemetry limits.
-                    </p>
-                  </div>
-                )}
-
-                {/* Add-on Recommendations */}
-                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">PERSONALIZED ADD-ON DEALS</span>
-                  <div className="flex flex-col gap-3">
-                    <div className="flex justify-between items-center border-b border-earth-sage/10 pb-2">
-                      <div className="flex flex-col">
-                        <span className="text-[11px] font-extrabold text-earth-cocoa">APAC & Europe Roaming Pass</span>
-                        <span className="text-[9px] text-earth-cocoa/65">Global connection pass • $15/mo</span>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          loggedInUser.activityLogs = [
-                            { date: new Date().toLocaleDateString(), details: 'Purchased APAC & Europe Roaming Pass Add-on.' },
-                            ...(loggedInUser.activityLogs || [])
-                          ];
-                          addTelemetry(`Customer ${loggedInUser.name} purchased Roaming Pass add-on.`);
-                          alert("✈_ APAC & Europe Roaming Pass activated successfully! Added to next bill.");
-                        }}
-                        className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-[9px] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
-                      >
-                        Buy Add-on
-                      </button>
-                    </div>
-
-                    <div className="flex justify-between items-center">
-                      <div className="flex flex-col">
-                        <span className="text-[11px] font-extrabold text-earth-cocoa">5G Extra Quota (+10 GB)</span>
-                        <span className="text-[9px] text-earth-cocoa/65">Additional high-speed bandwidth • $10/mo</span>
-                      </div>
-                      <button 
-                        onClick={() => {
-                          loggedInUser.activityLogs = [
-                            { date: new Date().toLocaleDateString(), details: 'Added 10 GB 5G Extra Data Quota.' },
-                            ...(loggedInUser.activityLogs || [])
-                          ];
-                          addTelemetry(`Customer ${loggedInUser.name} added 10 GB data quota.`);
-                          alert("⚡ 10 GB Extra Data Quota added successfully! Added to next invoice.");
-                        }}
-                        className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-[9px] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
-                      >
-                        Buy Add-on
-                      </button>
+                  {/* Service Log Ticker */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm text-left min-h-[170px] justify-between">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-earth-cocoa/65">YOUR RECENT ACCOUNT HISTORY LOG</span>
+                    <div className="flex-1 flex flex-col gap-2 overflow-y-auto mt-2 max-h-[100px] border border-earth-sage/10 rounded-xl p-2 bg-earth-bg/30">
+                      {(loggedInUser?.activityLogs || []).map((log, idx) => (
+                        <div key={idx} className="flex gap-2 text-[9px] text-earth-cocoa/80 items-start">
+                          <span className="font-bold text-earth-sage shrink-0">{log.date}</span>
+                          <span className="text-earth-cocoa/30 shrink-0">|</span>
+                          <span className="text-left flex-1 leading-normal">{log.details}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Column 3: AI Chatbot & Logs (Span 4) */}
-              <div className="lg:col-span-4 flex flex-col gap-6 w-full text-left">
-                {/* AI Chatbot Assistant */}
-                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm h-[320px] justify-between">
+                {/* Module 3: AI Chatbot Assistant */}
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm h-full justify-between text-left min-h-[380px]">
                   <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">AI PLAN ASSISTANT CHATBOT</span>
                     <span className="w-2 h-2 rounded-full bg-[#276B2B] animate-pulse" />
                   </div>
 
-                  <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 py-2 font-sans pr-1 text-[10px] max-h-[190px]">
+                  <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 py-2 font-sans pr-1 text-[10px] max-h-[250px]">
                     {chatbotMessages.map((msg, idx) => (
                       <div 
                         key={idx} 
                         className={`p-2.5 rounded-2xl max-w-[85%] leading-relaxed ${
                           msg.sender === 'user' 
-                            ? 'bg-earth-cocoa text-earth-bg ml-auto rounded-tr-none' 
-                            : 'bg-earth-bg/75 text-earth-cocoa mr-auto rounded-tl-none border border-earth-sage/15'
+                            ? 'bg-earth-cocoa text-earth-bg ml-auto rounded-tr-none shadow-sm' 
+                            : 'bg-earth-bg/75 text-earth-cocoa mr-auto rounded-tl-none border border-earth-sage/15 shadow-sm'
                         }`}
                       >
                         {msg.text}
@@ -2417,7 +2509,7 @@ System Status: Live
                         setChatbotMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
                       }, 500);
                     }}
-                    className="flex gap-2 border-t border-earth-sage/20 pt-2"
+                    className="flex gap-2 border-t border-earth-sage/20 pt-2.5"
                   >
                     <input 
                       type="text" 
@@ -2428,26 +2520,13 @@ System Status: Live
                     />
                     <button 
                       type="submit"
-                      className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-[10px] px-3.5 rounded-xl transition-all cursor-pointer"
+                      className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-[10px] px-3.5 rounded-xl transition-all cursor-pointer shadow-sm"
                     >
                       Send
                     </button>
                   </form>
                 </div>
 
-                {/* Service Log Ticker */}
-                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm flex-1 max-h-[220px]">
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-earth-cocoa/65">YOUR RECENT ACCOUNT HISTORY LOG</span>
-                  <div className="flex flex-col gap-2 overflow-y-auto max-h-[140px]">
-                    {(loggedInUser?.activityLogs || []).map((log, idx) => (
-                      <div key={idx} className="flex gap-2 text-[10px] text-earth-cocoa/75 items-start">
-                        <span className="font-bold text-earth-sage shrink-0">{log.date}</span>
-                        <span className="text-earth-cocoa/30 shrink-0">|</span>
-                        <span className="text-left flex-1 leading-normal">{log.details}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
 
             </div>
@@ -2941,6 +3020,37 @@ System Status: Live
                 Investigate Customers
               </button>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Custom Portal Notification Modal */}
+      {portalNotification && (
+        <div className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center animate-fadeIn font-sans">
+          <div className="bg-[#fcfaf2] border-2 border-earth-sage/40 rounded-3xl p-6 shadow-2xl max-w-sm w-full mx-4 text-left flex flex-col gap-4 animate-scaleUp text-earth-cocoa">
+            <div className="flex items-start gap-3.5">
+              <div className={`p-3 rounded-2xl shrink-0 ${
+                portalNotification.type === 'success' 
+                  ? 'bg-[#276B2B]/10 text-[#276B2B] border border-[#276B2B]/20' 
+                  : 'bg-earth-sage/15 text-earth-clay border border-earth-sage/25'
+              }`}>
+                {portalNotification.type === 'success' ? (
+                  <Check className="w-5 h-5" />
+                ) : (
+                  <Info className="w-5 h-5" />
+                )}
+              </div>
+              <div>
+                <h3 className="font-extrabold text-earth-cocoa text-base leading-tight tracking-tight">{portalNotification.title}</h3>
+                <p className="text-xs text-earth-cocoa/75 mt-2.5 leading-relaxed">{portalNotification.message}</p>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => setPortalNotification(null)}
+              className="w-full bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-xs py-2.5 rounded-xl transition-all cursor-pointer text-center mt-1 shadow-sm"
+            >
+              Dismiss
+            </button>
           </div>
         </div>
       )}
