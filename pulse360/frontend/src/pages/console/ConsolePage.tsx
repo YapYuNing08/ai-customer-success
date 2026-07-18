@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, LayoutDashboard, Users, FileText, Search, Bell } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Bell } from 'lucide-react';
 import type { ActiveUser } from '../../utils/mockData';
 import type { Report } from '../../types';
 import { buildRescuePlanReport } from '../../utils/reports';
@@ -18,7 +18,6 @@ export function ConsolePage(props: any) {
   const [filterPlan, setFilterPlan] = useState<string>('all');
   const [filterRisk, setFilterRisk] = useState<string>('all');
   const [showNotifications, setShowNotifications] = useState(false);
-  const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showOutageAlertModal, setShowOutageAlertModal] = useState(false);
 
   const [reportModalData, setReportModalData] = useState<{
@@ -179,26 +178,10 @@ export function ConsolePage(props: any) {
                 </div>
                 
                 <div className="flex items-center gap-4 w-full sm:w-auto">
-                  <div className="relative flex-1 sm:flex-none">
-                    <input 
-                      type="text" 
-                      placeholder="Search customers..."
-                      value={customerSearch}
-                      onChange={(e) => setCustomerSearch(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          setConsoleTab('customers');
-                        }
-                      }}
-                      className="bg-[#efe9d2]/35 border border-earth-sage/35 rounded-lg py-1.5 pl-8 pr-3 text-xs outline-none focus:border-earth-clay w-full sm:w-48 text-earth-cocoa font-bold placeholder-earth-cocoa/50"
-                    />
-                    <Search className="w-3.5 h-3.5 text-earth-cocoa/50 absolute left-2.5 top-2.5" />
-                  </div>
                   <div className="relative">
                     <button 
                       onClick={() => {
                         setShowNotifications(!showNotifications);
-                        setShowSettingsDropdown(false);
                       }}
                       className="p-1.5 hover:bg-[#efe9d2]/40 rounded-lg text-earth-cocoa/60 hover:text-earth-cocoa cursor-pointer relative"
                     >
@@ -245,97 +228,6 @@ export function ConsolePage(props: any) {
                             </span>
                             <span className="text-[8px] text-earth-cocoa/50 mt-1 font-mono">6 hours ago</span>
                           </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="relative">
-                    <button 
-                      onClick={() => {
-                        setShowSettingsDropdown(!showSettingsDropdown);
-                        setShowNotifications(false);
-                      }}
-                      className="p-1.5 hover:bg-[#efe9d2]/40 rounded-lg text-earth-cocoa/60 hover:text-earth-cocoa cursor-pointer"
-                    >
-                      <Settings className="w-4 h-4" />
-                    </button>
-                    
-                    {showSettingsDropdown && (
-                      <div className="absolute right-0 mt-2 w-72 bg-[#efe9d2] border border-earth-sage rounded-2xl shadow-xl z-50 p-4 animate-fadeIn text-left text-xs flex flex-col gap-3">
-                        <div className="font-bold text-earth-cocoa border-b border-earth-sage/20 pb-2 flex justify-between items-center">
-                          <span>Console Configurations</span>
-                          <span className="text-[9px] bg-earth-sage/25 text-earth-cocoa px-2 py-0.5 rounded font-extrabold uppercase">Sandbox</span>
-                        </div>
-                        
-                        <div className="flex flex-col gap-3.5">
-                          {/* Toggle 1: Simulation running */}
-                          <div className="flex justify-between items-center">
-                            <div className="flex flex-col">
-                              <span className="font-bold text-earth-cocoa">Digital Twin Sandbox</span>
-                              <span className="text-[9px] text-earth-cocoa/65">Simulate background user state transitions</span>
-                            </div>
-                            <button 
-                              onClick={() => setIsSimulating(!isSimulating)}
-                              className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase transition-all border cursor-pointer ${
-                                isSimulating 
-                                  ? 'bg-[#276B2B]/15 border-[#276B2B]/35 text-status-healthy' 
-                                  : 'bg-earth-cocoa/10 border-earth-cocoa/20 text-earth-cocoa/60'
-                              }`}
-                            >
-                              {isSimulating ? 'Active' : 'Paused'}
-                            </button>
-                          </div>
-                          
-                          {/* Slider 1: Outage Rate */}
-                          <div className="flex flex-col gap-1">
-                            <div className="flex justify-between font-bold">
-                              <span>Outage Frequency</span>
-                              <span className="text-earth-clay">{outageRate}%</span>
-                            </div>
-                            <input 
-                              type="range" 
-                              min="0" 
-                              max="100" 
-                              value={outageRate}
-                              onChange={(e) => setOutageRate(Number(e.target.value))}
-                              className="w-full accent-earth-clay h-1 bg-earth-cocoa/15 rounded-lg appearance-none cursor-pointer outline-none"
-                            />
-                          </div>
-                          
-                          {/* Slider 2: Billing Failure Rate */}
-                          <div className="flex flex-col gap-1">
-                            <div className="flex justify-between font-bold">
-                              <span>Billing Fail Chance</span>
-                              <span className="text-earth-clay">{billingFailureRate}%</span>
-                            </div>
-                            <input 
-                              type="range" 
-                              min="0" 
-                              max="100" 
-                              value={billingFailureRate}
-                              onChange={(e) => setBillingFailureRate(Number(e.target.value))}
-                              className="w-full accent-earth-clay h-1 bg-earth-cocoa/15 rounded-lg appearance-none cursor-pointer outline-none"
-                            />
-                          </div>
-
-                          {/* Trigger Incident Button */}
-                          <button 
-                            onClick={() => {
-                              setUsers(prev => prev.map((u, i) => i === 0 || i === 4 || i === 7 ? {
-                                ...u,
-                                warningFlags: [...new Set([...u.warningFlags, 'Regional Outage'])],
-                                healthScore: Math.max(0, u.healthScore - 35),
-                                churnProbability: Math.min(100, u.churnProbability + 40)
-                              } : u));
-                              addTelemetry("Forced critical outage simulation on active accounts.");
-                              setShowSettingsDropdown(false);
-                              setShowOutageAlertModal(true);
-                            }}
-                            className="w-full bg-status-critical hover:bg-[#8F2618] text-earth-bg font-extrabold text-[10px] py-2 rounded-xl transition-all cursor-pointer shadow-sm text-center"
-                          >
-                            Trigger Instant Outage
-                          </button>
                         </div>
                       </div>
                     )}
