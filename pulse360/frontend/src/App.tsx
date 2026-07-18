@@ -195,6 +195,16 @@ System Status: Live
   const [showOutageAlertModal, setShowOutageAlertModal] = useState(false);
   const [workspaceMode, setWorkspaceMode] = useState<'successhub' | 'grid' | 'live_data'>('successhub');
   const [inspectorUserId, setInspectorUserId] = useState<string>('');
+  const [chatbotMessages, setChatbotMessages] = useState<{ sender: 'user' | 'bot'; text: string }[]>([
+    { sender: 'bot', text: "Hello! I'm your SubSentry AI assistant. Ask me anything about your mobile plan, billing renewal, data usage, or roaming add-ons!" }
+  ]);
+  const [chatInput, setChatInput] = useState('');
+  const [onboardingSteps, setOnboardingSteps] = useState([
+    { id: 'esim', label: 'Activate eSIM Profile', done: true },
+    { id: '5g', label: 'Configure 5G VoLTE Calling', done: true },
+    { id: 'autopay', label: 'Setup Auto-pay Billing', done: false },
+    { id: 'app', label: 'Install Mobile Companion App', done: false }
+  ]);
 
   const consoleRef = useRef<HTMLDivElement>(null);
 
@@ -2117,26 +2127,27 @@ System Status: Live
             </div>
 
             {/* Main dashboard grid */}
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-stretch font-sans">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch font-sans animate-fadeIn">
               
-              {/* Left Column: Subscription & Profile details (Span 4) */}
-              <div className="md:col-span-5 flex flex-col gap-6 w-full">
-                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-4 shadow-sm h-full justify-between">
+              {/* Column 1: Profile & Onboarding (Span 4) */}
+              <div className="lg:col-span-4 flex flex-col gap-6 w-full text-left">
+                {/* Profile Card */}
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-4 shadow-sm">
                   <div className="flex items-center gap-4">
                     <img 
-                      src={users.find(u => u.id === clientUserId)?.avatar || users[0]?.avatar} 
-                      alt={users.find(u => u.id === clientUserId)?.name || users[0]?.name} 
-                      className="w-16 h-16 rounded-full border border-earth-sage/40 object-cover bg-white" 
+                      src={loggedInUser?.avatar} 
+                      alt={loggedInUser?.name} 
+                      className="w-16 h-16 rounded-full border border-earth-sage/40 object-cover bg-white animate-fadeIn" 
                     />
                     <div>
                       <h3 className="font-bold text-earth-cocoa text-base leading-tight">
-                        {users.find(u => u.id === clientUserId)?.name || users[0]?.name}
+                        {loggedInUser?.name}
                       </h3>
                       <span className="text-[10px] text-earth-cocoa/65 mt-1 block">
-                        {users.find(u => u.id === clientUserId)?.email || users[0]?.email}
+                        {loggedInUser?.email}
                       </span>
                       <span className="text-[10px] text-earth-cocoa/65 mt-0.5 block">
-                        {users.find(u => u.id === clientUserId)?.location || users[0]?.location}
+                        {loggedInUser?.location}
                       </span>
                     </div>
                   </div>
@@ -2145,150 +2156,297 @@ System Status: Live
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-earth-cocoa/65">Subscription Plan:</span>
                       <span className="font-bold text-earth-cocoa uppercase tracking-wider text-[11px]">
-                        {users.find(u => u.id === clientUserId)?.plan || users[0]?.plan}
+                        {loggedInUser?.plan} Plan
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-earth-cocoa/65">Monthly Contract MRR:</span>
                       <span className="font-bold text-earth-clay">
-                        ${users.find(u => u.id === clientUserId)?.mrr || users[0]?.mrr}/mo
+                        ${loggedInUser?.mrr}/mo
                       </span>
                     </div>
                     <div className="flex justify-between items-center text-xs">
                       <span className="text-earth-cocoa/65">Billing Status:</span>
                       <span className={`text-[10px] px-2.5 py-0.5 rounded-full font-bold uppercase tracking-wider ${
-                        (users.find(u => u.id === clientUserId) || users[0])?.warningFlags.includes('Failed Payment')
+                        hasFailedPayment
                           ? 'bg-status-critical/15 border border-status-critical/30 text-status-critical'
                           : 'bg-status-healthy/15 border border-status-healthy/30 text-status-healthy'
                       }`}>
-                        {(users.find(u => u.id === clientUserId) || users[0])?.warningFlags.includes('Failed Payment') ? 'Past Due' : 'Active'}
+                        {hasFailedPayment ? 'Past Due' : 'Active'}
                       </span>
                     </div>
                   </div>
                 </div>
+
+                {/* AI Onboarding Checklist Card */}
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">AI ONBOARDING CHECKLIST</span>
+                  <div className="flex flex-col gap-2.5 mt-1">
+                    {onboardingSteps.map((step) => {
+                      const isAutopay = step.id === 'autopay';
+                      const isDone = isAutopay ? !hasFailedPayment : step.done;
+                      return (
+                        <button 
+                          key={step.id}
+                          onClick={() => {
+                            if (isAutopay) {
+                              if (hasFailedPayment) {
+                                // 1-click action helper to resolve payment issue!
+                                handleClientAction(loggedInUser.id, 'extend_grace');
+                                alert("💳 Simulated credit card credentials refreshed! 7-day grace extension applied.");
+                              } else {
+                                alert("💳 Auto-pay is active and in good standing!");
+                              }
+                            } else {
+                              setOnboardingSteps(prev => prev.map(s => s.id === step.id ? { ...s, done: !s.done } : s));
+                            }
+                          }}
+                          className="flex items-center gap-2.5 text-xs text-earth-cocoa font-bold text-left cursor-pointer hover:bg-earth-sage/10 p-1.5 rounded-xl transition-all w-full"
+                        >
+                          <span className={`w-4.5 h-4.5 rounded-lg border flex items-center justify-center font-bold text-[10px] shrink-0 ${
+                            isDone 
+                              ? 'bg-[#276B2B] text-earth-bg border-[#276B2B]' 
+                              : 'border-earth-sage bg-earth-bg/50'
+                          }`}>
+                            {isDone ? '✓' : ''}
+                          </span>
+                          <span className={isDone ? 'line-through opacity-60 font-medium' : ''}>
+                            {step.label}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
 
-              {/* Right Column: Gauges (Span 8) */}
-              <div className="md:col-span-7 flex flex-col gap-6 w-full">
-                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-6 shadow-sm justify-between">
+              {/* Column 2: Health, Plan Suggestions & Add-ons (Span 4) */}
+              <div className="lg:col-span-4 flex flex-col gap-6 w-full text-left">
+                {/* Usage & Health Stats */}
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-5 shadow-sm">
                   {/* Gauge 1: Usage Limits */}
                   <div className="flex flex-col gap-2">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-bold text-earth-cocoa/75">PACKAGE LIMITS UTILIZATION</span>
+                      <span className="font-bold text-earth-cocoa/75 uppercase tracking-wider">MONTHLY DATA UTILIZATION</span>
                       <span className="font-extrabold text-earth-clay">
-                        {Math.round(((users.find(u => u.id === clientUserId) || users[0])?.metrics.usageVelocity || 0) * 100)}%
+                        {Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%
                       </span>
                     </div>
                     <div className="w-full bg-earth-cocoa/10 rounded-full h-2">
                       <div 
-                        className={`h-2 rounded-full ${
-                          ((users.find(u => u.id === clientUserId) || users[0])?.metrics.usageVelocity || 0) < 0.35 ? 'bg-status-risk' : 'bg-status-healthy'
+                        className={`h-2 rounded-full transition-all duration-500 ${
+                          (loggedInUser?.metrics.usageVelocity || 0) < 0.35 ? 'bg-status-risk' : 'bg-status-healthy'
                         }`}
-                        style={{ width: `${Math.round(((users.find(u => u.id === clientUserId) || users[0])?.metrics.usageVelocity || 0) * 100)}%` }}
+                        style={{ width: `${Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%` }}
                       />
                     </div>
                     <span className="text-[10px] text-earth-cocoa/60 leading-normal">
-                      Based on your login sessions, data throughput, and active seat allocation.
+                      High-speed 5G network throughput used this monthly billing period.
                     </span>
                   </div>
 
                   {/* Gauge 2: Service SLA health score */}
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 border-t border-earth-sage/10 pt-4">
                     <div className="flex justify-between items-center text-xs">
-                      <span className="font-bold text-earth-cocoa/75">SERVICE HEALTH SCORE</span>
+                      <span className="font-bold text-earth-cocoa/75 uppercase tracking-wider">SERVICE HEALTH SLA</span>
                       <span className="font-extrabold text-status-healthy">
-                        {(users.find(u => u.id === clientUserId) || users[0])?.healthScore}/100
+                        {loggedInUser?.healthScore}/100
                       </span>
                     </div>
                     <div className="w-full bg-earth-cocoa/10 rounded-full h-2">
                       <div 
-                        className="h-2 rounded-full bg-status-healthy"
-                        style={{ width: `${(users.find(u => u.id === clientUserId) || users[0])?.healthScore}%` }}
+                        className="h-2 rounded-full bg-status-healthy transition-all duration-500"
+                        style={{ width: `${loggedInUser?.healthScore}%` }}
                       />
                     </div>
                     <span className="text-[10px] text-earth-cocoa/60 leading-normal">
-                      We track service uptime and response times to ensure your subscription remains stable.
+                      Real-time connection stability rating. Current regional uptime SLA is at **99.98%**.
                     </span>
                   </div>
                 </div>
+
+                {/* AI Plan Optimization Advice */}
+                {((loggedInUser?.metrics.usageVelocity || 0) < 0.35 && loggedInUser?.plan !== 'Starter') || hasFailedPayment ? (
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">AI PLAN OPTIMIZATION</span>
+                    
+                    {/* Case A: Underutilization */}
+                    {(loggedInUser?.metrics.usageVelocity || 0) < 0.35 && loggedInUser?.plan !== 'Starter' && (
+                      <div className="bg-status-healthy/10 border border-[#276B2B]/30 p-3.5 rounded-xl flex flex-col gap-2">
+                        <span className="text-[10px] font-extrabold text-[#276B2B] uppercase">Saving Opportunity</span>
+                        <p className="text-[10px] text-earth-cocoa leading-relaxed">
+                          Usage is at {Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%. Downgrade to **Starter Plan** to save **$1,500/mo**.
+                        </p>
+                        <button 
+                          onClick={() => {
+                            handleClientAction(clientUserId, 'downgrade');
+                            alert("📉 1-Click Downgrade applied successfully! Plan set to Starter.");
+                          }}
+                          className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-[9px] py-1.5 rounded-lg transition-all w-full cursor-pointer"
+                        >
+                          Downgrade plan to save
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Case B: Billing Delinquency */}
+                    {hasFailedPayment && (
+                      <div className="bg-status-critical/10 border border-status-critical/30 p-3.5 rounded-xl flex flex-col gap-2 mt-1">
+                        <span className="text-[10px] font-extrabold text-status-critical uppercase">Payment Grace alert</span>
+                        <p className="text-[10px] text-earth-cocoa leading-relaxed">
+                          Transaction declined. Request a **7-day grace extension** to prevent service lock.
+                        </p>
+                        <button 
+                          onClick={() => {
+                            handleClientAction(clientUserId, 'extend_grace');
+                            alert("🔌 Grace extension requested successfully! Status: Grace Period.");
+                          }}
+                          className="bg-status-critical hover:bg-[#8F2618] text-earth-bg font-extrabold text-[9px] py-1.5 rounded-lg transition-all w-full cursor-pointer"
+                        >
+                          Request 7-Day Extension
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="bg-status-healthy/10 border border-[#276B2B]/20 p-5 rounded-2xl flex flex-col gap-2.5 shadow-sm text-left">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#276B2B]">System Status: Stable</span>
+                    <p className="text-[11px] text-earth-cocoa/90 leading-relaxed">
+                      All systems operating optimally. Your plan settings perfectly align with current usage telemetry limits.
+                    </p>
+                  </div>
+                )}
+
+                {/* Add-on Recommendations */}
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">PERSONALIZED ADD-ON DEALS</span>
+                  <div className="flex flex-col gap-3">
+                    <div className="flex justify-between items-center border-b border-earth-sage/10 pb-2">
+                      <div className="flex flex-col">
+                        <span className="text-[11px] font-extrabold text-earth-cocoa">APAC & Europe Roaming Pass</span>
+                        <span className="text-[9px] text-earth-cocoa/65">Global connection pass • $15/mo</span>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          loggedInUser.activityLogs = [
+                            { date: new Date().toLocaleDateString(), details: 'Purchased APAC & Europe Roaming Pass Add-on.' },
+                            ...(loggedInUser.activityLogs || [])
+                          ];
+                          addTelemetry(`Customer ${loggedInUser.name} purchased Roaming Pass add-on.`);
+                          alert("✈_ APAC & Europe Roaming Pass activated successfully! Added to next bill.");
+                        }}
+                        className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-[9px] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
+                      >
+                        Buy Add-on
+                      </button>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <div className="flex flex-col">
+                        <span className="text-[11px] font-extrabold text-earth-cocoa">5G Extra Quota (+10 GB)</span>
+                        <span className="text-[9px] text-earth-cocoa/65">Additional high-speed bandwidth • $10/mo</span>
+                      </div>
+                      <button 
+                        onClick={() => {
+                          loggedInUser.activityLogs = [
+                            { date: new Date().toLocaleDateString(), details: 'Added 10 GB 5G Extra Data Quota.' },
+                            ...(loggedInUser.activityLogs || [])
+                          ];
+                          addTelemetry(`Customer ${loggedInUser.name} added 10 GB data quota.`);
+                          alert("⚡ 10 GB Extra Data Quota added successfully! Added to next invoice.");
+                        }}
+                        className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-[9px] px-2.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
+                      >
+                        Buy Add-on
+                      </button>
+                    </div>
+                  </div>
+                </div>
               </div>
 
-            </div>
-
-            {/* WOW FACTOR INTERVENTIONS SECTION */}
-            <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-4 shadow-sm">
-              <h3 className="text-xs font-bold text-earth-cocoa uppercase tracking-wider">SubSentry Active Value Guard recommendations</h3>
-              
-              {/* Case A: Underutilization -> Downgrade suggestion */}
-              {((users.find(u => u.id === clientUserId) || users[0])?.metrics.usageVelocity || 0) < 0.35 && (users.find(u => u.id === clientUserId) || users[0])?.plan !== 'Starter' && (
-                <div className="bg-status-healthy/10 border border-status-healthy/30 p-5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all duration-300 animate-slideDown">
-                  <div className="flex-1 text-left">
-                    <h4 className="text-xs font-bold text-status-healthy uppercase tracking-wider flex items-center gap-1.5">
-                      <Cpu className="w-3.5 h-3.5 text-status-healthy" />
-                      Recommended Saving Action
-                    </h4>
-                    <p className="text-xs text-earth-cocoa mt-1.5 leading-relaxed">
-                      We noticed you are only using <strong>{Math.round(((users.find(u => u.id === clientUserId) || users[0])?.metrics.usageVelocity || 0) * 100)}%</strong> of your package limits. 
-                      Downgrade to the <strong>Starter Plan</strong> to save <strong>$1,500/mo</strong> while retaining your core features. We value your trust over empty spend!
-                    </p>
+              {/* Column 3: AI Chatbot & Logs (Span 4) */}
+              <div className="lg:col-span-4 flex flex-col gap-6 w-full text-left">
+                {/* AI Chatbot Assistant */}
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm h-[320px] justify-between">
+                  <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay">AI PLAN ASSISTANT CHATBOT</span>
+                    <span className="w-2 h-2 rounded-full bg-[#276B2B] animate-pulse" />
                   </div>
-                  <button 
-                    onClick={() => handleClientAction(clientUserId, 'downgrade')}
-                    className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer whitespace-nowrap shrink-0"
+
+                  <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 py-2 font-sans pr-1 text-[10px] max-h-[190px]">
+                    {chatbotMessages.map((msg, idx) => (
+                      <div 
+                        key={idx} 
+                        className={`p-2.5 rounded-2xl max-w-[85%] leading-relaxed ${
+                          msg.sender === 'user' 
+                            ? 'bg-earth-cocoa text-earth-bg ml-auto rounded-tr-none' 
+                            : 'bg-earth-bg/75 text-earth-cocoa mr-auto rounded-tl-none border border-earth-sage/15'
+                        }`}
+                      >
+                        {msg.text}
+                      </div>
+                    ))}
+                  </div>
+
+                  <form 
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!chatInput.trim()) return;
+                      const userMsg = chatInput.trim();
+                      setChatbotMessages(prev => [...prev, { sender: 'user', text: userMsg }]);
+                      setChatInput('');
+
+                      // Compute AI Response
+                      setTimeout(() => {
+                        let botReply = "I can help you audit your billing invoices, change subscription plans, activate eSIM roaming passes, or resolve credit card issues. What would you like to do?";
+                        const lower = userMsg.toLowerCase();
+                        if (lower.includes("bill") || lower.includes("invoice") || lower.includes("charge") || lower.includes("pay")) {
+                          botReply = hasFailedPayment 
+                            ? `⚠️ ALERT: Your last credit card renewal declined. Please request a Grace Extension or update payment details.`
+                            : `Your account is healthy! Current subscription costs $${loggedInUser.mrr}/mo and auto-renews via credit card.`;
+                        } else if (lower.includes("limit") || lower.includes("data") || lower.includes("usage") || lower.includes("quota")) {
+                          botReply = `You are currently utilizing ${Math.round((loggedInUser.metrics.usageVelocity || 0) * 100)}% of your plan thresholds. Recommend buying 5G Extra Data (+10 GB) for $10 to prevent speed drops.`;
+                        } else if (lower.includes("roaming") || lower.includes("travel") || lower.includes("abroad")) {
+                          botReply = "Planning a trip? Buy our APAC & Europe Roaming Pass add-on for $15/mo to get high-speed connection abroad!";
+                        } else if (lower.includes("upgrade") || lower.includes("downgrade") || lower.includes("plan")) {
+                          botReply = `You are on the ${loggedInUser.plan} subscription plan. If you need plan suggestions, our optimization dashboard recommends right-sizing to match your telemetry metrics.`;
+                        }
+                        setChatbotMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
+                      }, 500);
+                    }}
+                    className="flex gap-2 border-t border-earth-sage/20 pt-2"
                   >
-                    Execute 1-Click Downgrade
-                  </button>
+                    <input 
+                      type="text" 
+                      placeholder="Ask about plan, billing, roaming..." 
+                      value={chatInput}
+                      onChange={(e) => setChatInput(e.target.value)}
+                      className="flex-1 bg-earth-bg border border-earth-sage/35 rounded-xl px-3 py-2 text-[10px] text-earth-cocoa font-bold outline-none focus:border-earth-clay placeholder-earth-cocoa/50"
+                    />
+                    <button 
+                      type="submit"
+                      className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-[10px] px-3.5 rounded-xl transition-all cursor-pointer"
+                    >
+                      Send
+                    </button>
+                  </form>
                 </div>
-              )}
 
-              {/* Case B: Payment Issue -> Request extension */}
-              {(users.find(u => u.id === clientUserId) || users[0])?.warningFlags.includes('Failed Payment') && (
-                <div className="bg-status-critical/10 border border-status-critical/30 p-5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4 transition-all duration-300 animate-slideDown">
-                  <div className="flex-1 text-left">
-                    <h4 className="text-xs font-bold text-status-critical uppercase tracking-wider">
-                      ⚠️ Payment Delinquency Grace Alert
-                    </h4>
-                    <p className="text-xs text-earth-cocoa mt-1.5 leading-relaxed">
-                      Your invoice payment renewal failed (declined bank transaction). 
-                      Request an automatic <strong>7-day grace extension</strong> to keep services fully active while you contact your bank.
-                    </p>
-                  </div>
-                  <button 
-                    onClick={() => handleClientAction(clientUserId, 'extend_grace')}
-                    className="bg-status-critical hover:bg-status-critical-deep text-earth-bg font-bold text-xs px-4 py-2.5 rounded-xl transition-all shadow-sm cursor-pointer whitespace-nowrap shrink-0"
-                  >
-                    Request 7-Day Extension
-                  </button>
-                </div>
-              )}
-
-              {/* Default State: Healthy */}
-              {!(((users.find(u => u.id === clientUserId) || users[0])?.metrics.usageVelocity || 0) < 0.35 && (users.find(u => u.id === clientUserId) || users[0])?.plan !== 'Starter') && !(users.find(u => u.id === clientUserId) || users[0])?.warningFlags.includes('Failed Payment') && (
-                <div className="bg-earth-cocoa/5 border border-earth-sage/20 p-5 rounded-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <div className="flex-1 text-left">
-                    <h4 className="text-xs font-bold text-earth-cocoa/75 uppercase tracking-wider">
-                      Subscription Status: Healthy
-                    </h4>
-                    <p className="text-xs text-earth-cocoa/70 mt-1.5 leading-relaxed">
-                      Your services are fully configured and functional. Uptime SLA is currently operating at 99.98% across all active regions.
-                    </p>
+                {/* Service Log Ticker */}
+                <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm flex-1 max-h-[220px]">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-earth-cocoa/65">YOUR RECENT ACCOUNT HISTORY LOG</span>
+                  <div className="flex flex-col gap-2 overflow-y-auto max-h-[140px]">
+                    {(loggedInUser?.activityLogs || []).map((log, idx) => (
+                      <div key={idx} className="flex gap-2 text-[10px] text-earth-cocoa/75 items-start">
+                        <span className="font-bold text-earth-sage shrink-0">{log.date}</span>
+                        <span className="text-earth-cocoa/30 shrink-0">|</span>
+                        <span className="text-left flex-1 leading-normal">{log.details}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              )}
-            </div>
-
-            {/* Service Log Ticker */}
-            <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col gap-3 shadow-sm">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-earth-cocoa/65">YOUR RECENT ACCOUNT HISTORY LOG</span>
-              <div className="flex flex-col gap-2 max-h-[140px] overflow-y-auto">
-                {((users.find(u => u.id === clientUserId) || users[0])?.activityLogs || []).map((log, idx) => (
-                  <div key={idx} className="flex gap-2 text-[10px] text-earth-cocoa/75 items-start">
-                    <span className="font-bold text-earth-sage shrink-0">{log.date}</span>
-                    <span className="text-earth-cocoa/30 shrink-0">|</span>
-                    <span className="text-left flex-1 leading-normal">{log.details}</span>
-                  </div>
-                ))}
               </div>
+
             </div>
           </div>
         ) : (
