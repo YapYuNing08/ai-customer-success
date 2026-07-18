@@ -5,7 +5,6 @@ import type { Report } from '../../types';
 import { buildRescuePlanReport } from '../../utils/reports';
 import { ReportSuccessModal } from '../../components/modals/ReportSuccessModal';
 import { OutageAlertModal } from '../../components/modals/OutageAlertModal';
-import { GridView } from './GridView';
 import { DashboardTab } from './DashboardTab';
 import { CustomersTab } from './CustomersTab';
 import { HealthTab } from './HealthTab';
@@ -19,7 +18,6 @@ export function ConsolePage(props: any) {
   const [customerSearch, setCustomerSearch] = useState<string>('');
   const [filterPlan, setFilterPlan] = useState<string>('all');
   const [filterRisk, setFilterRisk] = useState<string>('all');
-  const [workspaceMode, setWorkspaceMode] = useState<'successhub' | 'grid'>('successhub');
   const [showNotifications, setShowNotifications] = useState(false);
   const [showSettingsDropdown, setShowSettingsDropdown] = useState(false);
   const [showOutageAlertModal, setShowOutageAlertModal] = useState(false);
@@ -165,30 +163,8 @@ export function ConsolePage(props: any) {
               
               {/* Top Navigation */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-earth-sage/20 w-full">
-                <div className="flex items-center gap-6 text-xs font-bold text-earth-cocoa/65 uppercase tracking-wider">
-                  <button 
-                    onClick={() => setWorkspaceMode('successhub')}
-                    className={`cursor-pointer transition-all hover:text-earth-clay pb-1 ${
-                      workspaceMode === 'successhub' 
-                        ? 'text-earth-clay border-b-2 border-earth-clay font-black' 
-                        : 'text-earth-cocoa/65'
-                    }`}
-                  >
-                    SuccessHub
-                  </button>
-                  
-                  <button 
-                    onClick={() => setWorkspaceMode('grid')}
-                    className={`cursor-pointer transition-all hover:text-earth-clay pb-1 ${
-                      workspaceMode === 'grid' 
-                        ? 'text-earth-clay border-b-2 border-earth-clay font-black' 
-                        : 'text-earth-cocoa/65'
-                    }`}
-                  >
-                    Grid
-                  </button>
-                  
-
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] uppercase font-extrabold tracking-widest text-earth-clay">SubSentry Workspace</span>
                 </div>
                 
                 <div className="flex items-center gap-4 w-full sm:w-auto">
@@ -200,10 +176,7 @@ export function ConsolePage(props: any) {
                       onChange={(e) => setCustomerSearch(e.target.value)}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') {
-                          if (workspaceMode !== 'grid') {
-                            setWorkspaceMode('successhub');
-                            setConsoleTab('customers');
-                          }
+                          setConsoleTab('customers');
                         }
                       }}
                       className="bg-[#efe9d2]/35 border border-earth-sage/35 rounded-lg py-1.5 pl-8 pr-3 text-xs outline-none focus:border-earth-clay w-full sm:w-48 text-earth-cocoa font-bold placeholder-earth-cocoa/50"
@@ -359,9 +332,7 @@ export function ConsolePage(props: any) {
                   <img src={users[0]?.avatar} className="w-6 h-6 rounded-full border border-earth-sage/40 object-cover" />
                 </div>
               </div>
-              {workspaceMode === 'grid' ? (
-                <GridView filteredConsoleUsers={filteredConsoleUsers} customerSearch={customerSearch} setCustomerSearch={setCustomerSearch} filterPlan={filterPlan} setFilterPlan={setFilterPlan} filterRisk={filterRisk} setFilterRisk={setFilterRisk} setSelectedConsoleUser={setSelectedConsoleUser} setConsoleTab={setConsoleTab} setWorkspaceMode={setWorkspaceMode} />
-              ) : consoleTab === 'dashboard' ? (
+              {consoleTab === 'dashboard' ? (
                 <DashboardTab dist={dist} expScore={expScore} expLabel={expLabel} />
               ) : consoleTab === 'customers' ? (
                 <CustomersTab selectedConsoleUser={selectedConsoleUser} setSelectedConsoleUser={setSelectedConsoleUser} users={users} handleUpdateUser={handleUpdateUser} customerSearch={customerSearch} setCustomerSearch={setCustomerSearch} filterPlan={filterPlan} setFilterPlan={setFilterPlan} filterRisk={filterRisk} setFilterRisk={setFilterRisk} filteredConsoleUsers={filteredConsoleUsers} />
@@ -380,12 +351,7 @@ export function ConsolePage(props: any) {
           onClose={() => setShowOutageAlertModal(false)}
           onNavigate={(tab) => {
             setShowOutageAlertModal(false);
-            if (tab === 'grid') {
-              setConsoleTab('dashboard');
-              setWorkspaceMode('grid');
-            } else {
-              setConsoleTab(tab);
-            }
+            setConsoleTab('customers');
           }}
         />
       )}
