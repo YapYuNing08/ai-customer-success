@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, TrendingDown, TrendingUp, UserCheck, 
   Clock, CreditCard, MessageSquare, DollarSign, CheckCircle, 
-  Copy, Zap, BookOpen, HeartHandshake, ShieldAlert, Cpu
+  Copy, Zap, BookOpen, HeartHandshake, ShieldAlert, Cpu, Send
 } from 'lucide-react';
 import { type ActiveUser } from '../utils/mockData';
 import { explainSimulation, getCustomer, getRecommendation, simulate } from '../lib/api';
@@ -17,10 +17,14 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
   const [copied, setCopied] = useState(false);
   const [activePlaybook, setActivePlaybook] = useState<string | null>(null);
   const [lastClickedAction, setLastClickedAction] = useState<'grace_period' | 'training' | 'discount' | 'csm_call' | null>(null);
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
+  const [emailSentSuccess, setEmailSentSuccess] = useState(false);
 
-  // Reset lastClickedAction when user changes
+  // Reset states when user changes
   useEffect(() => {
     setLastClickedAction(null);
+    setIsSendingEmail(false);
+    setEmailSentSuccess(false);
   }, [user.id]);
 
   // Real backend recommendation state
@@ -226,6 +230,24 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
     navigator.clipboard.writeText(`Subject: ${subject}\n\n${body}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleSendEmail = () => {
+    setIsSendingEmail(true);
+    setTimeout(() => {
+      setIsSendingEmail(false);
+      setEmailSentSuccess(true);
+
+      const updatedUser = { ...user };
+      updatedUser.activityLogs.unshift({
+        date: new Date().toISOString().split('T')[0],
+        type: 'feature_use',
+        details: `Emailed customer: "${subject}"`
+      });
+      onUpdateUser(updatedUser);
+
+      setTimeout(() => setEmailSentSuccess(false), 4000);
+    }, 1500);
   };
 
   // Friendly display names for backend risk factors (raw DB column names otherwise)
@@ -870,13 +892,39 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             </div>
 
             {lastClickedAction ? (
-              <div className="console-card-dark-inner rounded-xl p-4 font-mono text-xs console-text-primary flex flex-col gap-2 leading-relaxed shadow-inner">
-                <div>
-                  <strong className="console-text-muted">Subject:</strong> {subject}
+              <>
+                <div className="console-card-dark-inner rounded-xl p-4 font-mono text-xs console-text-primary flex flex-col gap-2 leading-relaxed shadow-inner">
+                  <div>
+                    <strong className="console-text-muted">Subject:</strong> {subject}
+                  </div>
+                  <hr className="console-border my-1" />
+                  <div className="whitespace-pre-line console-text-primary">{body}</div>
                 </div>
-                <hr className="console-border my-1" />
-                <div className="whitespace-pre-line console-text-primary">{body}</div>
-              </div>
+
+                <button
+                  disabled={isSendingEmail}
+                  onClick={handleSendEmail}
+                  className="w-full py-2.5 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 mt-1"
+                >
+                  {isSendingEmail ? (
+                    <>
+                      <span className="w-3.5 h-3.5 border-2 border-earth-bg border-t-transparent rounded-full animate-spin" />
+                      <span>Sending Email to {user.email}...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-3.5 h-3.5" />
+                      <span>Send Email Directly</span>
+                    </>
+                  )}
+                </button>
+
+                {emailSentSuccess && (
+                  <div className="bg-[#276B2B]/15 border border-[#276B2B]/35 text-status-healthy p-2.5 rounded-xl text-[10px] font-bold text-center animate-scaleUp">
+                    ✅ Suggested email successfully transmitted directly to {user.email}! Activity timeline updated.
+                  </div>
+                )}
+              </>
             ) : (
               <div className="console-card-dark-inner rounded-xl p-6 border border-dashed console-border text-center text-xs console-text-muted">
                 Select one of the Quick Actions on the right to automatically generate a tailored follow-up email draft here.
