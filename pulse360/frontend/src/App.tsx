@@ -682,6 +682,14 @@ System Status: Live
                       placeholder="Search customers..."
                       value={customerSearch}
                       onChange={(e) => setCustomerSearch(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          if (workspaceMode !== 'grid') {
+                            setWorkspaceMode('successhub');
+                            setConsoleTab('customers');
+                          }
+                        }
+                      }}
                       className="bg-[#efe9d2]/35 border border-earth-sage/35 rounded-lg py-1.5 pl-8 pr-3 text-xs outline-none focus:border-earth-clay w-full sm:w-48 text-earth-cocoa font-bold placeholder-earth-cocoa/50"
                     />
                     <Search className="w-3.5 h-3.5 text-earth-cocoa/50 absolute left-2.5 top-2.5" />
