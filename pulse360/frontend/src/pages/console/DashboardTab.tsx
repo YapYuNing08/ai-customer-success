@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Cpu, Users, Heart, Clock, Activity, Send, Mail, MessageCircle } from 'lucide-react';
 
 export function DashboardTab(props: any) {
@@ -13,6 +13,16 @@ export function DashboardTab(props: any) {
   } | null>(null);
   const [isSendingBroadcast, setIsSendingBroadcast] = useState(false);
   const [broadcastSuccess, setBroadcastSuccess] = useState(false);
+  const [selectedRecipientIds, setSelectedRecipientIds] = useState<string[]>([]);
+
+  // Automatically select all recipients when modal opens
+  useEffect(() => {
+    if (activeBroadcast) {
+      setSelectedRecipientIds(activeBroadcast.recipients.map(r => r.id));
+    } else {
+      setSelectedRecipientIds([]);
+    }
+  }, [activeBroadcast]);
 
   const getBroadcastTemplate = (groupName: string, type: 'email' | 'whatsapp', names: string[]) => {
     const isBilling = groupName.includes('Billing') || groupName.includes('Payment');
@@ -574,14 +584,35 @@ Is there a specific account or recent system event you would like me to analyze?
                         </div>
 
                         {/* Recipients list */}
-                        <div className="text-xs border-y border-earth-sage/20 py-3 flex flex-col gap-1">
-                          <span className="font-extrabold text-[10px] text-earth-clay uppercase tracking-wider">RECIPIENT PORTFOLIOS ({activeBroadcast.recipients.length}):</span>
-                          <div className="flex flex-wrap gap-1 mt-1 max-h-[60px] overflow-y-auto">
-                            {activeBroadcast.recipients.map((r: any) => (
-                              <span key={r.id} className="bg-earth-bg/40 border border-earth-sage/15 px-2 py-0.5 rounded text-[10px] font-bold text-earth-cocoa">
-                                {r.name} ({activeBroadcast.type === 'email' ? r.email : 'WhatsApp Live'})
-                              </span>
-                            ))}
+                        <div className="text-xs border-y border-earth-sage/20 py-3 flex flex-col gap-1.5">
+                          <span className="font-extrabold text-[10px] text-earth-clay uppercase tracking-wider">
+                            RECIPIENT PORTFOLIOS ({selectedRecipientIds.length}/{activeBroadcast.recipients.length} SELECTED):
+                          </span>
+                          <div className="flex flex-wrap gap-1.5 mt-1 max-h-[90px] overflow-y-auto pr-1">
+                            {activeBroadcast.recipients.map((r: any) => {
+                              const isSelected = selectedRecipientIds.includes(r.id);
+                              return (
+                                <button
+                                  key={r.id}
+                                  disabled={broadcastSuccess || isSendingBroadcast}
+                                  onClick={() => {
+                                    if (isSelected) {
+                                      setSelectedRecipientIds(prev => prev.filter(id => id !== r.id));
+                                    } else {
+                                      setSelectedRecipientIds(prev => [...prev, r.id]);
+                                    }
+                                  }}
+                                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-[10px] font-bold transition-all border cursor-pointer disabled:cursor-not-allowed ${
+                                    isSelected
+                                      ? 'bg-earth-cocoa text-earth-bg border-earth-cocoa shadow-sm font-extrabold'
+                                      : 'bg-earth-bg/30 text-earth-cocoa/40 border-earth-sage/20 line-through opacity-60'
+                                  }`}
+                                >
+                                  <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-status-healthy' : 'bg-earth-cocoa/40'}`} />
+                                  <span>{r.name} ({activeBroadcast.type === 'email' ? r.email : 'WhatsApp Live'})</span>
+                                </button>
+                              );
+                            })}
                           </div>
                         </div>
 
@@ -604,7 +635,7 @@ Is there a specific account or recent system event you would like me to analyze?
                         {/* Success State */}
                         {broadcastSuccess && (
                           <div className="bg-[#276B2B]/15 border border-[#276B2B]/35 text-status-healthy p-3.5 rounded-xl text-xs font-bold text-center animate-scaleUp">
-                            ✅ Broadcast transmitted successfully to {activeBroadcast.recipients.length} customer nodes! System logs updated.
+                            ✅ Broadcast transmitted successfully to {selectedRecipientIds.length} customer nodes! System logs updated.
                           </div>
                         )}
 
@@ -628,18 +659,18 @@ Is there a specific account or recent system event you would like me to analyze?
                             </button>
                           ) : (
                             <button 
-                              disabled={isSendingBroadcast}
+                              disabled={isSendingBroadcast || selectedRecipientIds.length === 0}
                               onClick={() => {
                                 setIsSendingBroadcast(true);
                                 setTimeout(() => {
                                   setIsSendingBroadcast(false);
                                   setBroadcastSuccess(true);
                                   if (addTelemetry) {
-                                    addTelemetry(`Transmitted group ${activeBroadcast.type} broadcast to ${activeBroadcast.recipients.length} accounts (${activeBroadcast.groupName}).`);
+                                    addTelemetry(`Transmitted group ${activeBroadcast.type} broadcast to ${selectedRecipientIds.length} accounts (${activeBroadcast.groupName}).`);
                                   }
                                 }, 1500);
                               }}
-                              className="px-5 py-2.5 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md disabled:opacity-50"
+                              className="px-5 py-2.5 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {isSendingBroadcast ? (
                                 <>
