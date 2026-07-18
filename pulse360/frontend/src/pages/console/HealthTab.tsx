@@ -9,7 +9,7 @@ export function HealthTab(props: any) {
                     <div>
                       <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight font-serif">Customer Health Analytics</h1>
                       <p className="text-xs text-earth-cocoa/75 mt-1 max-w-xl">
-                        Aggregated metrics, health trends, and telemetry breakdowns across active cohorts.
+                        Aggregated metrics, health trends, and telemetry breakdowns across active accounts.
                       </p>
                     </div>
                     <div className="flex items-center gap-3 text-xs font-bold shrink-0">
@@ -70,60 +70,6 @@ export function HealthTab(props: any) {
                     
                     {/* Left Column (Span 7) */}
                     <div className="lg:col-span-7 flex flex-col gap-6 w-full">
-                      {/* Telemetry Status Breakdown */}
-                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
-                        <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
-                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">TELEMETRY STATUS BREAKDOWN</span>
-                          <span className="text-[10px] font-bold text-earth-sage uppercase">System checks</span>
-                        </div>
-
-                        <div className="flex flex-col gap-4">
-                          {/* Item 1 */}
-                          <div className="flex flex-col gap-1">
-                            <div className="flex justify-between items-baseline text-xs">
-                              <span className="font-bold text-earth-cocoa">Login Frequency (Engagement)</span>
-                              <span className="font-extrabold text-status-healthy">82%</span>
-                            </div>
-                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
-                              <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '82%' }} />
-                            </div>
-                          </div>
-
-                          {/* Item 2 */}
-                          <div className="flex flex-col gap-1">
-                            <div className="flex justify-between items-baseline text-xs">
-                              <span className="font-bold text-earth-cocoa">Feature Utilization (Usage)</span>
-                              <span className="font-extrabold text-earth-clay">64%</span>
-                            </div>
-                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
-                              <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '64%' }} />
-                            </div>
-                          </div>
-
-                          {/* Item 3 */}
-                          <div className="flex flex-col gap-1">
-                            <div className="flex justify-between items-baseline text-xs">
-                              <span className="font-bold text-earth-cocoa">Support Ticket Resolution (Response)</span>
-                              <span className="font-extrabold text-status-healthy">91%</span>
-                            </div>
-                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
-                              <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '91%' }} />
-                            </div>
-                          </div>
-
-                          {/* Item 4 */}
-                          <div className="flex flex-col gap-1">
-                            <div className="flex justify-between items-baseline text-xs">
-                              <span className="font-bold text-earth-cocoa">Payment & Invoicing (Billing)</span>
-                              <span className="font-extrabold text-status-healthy">94%</span>
-                            </div>
-                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
-                              <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '94%' }} />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
                       {/* Recent transitions log */}
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
                         <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
@@ -157,7 +103,7 @@ export function HealthTab(props: any) {
                       {/* Health Cohort Segmentation */}
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm h-full justify-between">
                         <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full">
-                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">HEALTH COHORTS</span>
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER'S HEALTH</span>
                           <span className="text-[10px] font-bold text-earth-sage uppercase">Distribution of customer base</span>
                         </div>
 

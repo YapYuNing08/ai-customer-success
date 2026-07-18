@@ -118,6 +118,60 @@ export function DashboardTab(props: any) {
                         </div>
                       </div>
 
+                      {/* Telemetry Status Breakdown */}
+                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
+                        <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">TELEMETRY STATUS BREAKDOWN</span>
+                          <span className="text-[10px] font-bold text-earth-sage uppercase">System checks</span>
+                        </div>
+
+                        <div className="flex flex-col gap-4">
+                          {/* Item 1 */}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <span className="font-bold text-earth-cocoa">Login Frequency (Engagement)</span>
+                              <span className="font-extrabold text-status-healthy">82%</span>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '82%' }} />
+                            </div>
+                          </div>
+
+                          {/* Item 2 */}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <span className="font-bold text-earth-cocoa">Feature Utilization (Usage)</span>
+                              <span className="font-extrabold text-earth-clay">64%</span>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '64%' }} />
+                            </div>
+                          </div>
+
+                          {/* Item 3 */}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <span className="font-bold text-earth-cocoa">Support Ticket Resolution (Response)</span>
+                              <span className="font-extrabold text-status-healthy">91%</span>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '91%' }} />
+                            </div>
+                          </div>
+
+                          {/* Item 4 */}
+                          <div className="flex flex-col gap-1">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <span className="font-bold text-earth-cocoa">Payment & Invoicing (Billing)</span>
+                              <span className="font-extrabold text-status-healthy">94%</span>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '94%' }} />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
                       {/* Recent resolutions log */}
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
                         <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
@@ -168,39 +222,39 @@ export function DashboardTab(props: any) {
                       {/* Experience drivers */}
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm h-full">
                         <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full text-left">
-                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">EXPERIENCE DRIVERS</span>
-                          <span className="text-[10px] font-bold text-earth-sage uppercase">Impact on brand loyalty</span>
+                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER SATISFACTION DRIVERS</span>
+                          <span className="text-[10px] font-bold text-earth-sage uppercase">What keeps customers happy & loyal</span>
                         </div>
 
                         <div className="flex flex-col gap-4 text-xs font-bold text-earth-cocoa/80 text-left">
                           <div className="flex justify-between items-center p-2 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
                             <div>
-                              <span>Uptime SLA</span>
-                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">Sustained 99.9% uptime</span>
+                              <span>System Reliability</span>
+                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">How often the app is online & working</span>
                             </div>
                             <span className="text-status-healthy font-extrabold">+18%</span>
                           </div>
 
                           <div className="flex justify-between items-center p-2 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
                             <div>
-                              <span>Usage Volume Growth</span>
-                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">SaaS active feature growth</span>
+                              <span>Increasing Usage</span>
+                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">Customers using more features over time</span>
                             </div>
                             <span className="text-status-healthy font-extrabold">+12%</span>
                           </div>
 
                           <div className="flex justify-between items-center p-2 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
                             <div>
-                              <span>CSM Check-Ins</span>
-                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">Quarterly business reviews</span>
+                              <span>Regular Check-Ins</span>
+                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">Our customer support talking with them</span>
                             </div>
                             <span className="text-status-healthy font-extrabold">+15%</span>
                           </div>
 
                           <div className="flex justify-between items-center p-2 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
                             <div>
-                              <span>Failed Invoices</span>
-                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">Declined card frequency</span>
+                              <span>Failed Payments</span>
+                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">How often credit card renewals decline</span>
                             </div>
                             <span className="text-status-critical font-extrabold">-8%</span>
                           </div>

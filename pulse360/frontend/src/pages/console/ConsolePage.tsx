@@ -150,12 +150,7 @@ export function ConsolePage(props: any) {
                 </nav>
               </div>
 
-              <button 
-                onClick={() => { setConsoleTab('reports'); setSelectedConsoleUser(null); }}
-                className="w-full bg-earth-cocoa hover:bg-earth-clay text-earth-bg py-3 rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
-              >
-                New Report
-              </button>
+              
             </div>
 
             {/* Main Area */}
