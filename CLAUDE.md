@@ -11,7 +11,7 @@ AI-powered customer success & subscription optimization platform. Built for a 7-
 - Backend: FastAPI
 - Database: PostgreSQL, hosted (Neon or Supabase free tier) — not local, not Docker, not SQLite. One shared connection string in `.env` means the whole team and the demo machine hit the same data, no local drift, no container failure risk mid-week.
 - ML: pandas, numpy, scikit-learn, XGBoost, SHAP
-- GenAI: Gemini API — used only for the copilot feature (see below), not for churn/health-score logic, which must stay deterministic and fast for live judging
+- GenAI: Gemini API (gemini-2.5-flash via REST) — used for the copilot feature (see below) and the simulator's narrative layer (`backend/app/ml/narrator.py`). Never for churn/health-score numbers, which must stay deterministic and fast for live judging: Gemini only rewrites already-computed XGBoost results as plain-language text, and every call has a deterministic fallback template so the demo can't block. Gotcha: 2.5-flash is a thinking model — requests must set `thinkingConfig.thinkingBudget: 0` or it burns the whole token budget on hidden reasoning and returns empty text.
 
 ## Data
 - Base dataset: Kaggle Telco Customer Churn (7,043 rows) at `pulse360/backend/plots/Telco-Customer-Churn.csv` — real churn labels, tenure, contract, payment fields
@@ -32,7 +32,7 @@ pulse360/
 │       ├── data.py        # in-memory placeholder customers (demo-safety fallback only)
 │       ├── models/        # pydantic schemas
 │       ├── db/             # SQLAlchemy models + session + init.sql
-│       └── ml/              # explainer.py: model loading + scoring for /simulate
+│       └── ml/              # explainer.py: model loading + scoring for /simulate; narrator.py: Gemini narrative + fallback for /simulate/explain
 ├── ml/
 │   ├── data/          # raw + processed dataset (gitignored except sample)
 │   ├── load_data.py    # CSV → synthetic columns → Postgres (deterministic, idempotent)
@@ -43,14 +43,19 @@ pulse360/
 
 There is a stale duplicate frontend at the repo root (`/src`, package "subsentry") — `pulse360/frontend` is canonical; do not edit the root copy.
 
+## Running locally (Windows gotchas)
+- Backend: from `pulse360/backend/`, run `venv\Scripts\uvicorn app.main:app --reload --port 8000`. The server uses THAT venv — check dependencies against `venv`, not system Python (venv has `requests` but not `httpx`; system Python has `httpx` but no uvicorn).
+- Only ever run ONE uvicorn instance. Multiple `--reload` instances, or an import error in a reload worker, can wedge every request (even /health hangs). Watchfiles also sometimes misses a change and keeps serving a stale worker — if an edit doesn't take effect, do a full kill + restart, don't keep editing.
+
 ## API contract (drives both frontend and backend — don't let either side drift from this)
-Customer object: `customer_id, name, subscription_plan, health_score, churn_probability, risk_tier, shap_reasons: [{feature, contribution}], recommended_action, monthly_usage_pct`
+Customer object: `customer_id, name, subscription_plan, health_score, churn_probability, risk_tier, shap_reasons: [{feature, contribution}], recommended_action, monthly_usage_pct, monthly_charges`. Detail view adds the raw signals (`login_frequency, feature_usage, support_ticket_count, feedback_score`) so the simulator can initialize sliders from real values (untouched run = zero delta).
 
 Endpoints:
 - `GET /customers` — list + health scores, for dashboard table
 - `GET /customers/{id}` — detail + SHAP breakdown, for drill-down
 - `GET /customers/{id}/recommendation` — Next Best Action output
-- `POST /customers/{id}/simulate` — What-If simulator, takes an action param, returns projected delta
+- `POST /customers/{id}/simulate` — What-If simulator, takes lever values, returns projected churn/health deltas + revenue framing (`monthly_charges`, `projected_monthly_revenue_saved`, `projected_annual_revenue_saved`)
+- `POST /customers/{id}/simulate/explain` — same levers; returns `{customer_id, narrative, source}` where `source` is `"gemini"` or `"fallback"`. UI renders numbers instantly from /simulate, then streams this narrative in after.
 
 ## Feature priority (do not build out of order — scope discipline matters more than feature count for this rubric)
 
@@ -62,10 +67,10 @@ Endpoints:
 
 **Build if core spine finishes on schedule (spine is done — these are next):**
 5. Subscription Optimizer — usage% vs. plan tier, threshold-based upgrade/downgrade rule. Downgrade recommendation is the key innovativeness signal — most competing teams will only ever suggest upsell. (`monthly_charges` + `contract` columns are already in the DB for this.)
-6. What-If Retention Simulator — backend is done (POST /simulate runs the real model with per-customer deltas); remaining work is UI polish + revenue-delta framing
+6. What-If Retention Simulator ✅ DONE (2026-07-17) — POST /simulate runs the real model with per-customer deltas; UI sliders initialize from the customer's real DB values with a "Reset to Today's Values" button; results show revenue impact ((baseline churn − simulated churn) × monthly_charges × 12) plus a Gemini-written retention plan with deterministic fallback
 
 **Fake it, don't build it:**
-7. Onboarding Agent — do NOT build real dwell-time/click-tracking ML. Deterministic scripted trigger only: `time_on_page > 10min AND same_button_clicked >= 3 → show popup`, run against a scripted demo customer.
+7. Onboarding Agent — do NOT build real dwell-time/click-tracking ML. Deterministic scripted trigger only: `time_on_page > 2min AND same_button_clicked >= 3 → show popup`, run against a scripted demo customer.
 8. Copilot — do NOT build live RAG during the judged demo. Pre-generate answers for 3-4 rehearsed questions, route those exact queries to a real Gemini call with retrieved context. Everything outside the rehearsed set falls back to a canned response — do not risk a live LLM call failing on stage.
 
 **Drop entirely for the hackathon:**

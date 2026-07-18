@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, TrendingDown, TrendingUp, UserCheck, 
   Clock, CreditCard, MessageSquare, DollarSign, CheckCircle, 
   Copy, Zap, BookOpen, HeartHandshake, ShieldAlert, Cpu
 } from 'lucide-react';
 import { type ActiveUser } from '../utils/mockData';
-import { getRecommendation, simulate } from '../lib/api';
+import { explainSimulation, getCustomer, getRecommendation, simulate } from '../lib/api';
 
 interface ActiveUserInsightProps {
   user: ActiveUser;
@@ -30,33 +30,92 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
       });
   }, [user.id]);
 
-  // What-If Simulator Levers State
-  const [simLevers, setSimLevers] = useState({
+  // What-If Simulator Levers State — estimated defaults until the customer's
+  // real stored values arrive from GET /customers/{id}.
+  const estimatedLevers = {
     login_frequency: 3.5,
     feature_usage: 0.5,
     monthly_usage_pct: Math.round(user.metrics.usageVelocity * 100),
     support_ticket_count: user.metrics.failedPayments > 0 ? 3 : 1,
     feedback_score: user.healthScore > 70 ? 8.5 : 5.8,
     payment_status: user.metrics.failedPayments > 0 ? 'past_due' : 'active'
-  });
+  };
+  const [simLevers, setSimLevers] = useState(estimatedLevers);
+  const [baselineLevers, setBaselineLevers] = useState(estimatedLevers);
+  const [leversLoaded, setLeversLoaded] = useState(false);
 
   const [simResult, setSimResult] = useState<any>(null);
   const [simLoading, setSimLoading] = useState(false);
   const [simError, setSimError] = useState<string | null>(null);
 
+  // AI narrative for the last simulation (Gemini, with backend fallback text).
+  const [aiNarrative, setAiNarrative] = useState<string | null>(null);
+  const [aiSource, setAiSource] = useState<'gemini' | 'fallback' | null>(null);
+  const [aiLoading, setAiLoading] = useState(false);
+  const narrativeSeq = useRef(0); // ignore out-of-order responses on rapid re-runs
+
+  const clamp = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+  // Start the sliders at this customer's real current values, so running the
+  // simulator without touching anything shows a zero delta (a true baseline).
+  useEffect(() => {
+    setLeversLoaded(false);
+    setSimResult(null);
+    setSimError(null);
+    setAiNarrative(null);
+    setAiSource(null);
+    setAiLoading(false);
+    narrativeSeq.current += 1;
+    getCustomer(user.id)
+      .then((c: any) => {
+        const real = {
+          login_frequency: c.login_frequency != null ? clamp(Math.round(c.login_frequency * 10) / 10, 0.1, 10) : estimatedLevers.login_frequency,
+          feature_usage: c.feature_usage != null ? clamp(Math.round(c.feature_usage * 20) / 20, 0, 1) : estimatedLevers.feature_usage,
+          monthly_usage_pct: c.monthly_usage_pct != null ? clamp(Math.round(c.monthly_usage_pct), 5, 100) : estimatedLevers.monthly_usage_pct,
+          support_ticket_count: c.support_ticket_count != null ? clamp(c.support_ticket_count, 0, 10) : estimatedLevers.support_ticket_count,
+          feedback_score: c.feedback_score != null ? clamp(Math.round(c.feedback_score * 10) / 10, 1, 10) : estimatedLevers.feedback_score,
+          payment_status: c.payment_status || estimatedLevers.payment_status,
+        };
+        setSimLevers(real);
+        setBaselineLevers(real);
+      })
+      .catch((err) => {
+        console.warn('Could not load current signal values; simulator keeps estimated defaults.', err);
+      })
+      .finally(() => setLeversLoaded(true));
+  }, [user.id]);
+
   const runSimulation = () => {
     setSimLoading(true);
     setSimError(null);
-    simulate(user.id, {
+    const levers = {
       login_frequency: Number(simLevers.login_frequency),
       feature_usage: Number(simLevers.feature_usage),
       monthly_usage_pct: Number(simLevers.monthly_usage_pct),
       support_ticket_count: parseInt(String(simLevers.support_ticket_count)),
       feedback_score: Number(simLevers.feedback_score),
       payment_status: simLevers.payment_status
-    })
+    };
+    simulate(user.id, levers)
       .then((res) => {
         setSimResult(res);
+        // Numbers are shown immediately; the AI retention plan streams in after.
+        const seq = ++narrativeSeq.current;
+        setAiNarrative(null);
+        setAiSource(null);
+        setAiLoading(true);
+        explainSimulation(user.id, levers)
+          .then((n) => {
+            if (seq !== narrativeSeq.current) return;
+            setAiNarrative(n.narrative);
+            setAiSource(n.source);
+          })
+          .catch((err) => {
+            console.warn('AI narrative unavailable for this run.', err);
+          })
+          .finally(() => {
+            if (seq === narrativeSeq.current) setAiLoading(false);
+          });
       })
       .catch((err) => {
         setSimError('Could not run the simulation right now. Please try again.');
@@ -169,6 +228,15 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
     monthly_charges: 'Monthly Bill',
     total_charges: 'Total Spent'
   };
+
+  // Revenue framing for the simulator: expected 12-month revenue kept (or
+  // lost) = churn-risk change x this customer's monthly bill. Backend sends
+  // it computed from real charges; fall back to the displayed MRR otherwise.
+  const annualRevenueDelta = simResult
+    ? (simResult.projected_annual_revenue_saved ?? -simResult.delta_churn * user.mrr * 12)
+    : 0;
+  const revenueBasisMonthly = simResult?.monthly_charges ?? user.mrr;
+  const fmtMoney = (v: number) => Math.abs(v).toLocaleString(undefined, { maximumFractionDigits: 0 });
 
   const activeFactors = recommendation?.shap_reasons
     ? recommendation.shap_reasons.map((r: any) => ({
@@ -401,7 +469,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           </p>
 
           <div className="flex flex-col gap-4 my-2">
-            {activeFactors.map((factor) => {
+            {activeFactors.map((factor: { name: string; impact: number }) => {
               const isPositive = factor.impact > 0;
               return (
                 <div key={factor.name} className="flex flex-col gap-1.5">
@@ -475,16 +543,33 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               "What-If" Simulator
             </h3>
             <p className="text-xs console-text-secondary leading-normal">
-              Try changing this customer's situation below to see how their risk of leaving would change.
+              The sliders start at this customer's current situation. Change them to see how their risk of leaving and your revenue would change.
             </p>
           </div>
-          <button
-            onClick={runSimulation}
-            disabled={simLoading}
-            className="self-start md:self-auto bg-earth-cocoa hover:bg-earth-clay text-earth-bg px-5 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-earth-cocoa/20 transition-all duration-200 cursor-pointer disabled:opacity-50"
-          >
-            {simLoading ? 'Calculating...' : 'See What Would Happen'}
-          </button>
+          <div className="flex items-center gap-2 self-start md:self-auto">
+            <button
+              onClick={() => {
+                setSimLevers(baselineLevers);
+                setSimResult(null);
+                setSimError(null);
+                setAiNarrative(null);
+                setAiSource(null);
+                setAiLoading(false);
+                narrativeSeq.current += 1;
+              }}
+              disabled={!leversLoaded}
+              className="border console-border console-text-secondary hover:console-text-primary bg-earth-bg/5 hover:bg-earth-bg/10 px-4 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer disabled:opacity-50"
+            >
+              Reset to Today's Values
+            </button>
+            <button
+              onClick={runSimulation}
+              disabled={simLoading || !leversLoaded}
+              className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg px-5 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-earth-cocoa/20 transition-all duration-200 cursor-pointer disabled:opacity-50"
+            >
+              {!leversLoaded ? 'Loading Current Values...' : simLoading ? 'Calculating...' : 'See What Would Happen'}
+            </button>
+          </div>
         </div>
 
         {/* Simulator Grid */}
@@ -650,6 +735,52 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                     </span>
                   </div>
                 </div>
+
+                {/* Revenue Impact (the money view of the same change) */}
+                <div className={`p-3.5 rounded-xl flex flex-col gap-1 border ${
+                  Math.round(annualRevenueDelta) > 0
+                    ? 'bg-status-healthy/10 border-status-healthy/30'
+                    : Math.round(annualRevenueDelta) < 0
+                    ? 'bg-status-critical/10 border-status-critical/30'
+                    : 'console-card-dark-inner console-border'
+                }`}>
+                  <span className="text-[10px] console-text-muted font-semibold block flex items-center gap-1">
+                    <DollarSign className="w-3 h-3 text-earth-clay" />
+                    REVENUE IMPACT (NEXT 12 MONTHS)
+                  </span>
+                  <span className={`text-2xl font-extrabold mt-1 ${
+                    Math.round(annualRevenueDelta) > 0 ? 'text-status-healthy' : Math.round(annualRevenueDelta) < 0 ? 'text-status-critical' : 'console-text-primary'
+                  }`}>
+                    {Math.round(annualRevenueDelta) > 0 ? `+$${fmtMoney(annualRevenueDelta)} protected` : Math.round(annualRevenueDelta) < 0 ? `-$${fmtMoney(annualRevenueDelta)} at risk` : 'No revenue change'}
+                  </span>
+                  <span className="text-[10px] console-text-muted leading-normal mt-1">
+                    How we got this: the {Math.round(Math.abs(simResult.delta_churn) * 100)}% change in leave-risk × this customer's ${fmtMoney(revenueBasisMonthly)}/mo bill × 12 months. Keeping a customer is far cheaper than winning a new one.
+                  </span>
+                </div>
+
+                {/* AI Retention Advisor — Gemini narrates the computed result */}
+                {(aiLoading || aiNarrative) && (
+                  <div className="console-card-dark-inner border console-border p-3.5 rounded-xl flex flex-col gap-1.5">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] console-text-muted font-semibold flex items-center gap-1">
+                        <Zap className="w-3 h-3 text-earth-clay" />
+                        AI RETENTION ADVISOR
+                      </span>
+                      {aiSource && (
+                        <span className="text-[9px] bg-earth-sage/20 border console-border console-text-primary px-1.5 py-0.5 rounded font-bold uppercase tracking-wider">
+                          {aiSource === 'gemini' ? 'Gemini AI' : 'Instant Summary'}
+                        </span>
+                      )}
+                    </div>
+                    {aiLoading ? (
+                      <span className="text-[11px] console-text-muted italic animate-pulse">
+                        Writing a retention plan for this scenario…
+                      </span>
+                    ) : (
+                      <p className="text-[11px] console-text-secondary leading-relaxed">{aiNarrative}</p>
+                    )}
+                  </div>
+                )}
 
                 {/* Summary sentence */}
                 <p className="text-[11px] console-text-secondary leading-relaxed console-card-dark-inner p-2 rounded-lg mt-1 italic">
