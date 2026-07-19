@@ -656,15 +656,22 @@ Is there a specific account or recent system event you would like me to analyze?
                         <div className="flex flex-col gap-2">
                           <span className="font-extrabold text-xs text-earth-clay uppercase tracking-wider">AI BROADCAST MESSAGE TEMPLATE:</span>
                           {activeBroadcast.type === 'email' && (
-                            <div className="flex flex-col gap-1.5 bg-earth-bg/35 border border-earth-sage/15 p-3 rounded-xl text-xs">
+                            <div className="flex flex-col gap-1 bg-white border border-earth-sage/35 p-3 rounded-2xl text-xs shadow-sm">
                               <span className="font-bold text-earth-cocoa/60 text-xs uppercase">Subject Line:</span>
-                              <div className="font-black text-sm text-earth-cocoa border-b border-earth-sage/10 pb-1.5 mb-0.5">{activeBroadcast.subject}</div>
+                              <input
+                                type="text"
+                                value={activeBroadcast.subject}
+                                disabled={broadcastSuccess || isSendingBroadcast}
+                                onChange={(e) => setActiveBroadcast(prev => prev ? { ...prev, subject: e.target.value } : null)}
+                                className="w-full bg-transparent font-black text-sm text-earth-cocoa outline-none border-b border-transparent focus:border-earth-clay pb-1"
+                              />
                             </div>
                           )}
                           <textarea
-                            readOnly
+                            disabled={broadcastSuccess || isSendingBroadcast}
                             value={activeBroadcast.body}
-                            className="w-full h-56 bg-earth-bg/35 border border-earth-sage/25 p-4 rounded-2xl text-sm font-mono text-earth-cocoa leading-relaxed outline-none resize-none"
+                            onChange={(e) => setActiveBroadcast(prev => prev ? { ...prev, body: e.target.value } : null)}
+                            className="w-full h-56 bg-white border border-earth-sage/35 p-4 rounded-2xl text-sm font-mono text-earth-cocoa leading-relaxed outline-none focus:border-earth-clay shadow-sm"
                           />
                         </div>
 
