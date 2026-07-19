@@ -19,13 +19,29 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
   const [lastClickedAction, setLastClickedAction] = useState<'grace_period' | 'training' | 'discount' | 'csm_call' | null>(null);
   const [isSendingEmail, setIsSendingEmail] = useState(false);
   const [emailSentSuccess, setEmailSentSuccess] = useState(false);
+  const [editedSubject, setEditedSubject] = useState('');
+  const [editedBody, setEditedBody] = useState('');
 
   // Reset states when user changes
   useEffect(() => {
     setLastClickedAction(null);
     setIsSendingEmail(false);
     setEmailSentSuccess(false);
+    setEditedSubject('');
+    setEditedBody('');
   }, [user.id]);
+
+  useEffect(() => {
+    if (lastClickedAction) {
+      const draft = generateEmailDraft();
+      setEditedSubject(draft.subject);
+      setEditedBody(draft.body);
+    } else {
+      setEditedSubject('');
+      setEditedBody('');
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lastClickedAction]);
 
   // Real backend recommendation state
   const [recommendation, setRecommendation] = useState<any>(null);
@@ -198,7 +214,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
   };
 
   // Generate Email Text based on Churn Indicators
-  const generateEmailDraft = () => {
+  function generateEmailDraft() {
     if (!lastClickedAction) {
       return { subject: '', body: '' };
     }
@@ -222,12 +238,10 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
 
     body += `\n\nBest regards,\nCustomer Success Team\nSubSentry`;
     return { subject, body };
-  };
-
-  const { subject, body } = generateEmailDraft();
+  }
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(`Subject: ${subject}\n\n${body}`);
+    navigator.clipboard.writeText(`Subject: ${editedSubject}\n\n${editedBody}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -242,7 +256,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
       updatedUser.activityLogs.unshift({
         date: new Date().toISOString().split('T')[0],
         type: 'feature_use',
-        details: `Emailed customer: "${subject}"`
+        details: `Emailed customer: "${editedSubject}"`
       });
       onUpdateUser(updatedUser);
 
@@ -893,12 +907,26 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
 
             {lastClickedAction ? (
               <>
-                <div className="console-card-dark-inner rounded-xl p-4 font-mono text-xs console-text-primary flex flex-col gap-2 leading-relaxed shadow-inner">
-                  <div>
-                    <strong className="console-text-muted">Subject:</strong> {subject}
+                <div className="flex flex-col gap-3">
+                  {/* Subject input field */}
+                  <div className="flex flex-col gap-1 console-card-dark-inner p-3 rounded-xl text-xs">
+                    <span className="font-bold console-text-muted text-[10px] uppercase">Subject Line:</span>
+                    <input
+                      type="text"
+                      value={editedSubject}
+                      onChange={(e) => setEditedSubject(e.target.value)}
+                      disabled={isSendingEmail}
+                      className="w-full bg-transparent font-bold text-xs console-text-primary outline-none border-b border-transparent focus:border-earth-clay pb-0.5"
+                    />
                   </div>
-                  <hr className="console-border my-1" />
-                  <div className="whitespace-pre-line console-text-primary">{body}</div>
+
+                  {/* Body textarea */}
+                  <textarea
+                    value={editedBody}
+                    onChange={(e) => setEditedBody(e.target.value)}
+                    disabled={isSendingEmail}
+                    className="w-full h-56 console-card-dark-inner border border-transparent p-4 rounded-xl text-xs font-mono console-text-primary leading-relaxed outline-none focus:border-earth-clay shadow-inner"
+                  />
                 </div>
 
                  <button
@@ -922,7 +950,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                 {(user.name.toLowerCase().replace(/\s+/g, '').includes('yap') || user.name.toLowerCase().replace(/\s+/g, '').includes('yuning')) && (
                   <button
                     onClick={() => {
-                      const whatsappText = `Hi ${user.name},\n\n${body}`;
+                      const whatsappText = editedBody;
                       const phone = user.name.toLowerCase().replace(/\s+/g, '').includes('yap') ? '60162897881' : '60122293817';
                       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(whatsappText)}`, '_blank');
                     }}
