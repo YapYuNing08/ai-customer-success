@@ -12,7 +12,7 @@ import { useEffect } from 'react';
 
 // Canonical plan list prices (RM/mo) — must stay in sync with PLAN_OPTIONS in
 // OnboardingWizard.tsx (see CLAUDE.md hard rules).
-const planMrr = { Starter: 400, Growth: 800, Pro: 1200, Enterprise: 4000 } as const;
+const planMrr = { Starter: 50, Growth: 100, Pro: 200, Enterprise: 500 } as const;
 
 const buildYuNingUser = (): ActiveUser => ({
   id: "cus_yuning",
@@ -23,7 +23,7 @@ const buildYuNingUser = (): ActiveUser => ({
   lat: 3.1390,
   lng: 101.6869,
   plan: 'Pro',
-  mrr: 79,
+  mrr: planMrr.Pro,
   healthScore: 45,
   churnProbability: 55,
   warningFlags: ['Using It Less'],
@@ -237,7 +237,7 @@ function App() {
       lat: 3.139,
       lng: 101.6869,
       plan,
-      mrr: plan === 'Enterprise' ? 199 : plan === 'Pro' ? 79 : 39,
+      mrr: planMrr[plan],
       healthScore: 85,
       churnProbability: 8,
       warningFlags: [],

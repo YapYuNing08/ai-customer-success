@@ -138,7 +138,7 @@ export function ClientDashboardPage(props: any) {
                 <div className="flex justify-between items-center text-xs">
                   <span className="text-slate-600">Monthly Contract MRR:</span>
                   <span className="font-bold text-[#0064DC]">
-                    ${loggedInUser?.mrr}/mo
+                    RM{loggedInUser?.mrr}/mo
                   </span>
                 </div>
                 <div className="flex justify-between items-center text-xs">
@@ -335,7 +335,7 @@ export function ClientDashboardPage(props: any) {
                   <div className="flex justify-between items-center border-b border-slate-100 pb-2">
                     <div className="flex flex-col">
                       <span className="text-xs font-extrabold text-[#001871]">Roaming Pass</span>
-                      <span className="text-xs text-slate-500">APAC & Europe • $15/mo</span>
+                      <span className="text-xs text-slate-500">APAC & Europe • RM50/mo</span>
                     </div>
                     <button 
                       onClick={() => {
@@ -359,7 +359,7 @@ export function ClientDashboardPage(props: any) {
                   <div className="flex justify-between items-center">
                     <div className="flex flex-col">
                       <span className="text-xs font-extrabold text-[#001871]">5G Extra Quota</span>
-                      <span className="text-xs text-slate-500">+10 GB High-Speed • $10/mo</span>
+                      <span className="text-xs text-slate-500">+10 GB High-Speed • RM10/mo</span>
                     </div>
                     <button 
                       onClick={() => {
@@ -455,11 +455,11 @@ export function ClientDashboardPage(props: any) {
                       if (lower.includes("bill") || lower.includes("invoice") || lower.includes("charge") || lower.includes("pay")) {
                         botReply = hasFailedPayment 
                           ? `⚠️ ALERT: Your last credit card renewal declined. Please request a Grace Extension or update payment details.`
-                          : `Your account is healthy! Current subscription costs $${loggedInUser.mrr}/mo and auto-renews via credit card.`;
+                          : `Your account is healthy! Current subscription costs RM${loggedInUser.mrr}/mo and auto-renews via credit card.`;
                       } else if (lower.includes("limit") || lower.includes("data") || lower.includes("usage") || lower.includes("quota")) {
-                        botReply = `You are currently utilizing ${Math.round((loggedInUser.metrics.usageVelocity || 0) * 100)}% of your plan thresholds. Recommend buying 5G Extra Data (+10 GB) for $10 to prevent speed drops.`;
+                        botReply = `You are currently utilizing ${Math.round((loggedInUser.metrics.usageVelocity || 0) * 100)}% of your plan thresholds. Recommend buying 5G Extra Data (+10 GB) for RM10 to prevent speed drops.`;
                       } else if (lower.includes("roaming") || lower.includes("travel") || lower.includes("abroad")) {
-                        botReply = "Planning a trip? Buy our APAC & Europe Roaming Pass add-on for $15/mo to get high-speed connection abroad!";
+                        botReply = "Planning a trip? Buy our APAC & Europe Roaming Pass add-on for RM50/mo to get high-speed connection abroad!";
                       } else if (lower.includes("upgrade") || lower.includes("downgrade") || lower.includes("plan")) {
                         botReply = `You are on the ${loggedInUser.plan} subscription plan. You can switch to any plan yourself with the "Change Plan" button in the AI Plan Optimization panel — the AI will flag its suggested tier for you.`;
                       }

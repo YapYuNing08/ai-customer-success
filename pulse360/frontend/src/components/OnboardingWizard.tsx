@@ -41,10 +41,10 @@ export type LifestyleKey = keyof typeof LIFESTYLE_CONFIG;
 // Subscription packages offered on the plan step. Prices match the planMrr
 // map in App.tsx so revenue figures stay consistent end-to-end.
 export const PLAN_OPTIONS = {
-  Starter: { price: 400, blurb: '20 GB data · 4G speed · SMS bundle' },
-  Growth: { price: 800, blurb: '60 GB data · 5G access · weekend boost' },
-  Pro: { price: 1200, blurb: 'Unlimited data · 5G priority · hotspot' },
-  Enterprise: { price: 4000, blurb: 'Unlimited · dedicated support · SLA' },
+  Starter: { price: 50, blurb: '20 GB data · 4G speed · SMS bundle' },
+  Growth: { price: 100, blurb: '60 GB data · 5G access · weekend boost' },
+  Pro: { price: 200, blurb: 'Unlimited data · 5G priority · hotspot' },
+  Enterprise: { price: 500, blurb: 'Unlimited · dedicated support · SLA' },
 } as const;
 
 export type PlanKey = keyof typeof PLAN_OPTIONS;

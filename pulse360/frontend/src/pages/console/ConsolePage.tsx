@@ -125,7 +125,7 @@ export function ConsolePage(props: any) {
     <>
           <div className="flex-1 flex min-h-[calc(100vh-80px)] w-full animate-fadeIn bg-earth-bg select-none">
             {/* Sidebar */}
-            <div className="hidden lg:flex w-64 bg-[#F5ECE3]/75 border-r border-earth-sage/30 p-6 flex-col justify-between text-left shrink-0">
+            <div className="hidden lg:flex w-64 bg-[#F5ECE3]/75 border-r border-earth-sage/30 p-6 flex-col justify-between text-left shrink-0 sticky top-[80px] self-start h-[calc(100vh-80px)] overflow-y-auto">
               <div className="flex flex-col gap-6">
                 <div>
                   <span className="text-[10px] uppercase font-extrabold tracking-widest text-earth-clay">ENTERPRISE TIER</span>
