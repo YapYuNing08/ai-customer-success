@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { mockUsers, mergeBackendCustomer, downgradeSavings, upgradeCost, suggestPlanChange, type ActiveUser } from './utils/mockData';
+import { mockUsers, mergeBackendCustomer, downgradeSavings, upgradeCost, suggestPlanChange, PLAN_LADDER, type PlanTier, type ActiveUser } from './utils/mockData';
 import { LIFESTYLE_CONFIG, type WizardResult } from './components/OnboardingWizard';
 import { ActiveUserInsight } from './components/ActiveUserInsight';
 import { NavBar } from './components/NavBar';
@@ -9,6 +9,10 @@ import { ConsolePage } from './pages/console/ConsolePage';
 import { useChurnSimulation } from './hooks/useChurnSimulation';
 import { getCustomers, getCustomerStats, createCustomer } from './lib/api';
 import { useEffect } from 'react';
+
+// Canonical plan list prices (RM/mo) — must stay in sync with PLAN_OPTIONS in
+// OnboardingWizard.tsx (see CLAUDE.md hard rules).
+const planMrr = { Starter: 400, Growth: 800, Pro: 1200, Enterprise: 4000 } as const;
 
 const buildYuNingUser = (): ActiveUser => ({
   id: "cus_yuning",
@@ -137,39 +141,59 @@ function App() {
     addTelemetry(`[Action Taken] ${recoveredUser.name} is back on track — risk of leaving is down to ${recoveredUser.churnProbability}%.`);
   };
 
-  const handleClientAction = (userId: string, action: 'downgrade' | 'upgrade' | 'extend_grace') => {
+  const handleClientAction = (userId: string, action: 'downgrade' | 'upgrade' | 'extend_grace' | 'change_plan', targetPlanOverride?: PlanTier) => {
     setUsers(prev => prev.map(u => {
       if (u.id === userId) {
-        if (action === 'downgrade' || action === 'upgrade') {
-          const suggestion = suggestPlanChange(u.plan, u.metrics.usageVelocity, u.mrr);
-          const targetPlan = suggestion?.direction === action
-            ? suggestion.targetPlan
-            : action === 'downgrade' ? 'Starter' : u.plan;
-          const newMrr = action === 'downgrade'
-            ? u.mrr - downgradeSavings(u.mrr)
-            : u.mrr + upgradeCost(u.mrr);
+        if (action === 'downgrade' || action === 'upgrade' || action === 'change_plan') {
+          let targetPlan: PlanTier;
+          let direction: 'downgrade' | 'upgrade';
+          if (action === 'change_plan') {
+            // Customer picked a specific plan themselves from the plan picker.
+            if (!targetPlanOverride || targetPlanOverride === u.plan) return u;
+            targetPlan = targetPlanOverride;
+            direction = PLAN_LADDER.indexOf(targetPlan) < PLAN_LADDER.indexOf(u.plan) ? 'downgrade' : 'upgrade';
+          } else {
+            const suggestion = suggestPlanChange(u.plan, u.metrics.usageVelocity, u.mrr);
+            targetPlan = suggestion?.direction === action
+              ? suggestion.targetPlan
+              : action === 'downgrade' ? 'Starter' : u.plan;
+            direction = action;
+          }
+          // A picked plan scales charges by the list-price ratio so the
+          // customer's own price scale is preserved; the 1-click AI actions
+          // keep their fixed step deltas.
+          const newMrr = action === 'change_plan'
+            ? Math.max(5, Math.round(u.mrr * planMrr[targetPlan] / planMrr[u.plan]))
+            : direction === 'downgrade'
+              ? u.mrr - downgradeSavings(u.mrr)
+              : u.mrr + upgradeCost(u.mrr);
           return {
             ...u,
             plan: targetPlan,
             mrr: newMrr,
-            healthScore: Math.min(98, u.healthScore + (action === 'downgrade' ? 20 : 10)),
-            churnProbability: Math.max(5, u.churnProbability - (action === 'downgrade' ? 30 : 15)),
+            healthScore: Math.min(98, u.healthScore + (direction === 'downgrade' ? 20 : 10)),
+            churnProbability: Math.max(5, u.churnProbability - (direction === 'downgrade' ? 30 : 15)),
             metrics: {
               ...u.metrics,
               // Right-sizing changes capacity, so relative usage shifts:
-              // a smaller plan fills up, a bigger one opens headroom.
-              usageVelocity: action === 'downgrade'
-                ? Math.min(0.85, Number((u.metrics.usageVelocity * 2.2).toFixed(2)))
-                : Number((u.metrics.usageVelocity * 0.55).toFixed(2)),
+              // a smaller plan fills up, a bigger one opens headroom. A picked
+              // plan may span several tiers, so scale by capacity ratio.
+              usageVelocity: action === 'change_plan'
+                ? Math.min(0.85, Math.max(0.05, Number((u.metrics.usageVelocity * planMrr[u.plan] / planMrr[targetPlan]).toFixed(2))))
+                : direction === 'downgrade'
+                  ? Math.min(0.85, Number((u.metrics.usageVelocity * 2.2).toFixed(2)))
+                  : Number((u.metrics.usageVelocity * 0.55).toFixed(2)),
             },
             warningFlags: u.warningFlags.filter(f => f !== 'Using It Less'),
             activityLogs: [
               {
                 date: new Date().toISOString().split('T')[0],
                 type: 'plan_change',
-                details: action === 'downgrade'
-                  ? `Customer self-downgraded subscription to ${targetPlan} Plan (RM${newMrr.toLocaleString()}/mo) via Dashboard Console.`
-                  : `Customer self-upgraded subscription to ${targetPlan} Plan (RM${newMrr.toLocaleString()}/mo) via Dashboard Console.`
+                details: action === 'change_plan'
+                  ? `Customer self-selected the ${targetPlan} Plan (RM${newMrr.toLocaleString()}/mo) via AI Plan Optimization.`
+                  : direction === 'downgrade'
+                    ? `Customer self-downgraded subscription to ${targetPlan} Plan (RM${newMrr.toLocaleString()}/mo) via Dashboard Console.`
+                    : `Customer self-upgraded subscription to ${targetPlan} Plan (RM${newMrr.toLocaleString()}/mo) via Dashboard Console.`
               },
               ...u.activityLogs
             ]
@@ -202,7 +226,6 @@ function App() {
   const handleSignup = async (result: WizardResult) => {
     const name = result.name || 'New Customer';
     const plan: ActiveUser['plan'] = result.plan || 'Starter';
-    const planMrr = { Starter: 400, Growth: 800, Pro: 1200, Enterprise: 4000 } as const;
     const today = new Date().toISOString().split('T')[0];
     const cfg = LIFESTYLE_CONFIG[result.lifestyle];
     const buildLocalUser = (id: string): ActiveUser => ({

@@ -276,7 +276,9 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
     }, 1500);
   };
 
-  // Friendly display names for backend risk factors (raw DB column names otherwise)
+  // Friendly display names for backend risk factors (raw DB column names otherwise).
+  // The trained model emits payment_active/tenure_days; the offline data.py
+  // fallback uses payment_status — both spellings must stay mapped.
   const FACTOR_LABELS: Record<string, string> = {
     monthly_usage_pct: 'Monthly Usage',
     login_frequency: 'How Often They Log In',
@@ -284,10 +286,58 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
     support_ticket_count: 'Support Requests',
     feedback_score: 'Feedback Score',
     payment_status: 'Payment Status',
+    payment_active: 'Payment Status',
     tenure: 'Time as a Customer',
+    tenure_days: 'Time as a Customer',
     contract: 'Contract Type',
     monthly_charges: 'Monthly Bill',
     total_charges: 'Total Spent'
+  };
+
+  // One-sentence plain-language explanation per risk factor, shown under each
+  // bar. Uses the customer's real signal values (same GET /customers/{id}
+  // fetch that seeds the simulator sliders) once loaded; generic phrasing
+  // until then.
+  const explainFactor = (feature: string | undefined, raising: boolean): string => {
+    const v = leversLoaded ? baselineLevers : null;
+    switch (feature) {
+      case 'login_frequency':
+        return raising
+          ? `They log in ${v ? `only about ${v.login_frequency} times a week` : 'infrequently'} — customers who rarely log in are far more likely to cancel.`
+          : `They log in ${v ? `about ${v.login_frequency} times a week` : 'regularly'} — frequent use keeps a customer engaged.`;
+      case 'feature_usage':
+        return raising
+          ? `They use ${v ? `only ${Math.round(v.feature_usage * 100)}%` : 'very few'} of the features in their plan — customers who don't explore the product see less value in it.`
+          : `They use ${v ? `${Math.round(v.feature_usage * 100)}%` : 'a good share'} of the features in their plan — getting real value makes them likely to stay.`;
+      case 'monthly_usage_pct':
+        return raising
+          ? `They're at ${v ? `${v.monthly_usage_pct}%` : 'a low share'} of their monthly plan allowance — paying for more than they use is a common step before cancelling.`
+          : `They're using ${v ? `${v.monthly_usage_pct}%` : 'a healthy share'} of their monthly plan allowance — they're getting their money's worth.`;
+      case 'support_ticket_count':
+        return raising
+          ? `${v ? `${v.support_ticket_count} support tickets` : 'Several support tickets'} recently — unresolved problems are a top reason customers walk away.`
+          : v && v.support_ticket_count === 0
+            ? 'No support tickets recently — a smooth, frustration-free experience so far.'
+            : `${v ? `Only ${v.support_ticket_count} support ticket${v.support_ticket_count === 1 ? '' : 's'}` : 'Few support tickets'} recently — few problems means little frustration.`;
+      case 'feedback_score':
+        return raising
+          ? `They rated their experience ${v ? `${v.feedback_score}/10` : 'poorly'} — unhappy customers rarely stay long.`
+          : `They rated their experience ${v ? `${v.feedback_score}/10` : 'well'} — satisfied customers are much more likely to renew.`;
+      case 'payment_status':
+      case 'payment_active':
+        return raising
+          ? 'Their payment failed or is past due — billing problems often turn into silent cancellations.'
+          : 'Their payments are up to date — a healthy billing history is a strong loyalty sign.';
+      case 'tenure':
+      case 'tenure_days':
+        return raising
+          ? "They're still a fairly new customer — loyalty hasn't had time to build, and new customers churn the most."
+          : "They're a long-time customer — the longer someone stays, the more likely they are to keep staying.";
+      default:
+        return raising
+          ? 'This factor is pushing their cancellation risk up.'
+          : 'This factor is helping keep this customer around.';
+    }
   };
 
   // Revenue framing for the simulator: expected 12-month revenue kept (or
@@ -299,12 +349,17 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
   const revenueBasisMonthly = simResult?.monthly_charges ?? user.mrr;
   const fmtMoney = (v: number) => Math.abs(v).toLocaleString(undefined, { maximumFractionDigits: 0 });
 
-  const activeFactors = recommendation?.shap_reasons
-    ? recommendation.shap_reasons.map((r: any) => ({
-        name: FACTOR_LABELS[r.feature] ?? r.feature.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
-        impact: Math.round(r.contribution * 100)
-      }))
-    : user.churnFactors;
+  // NEW-* signups (and any unscored row) legitimately have shap_reasons: [] —
+  // an empty array must fall through to churnFactors, and an empty result
+  // renders the "too new to explain" state below instead of a blank panel.
+  const activeFactors: { feature?: string; name: string; impact: number }[] =
+    recommendation?.shap_reasons?.length
+      ? recommendation.shap_reasons.map((r: any) => ({
+          feature: r.feature,
+          name: FACTOR_LABELS[r.feature] ?? r.feature.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
+          impact: Math.round(r.contribution * 100)
+        }))
+      : user.churnFactors;
 
   return (
     <div className="text-left w-full flex flex-col gap-6 p-4 md:p-6 console-bg-dark min-h-screen relative animate-fadeIn">
@@ -531,37 +586,61 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               AI-Powered
             </span>
           </div>
-          <p className="text-xs text-black font-normal leading-relaxed">
-            The factors below show what is causing this customer to consider leaving (red) versus what is keeping them happy and loyal (green).
-          </p>
+          {activeFactors.length > 0 && (
+            <p className="text-xs text-black font-normal leading-relaxed">
+              The factors below show what is causing this customer to consider leaving (red) versus what is keeping them happy and loyal (green).
+            </p>
+          )}
 
           <div className="flex flex-col gap-4 my-2">
-            {activeFactors.map((factor: { name: string; impact: number }) => {
-              const isPositive = factor.impact > 0;
-              return (
-                <div key={factor.name} className="flex flex-col gap-1.5">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-black font-extrabold">{factor.name}</span>
-                    <span className={isPositive ? 'text-status-critical font-bold' : 'text-status-healthy font-bold'}>
-                      {isPositive ? `Raises risk by ${factor.impact}%` : `Lowers risk by ${Math.abs(factor.impact)}%`}
-                    </span>
+            {activeFactors.length === 0 ? (
+              <div className="console-card-dark-inner rounded-lg p-3 text-xs text-black font-normal leading-relaxed">
+                No risk breakdown yet — this customer is too new for the AI to explain. Risk factors
+                appear once they build up real usage history (logins, feature use, feedback). For
+                now, their score is a healthy new-account baseline.
+              </div>
+            ) : (
+              activeFactors.map((factor) => {
+                // SHAP contributions are log-odds, not probabilities — "raises
+                // risk by 140%" is meaningless. Show each factor's share of the
+                // total explanation instead, bucketed into plain-language strength.
+                const totalAbs = activeFactors.reduce((s, f) => s + Math.abs(f.impact), 0);
+                const share = totalAbs > 0 ? Math.round((Math.abs(factor.impact) / totalAbs) * 100) : 0;
+                const isNeutral = factor.impact === 0;
+                const isPositive = factor.impact > 0;
+                const strength = share >= 35 ? 'Major' : share >= 20 ? 'Strong' : share >= 10 ? 'Moderate' : 'Minor';
+                return (
+                  <div key={factor.name} className="flex flex-col gap-1.5">
+                    <div className="flex justify-between text-xs">
+                      <span className="text-black font-extrabold">{factor.name}</span>
+                      <span className={isNeutral ? 'text-black/50 font-bold' : isPositive ? 'text-status-critical font-bold' : 'text-status-healthy font-bold'}>
+                        {isNeutral ? 'Little effect either way' : isPositive ? `${strength} — raising their risk` : `${strength} — keeping them here`}
+                      </span>
+                    </div>
+                    {/* Bar = this factor's share of the overall explanation */}
+                    <div className="w-full h-2 bg-earth-cocoa/10 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${isPositive ? 'bg-status-critical' : 'bg-status-healthy'}`}
+                        style={{ width: `${Math.min(100, share)}%` }}
+                      />
+                    </div>
+                    {!isNeutral && (
+                      <p className="text-[11px] text-black/70 font-normal leading-snug">
+                        {explainFactor(factor.feature, isPositive)}
+                      </p>
+                    )}
                   </div>
-                  {/* Slider bar */}
-                  <div className="w-full h-2 bg-earth-cocoa/10 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${isPositive ? 'bg-status-critical' : 'bg-status-healthy'}`}
-                      style={{ width: `${Math.min(100, Math.abs(factor.impact))}%` }}
-                    />
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
 
-          <div className="console-card-dark-inner rounded-lg p-3 text-xs text-black font-bold flex justify-between items-center">
-            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-status-healthy" /> Green = Helps retain this customer</span>
-            <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-status-critical" /> Red = Increases cancellation risk</span>
-          </div>
+          {activeFactors.length > 0 && (
+            <div className="console-card-dark-inner rounded-lg p-3 text-xs text-black font-bold flex justify-between items-center">
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-status-healthy" /> Green = Helps retain this customer</span>
+              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-status-critical" /> Red = Increases cancellation risk</span>
+            </div>
+          )}
         </div>
 
         {/* Activity Timeline */}
