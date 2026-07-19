@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { ArrowDown, ChevronRight, Cpu, Gauge, EyeOff, History, Lightbulb, SlidersHorizontal, Compass } from 'lucide-react';
 import { Globe } from '../components/Globe';
 import { ModelAnalyticsModal } from '../components/modals/ModelAnalyticsModal';
+import Avatar from '../components/Avatar';
 
 export function MarketingPage(props: any) {
   const { currentPage, users, selectedUser, handleSelectUser, pulseTrigger, setPulseTrigger, addTelemetry, scrollToConsole, consoleRef, isDark } = props;
@@ -239,7 +240,7 @@ export function MarketingPage(props: any) {
                           className={`border-b transition-colors cursor-pointer ${isDark ? 'border-earth-bg/10 hover:bg-earth-bg/5' : 'border-earth-sage/20 hover:bg-[#efe9d2]/40'}`}
                         >
                           <td className="py-3 px-4 flex items-center gap-3">
-                            <img src={u.avatar} alt={u.name} className={`w-8 h-8 rounded-full object-cover border ${isDark ? 'border-earth-bg/25' : 'border-earth-sage/40'}`} />
+                            <Avatar name={u.name} className={`w-8 h-8 text-xs rounded-full border ${isDark ? 'border-earth-bg/25' : 'border-earth-sage/40'}`} />
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className={`font-bold block ${textPrimary}`}>{u.name}</span>

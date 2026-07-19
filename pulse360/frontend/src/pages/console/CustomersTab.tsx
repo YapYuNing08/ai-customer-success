@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Search, Clock, ArrowLeft } from 'lucide-react';
 import { ActiveUserInsight } from '../../components/ActiveUserInsight';
+import Avatar from '../../components/Avatar';
 
 const getEstimatedLeaveDate = (probability: number) => {
   if (probability <= 15) return 'N/A (Stable)';
@@ -115,7 +116,7 @@ export function CustomersTab(props: any) {
                               {/* Card Header */}
                               <div className="flex justify-between items-start gap-2">
                                 <div className="flex items-center gap-3">
-                                  <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full border border-earth-sage/20 object-cover bg-white shrink-0" />
+                                  <Avatar name={u.name} className="w-10 h-10 text-sm rounded-full border border-earth-sage/20" />
                                   <div className="text-left">
                                     <h4 className="font-extrabold text-sm leading-tight line-clamp-1 text-black">{u.name}</h4>
                                     <span className="text-xs text-black font-normal block mt-0.5">{u.location}</span>

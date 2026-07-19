@@ -5,6 +5,7 @@ import {
   Copy, Zap, BookOpen, HeartHandshake, ShieldAlert, Cpu, Send, MessageCircle
 } from 'lucide-react';
 import { type ActiveUser } from '../utils/mockData';
+import Avatar from './Avatar';
 import { explainSimulation, getCustomer, getRecommendation, simulate } from '../lib/api';
 
 interface ActiveUserInsightProps {
@@ -390,10 +391,9 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
         className={`console-card-dark rounded-2xl p-5 flex flex-col md:flex-row gap-6 items-start md:items-center justify-between shadow-sm cursor-pointer transition-all ${selectedInsightCard === 'overview' ? 'demo-card-selected' : ''}`}
       >
         <div className="flex items-center gap-4">
-          <img 
-            src={user.avatar} 
-            alt={user.name} 
-            className="w-16 h-16 rounded-full border-2 border-earth-clay object-cover" 
+          <Avatar
+            name={user.name}
+            className="w-16 h-16 text-2xl rounded-full border-2 border-earth-clay"
           />
           <div>
             <div className="flex items-center gap-2 flex-wrap">

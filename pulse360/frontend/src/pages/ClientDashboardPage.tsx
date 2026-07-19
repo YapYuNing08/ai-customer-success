@@ -3,6 +3,7 @@ import { ArrowLeft, X } from 'lucide-react';
 import { downgradeSavings, suggestPlanChange } from '../utils/mockData';
 import { PortalNotificationModal } from '../components/modals/PortalNotificationModal';
 import { OnboardingWizard, LIFESTYLE_CONFIG, PLAN_OPTIONS, type PlanKey, type WizardResult } from '../components/OnboardingWizard';
+import Avatar from '../components/Avatar';
 
 export function ClientDashboardPage(props: any) {
   const { users, clientUserId, setClientUserId, handleClientAction, addTelemetry, setCurrentPage, signupCompleted, onSignup, onSignupSkip } = props;
@@ -109,10 +110,9 @@ export function ClientDashboardPage(props: any) {
               <div>
                 <span className="text-xs uppercase font-bold text-[#0064DC] tracking-wider">Account Identity</span>
                 <div className="flex items-center gap-4 mt-3">
-                  <img 
-                    src={loggedInUser?.avatar} 
-                    alt={loggedInUser?.name} 
-                    className="w-14 h-14 rounded-full border border-slate-200 object-cover bg-white shrink-0" 
+                  <Avatar
+                    name={loggedInUser?.name}
+                    className="w-14 h-14 text-xl rounded-full border border-slate-200"
                   />
                   <div>
                     <h3 className="font-extrabold text-[#001871] text-base leading-tight">
