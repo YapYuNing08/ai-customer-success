@@ -60,7 +60,7 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
   "cus_001": {
     email: 'contact@yap.my',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
-    location: 'Kuala Lumpur',
+    location: 'Kuala Lumpur, Malaysia',
     lat: 3.1390,
     lng: 101.6869,
     mrr: 199,
@@ -75,7 +75,7 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
   "cus_002": {
     email: 'ops@acmeselangor.com.my',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-    location: 'Petaling Jaya, Selangor',
+    location: 'Petaling Jaya, Malaysia',
     lat: 3.1073,
     lng: 101.6067,
     mrr: 79,
@@ -86,11 +86,11 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_003": {
-    email: 'support@blueharbor.com.my',
+    email: 'support@nusantaratech.id',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-    location: 'George Town, Penang',
-    lat: 5.4141,
-    lng: 100.3288,
+    location: 'Jakarta, Indonesia',
+    lat: -6.2088,
+    lng: 106.8456,
     mrr: 199,
     warningFlags: [],
     activityLogs: [
@@ -99,11 +99,11 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_004": {
-    email: 'billing@cedarmalaysia.my',
+    email: 'billing@temasek.sg',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-    location: 'Johor Bahru, Johor',
-    lat: 1.4927,
-    lng: 103.7414,
+    location: 'Singapore',
+    lat: 1.3521,
+    lng: 103.8198,
     mrr: 39,
     warningFlags: ['Failed Payment'],
     activityLogs: [
@@ -112,11 +112,11 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_005": {
-    email: 'analytics@summitkl.my',
+    email: 'analytics@surabayamaritime.id',
     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80',
-    location: 'Ipoh, Perak',
-    lat: 4.5921,
-    lng: 101.0901,
+    location: 'Surabaya, Indonesia',
+    lat: -7.2575,
+    lng: 112.7521,
     mrr: 79,
     warningFlags: [],
     activityLogs: [
@@ -125,11 +125,11 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_006": {
-    email: 'ops@melakafinancial.my',
+    email: 'ops@penangsemi.my',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-    location: 'Melaka City, Melaka',
-    lat: 2.1896,
-    lng: 102.2501,
+    location: 'George Town, Malaysia',
+    lat: 5.4141,
+    lng: 100.3288,
     mrr: 199,
     warningFlags: [],
     activityLogs: [
@@ -138,11 +138,11 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_007": {
-    email: 'contact@kuchinglogistics.my',
+    email: 'contact@bandungcreative.id',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-    location: 'Kuching, Sarawak',
-    lat: 1.5533,
-    lng: 110.3592,
+    location: 'Bandung, Indonesia',
+    lat: -6.9175,
+    lng: 107.6191,
     mrr: 79,
     warningFlags: ['Not Using Key Features'],
     activityLogs: [
@@ -151,11 +151,11 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_008": {
-    email: 'operations@sabahtech.my',
+    email: 'operations@batamelectronics.id',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-    location: 'Kota Kinabalu, Sabah',
-    lat: 5.9804,
-    lng: 116.0735,
+    location: 'Batam, Indonesia',
+    lat: 1.0825,
+    lng: 104.0305,
     mrr: 199,
     warningFlags: ['Likely to Leave'],
     activityLogs: [
@@ -164,11 +164,11 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_009": {
-    email: 'compras@selangorretail.my',
+    email: 'compras@johorlogistics.my',
     avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&q=80',
-    location: 'Shah Alam, Selangor',
-    lat: 3.0738,
-    lng: 101.5183,
+    location: 'Johor Bahru, Malaysia',
+    lat: 1.4927,
+    lng: 103.7414,
     mrr: 39,
     warningFlags: [],
     activityLogs: [
@@ -177,11 +177,11 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_010": {
-    email: 'info@klangdevs.my',
+    email: 'info@orchardretail.sg',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
-    location: 'Klang, Selangor',
-    lat: 3.0333,
-    lng: 101.4500,
+    location: 'Singapore',
+    lat: 1.3600,
+    lng: 103.8200,
     mrr: 79,
     warningFlags: [],
     activityLogs: [
@@ -190,122 +190,122 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_011": {
-    email: 'operations@pahangshipping.my',
+    email: 'operations@medanpalm.id',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
-    location: 'Kuantan, Pahang',
-    lat: 3.8077,
-    lng: 103.3260,
+    location: 'Medan, Indonesia',
+    lat: 3.5952,
+    lng: 98.6722,
     mrr: 79,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Kuantan terminal connected.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Medan terminal connected.' }],
     pastJourneys: []
   },
   "cus_012": {
-    email: 'ceo@kedahventures.my',
+    email: 'ceo@dewataresorts.id',
     avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&q=80',
-    location: 'Alor Setar, Kedah',
-    lat: 6.1210,
-    lng: 100.3601,
+    location: 'Bali, Indonesia',
+    lat: -8.6705,
+    lng: 115.2126,
     mrr: 199,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Account active from Alor Setar.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Account active from Bali.' }],
     pastJourneys: []
   },
   "cus_013": {
-    email: 'staff@terengganumedia.my',
+    email: 'staff@peraktin.my',
     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80',
-    location: 'Kuala Terengganu, Terengganu',
-    lat: 5.3302,
-    lng: 103.1408,
+    location: 'Ipoh, Malaysia',
+    lat: 4.5921,
+    lng: 101.0901,
     mrr: 79,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'support_open', details: 'Kuala Terengganu team opened API review.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'support_open', details: 'Ipoh team opened API review.' }],
     pastJourneys: []
   },
   "cus_014": {
-    email: 'admin@kelantanfisheries.my',
+    email: 'admin@borneoeco.my',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-    location: 'Kota Bharu, Kelantan',
-    lat: 6.1254,
-    lng: 102.2381,
+    location: 'Kuching, Malaysia',
+    lat: 1.5533,
+    lng: 110.3592,
     mrr: 39,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Logged in from Kota Bharu.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Logged in from Kuching.' }],
     pastJourneys: []
   },
   "cus_015": {
-    email: 'contact@serembanagri.my',
+    email: 'contact@javacoffee.id',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-    location: 'Seremban, Negeri Sembilan',
-    lat: 2.7258,
-    lng: 101.9378,
+    location: 'Yogyakarta, Indonesia',
+    lat: -7.7956,
+    lng: 110.3695,
     mrr: 79,
     warningFlags: ['Failed Payment'],
-    activityLogs: [{ date: '2026-07-15', type: 'payment_fail', details: 'Dunning alert on Seremban account.' }],
+    activityLogs: [{ date: '2026-07-15', type: 'payment_fail', details: 'Dunning alert on Yogyakarta account.' }],
     pastJourneys: []
   },
   "cus_016": {
-    email: 'miri@resortnet.my',
+    email: 'changi@aerospace.sg',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
-    location: 'Miri, Sarawak',
-    lat: 4.3995,
-    lng: 113.9914,
+    location: 'Singapore',
+    lat: 1.3500,
+    lng: 103.9900,
     mrr: 199,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'feature_use', details: 'Miri team operations.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'feature_use', details: 'Changi team operations.' }],
     pastJourneys: []
   },
   "cus_017": {
-    email: 'sandakan@hospitality.my',
+    email: 'kinabalu@forestry.my',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-    location: 'Sandakan, Sabah',
-    lat: 5.8402,
-    lng: 118.1179,
+    location: 'Kota Kinabalu, Malaysia',
+    lat: 5.9804,
+    lng: 116.0735,
     mrr: 79,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Sandakan workspace sync.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Kota Kinabalu workspace sync.' }],
     pastJourneys: []
   },
   "cus_018": {
-    email: 'sales@taipingtextile.my',
+    email: 'sales@palembangenergy.id',
     avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&q=80',
-    location: 'Taiping, Perak',
-    lat: 4.8500,
-    lng: 100.7333,
+    location: 'Palembang, Indonesia',
+    lat: -2.9909,
+    lng: 104.7566,
     mrr: 39,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Taiping check-in.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Palembang check-in.' }],
     pastJourneys: []
   },
   "cus_019": {
-    email: 'semiconductors@sibu.my',
+    email: 'makassar@shipping.id',
     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80',
-    location: 'Sibu, Sarawak',
-    lat: 2.3000,
-    lng: 111.8167,
+    location: 'Makassar, Indonesia',
+    lat: -5.1477,
+    lng: 119.4327,
     mrr: 199,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'feature_use', details: 'Sibu batch sync triggered.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'feature_use', details: 'Makassar batch sync triggered.' }],
     pastJourneys: []
   },
   "cus_020": {
-    email: 'dev@bataupahatanalytics.my',
+    email: 'dev@pontianakagro.id',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-    location: 'Batu Pahat, Johor',
-    lat: 1.8500,
-    lng: 102.9300,
+    location: 'Pontianak, Indonesia',
+    lat: -0.0263,
+    lng: 109.3425,
     mrr: 79,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'support_open', details: 'Batu Pahat dev logged ticket.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'support_open', details: 'Pontianak dev logged ticket.' }],
     pastJourneys: []
   }
 };
 
 const offlineNames: Record<string, string> = {
-  "cus_001": "Yap", "cus_002": "Acme Selangor", "cus_003": "Blue Harbor Penang", "cus_004": "Cedar Malaysia", "cus_005": "Summit KL",
-  "cus_006": "Melaka Financial", "cus_007": "Kuching Logistics", "cus_008": "Sabah Tech", "cus_009": "Selangor Retail", "cus_010": "Klang Devs",
-  "cus_011": "Pahang Shipping", "cus_012": "Kedah Ventures", "cus_013": "Terengganu Media", "cus_014": "Kelantan Fisheries", "cus_015": "Seremban Agricultures",
-  "cus_016": "Miri Resorts", "cus_017": "Sandakan Hospitality", "cus_018": "Taiping Textile", "cus_019": "Sibu Semiconductors", "cus_020": "Batu Pahat Analytics"
+  "cus_001": "Yap", "cus_002": "Acme Selangor", "cus_003": "Nusantara Tech", "cus_004": "Temasek Holdings", "cus_005": "Surabaya Maritime",
+  "cus_006": "Penang Semiconductor", "cus_007": "Bandung Creative Labs", "cus_008": "Batam Electronics", "cus_009": "Johor Logistics Hub", "cus_010": "Orchard Retailers",
+  "cus_011": "Medan Palm Corp", "cus_012": "Dewata Resort Group", "cus_013": "Perak Tin Mining", "cus_014": "Borneo Eco Solutions", "cus_015": "Java Coffee Roasters",
+  "cus_016": "Changi Aerospace", "cus_017": "Kinabalu Forestry", "cus_018": "Palembang Energy", "cus_019": "Makassar Shipping", "cus_020": "Pontianak Agro"
 };
 
 const offlinePlans: Record<string, string> = {
