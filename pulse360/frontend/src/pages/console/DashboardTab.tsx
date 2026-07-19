@@ -246,8 +246,8 @@ Is there a specific account or recent system event you would like me to analyze?
                           <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-baseline text-xs">
                               <div>
-                                <span className="text-sm font-bold text-black block">Login Frequency (Engagement)</span>
-                                <span className="text-xs text-black font-semibold block mt-1">A positive delta shows customer check-in methods are working. If negative, refine onboarding engagement plans.</span>
+                                <span className="text-sm font-bold text-earth-cocoa block">Login Frequency (Engagement)</span>
+                                <span className="text-[11px] text-black font-medium block mt-1 leading-normal">A positive delta shows customer check-in methods are working. If negative, refine onboarding engagement plans.</span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
                                 <span className="text-sm font-black text-black">82%</span>
@@ -265,8 +265,8 @@ Is there a specific account or recent system event you would like me to analyze?
                           <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-baseline text-xs">
                               <div>
-                                <span className="text-sm font-bold text-black block">Feature Utilization (Usage)</span>
-                                <span className="text-xs text-black font-semibold block mt-1">An increase confirms new features are successfully adopted. A drop indicates a need to schedule tutorial broadcasts.</span>
+                                <span className="text-sm font-bold text-earth-cocoa block">Feature Utilization (Usage)</span>
+                                <span className="text-[11px] text-black font-medium block mt-1 leading-normal">An increase confirms new features are successfully adopted. A drop indicates a need to schedule tutorial broadcasts.</span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
                                 <span className="text-sm font-black text-black">64%</span>
@@ -284,8 +284,8 @@ Is there a specific account or recent system event you would like me to analyze?
                           <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-baseline text-xs">
                               <div>
-                                <span className="text-sm font-bold text-black block">Support Ticket Resolution (Response)</span>
-                                <span className="text-xs text-black font-semibold block mt-1">Higher rates validate successful CSM support interventions. A drop highlights resource bottlenecks needing attention.</span>
+                                <span className="text-sm font-bold text-earth-cocoa block">Support Ticket Resolution (Response)</span>
+                                <span className="text-[11px] text-black font-medium block mt-1 leading-normal">Higher rates validate successful CSM support interventions. A drop highlights resource bottlenecks needing attention.</span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
                                 <span className="text-sm font-black text-black">91%</span>
@@ -303,8 +303,8 @@ Is there a specific account or recent system event you would like me to analyze?
                           <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-baseline text-xs">
                               <div>
-                                <span className="text-sm font-bold text-black block">Payment & Invoicing (Billing)</span>
-                                <span className="text-xs text-black font-semibold block mt-1">A stable rate shows automated invoicing is reliable. A drop warns of payment failures requiring grace-period playbooks.</span>
+                                <span className="text-sm font-bold text-earth-cocoa block">Payment & Invoicing (Billing)</span>
+                                <span className="text-[11px] text-black font-medium block mt-1 leading-normal">A stable rate shows automated invoicing is reliable. A drop warns of payment failures requiring grace-period playbooks.</span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
                                 <span className="text-sm font-black text-black">94%</span>
