@@ -4,6 +4,8 @@ import { Cpu, Users, Heart, Clock, Activity, Send, Mail, MessageCircle, EyeOff }
 export function DashboardTab(props: any) {
   const { dist, expScore, expLabel, users, addTelemetry, onViewSilentChurners } = props;
   const [activeSubTab, setActiveSubTab] = useState<'distribution' | 'interventions'>('distribution');
+  // Demo aid: the card the presenter last clicked keeps a pulsing border until another is clicked.
+  const [selectedCard, setSelectedCard] = useState<string | null>(null);
   const [activeBroadcast, setActiveBroadcast] = useState<{
     groupName: string;
     type: 'email' | 'whatsapp';
@@ -196,9 +198,9 @@ Is there a specific account or recent system event you would like me to analyze?
                   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full items-stretch">
                     {/* Silent Churn Card — disengaging quietly, no tickets raised. Clicking opens the filtered customer list. */}
                     <div
-                      onClick={onViewSilentChurners}
+                      onClick={() => { setSelectedCard('silent'); setTimeout(onViewSilentChurners, 600); }}
                       title="Disengaging quietly — low logins, no support tickets raised. Click to view these accounts."
-                      className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-5 flex flex-col justify-between shadow-sm w-full cursor-pointer hover:bg-[#efe9d2]/60 hover:shadow-md transition-all"
+                      className={`bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-5 flex flex-col justify-between shadow-sm w-full cursor-pointer hover:bg-[#efe9d2]/60 hover:shadow-md transition-all ${selectedCard === 'silent' ? 'demo-card-selected' : ''}`}
                     >
                       <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-center">
@@ -225,7 +227,10 @@ Is there a specific account or recent system event you would like me to analyze?
                     </div>
 
                     {/* Active Accounts Card */}
-                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-5 flex flex-col justify-between shadow-sm w-full">
+                    <div
+                      onClick={() => setSelectedCard('active')}
+                      className={`bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-5 flex flex-col justify-between shadow-sm w-full cursor-pointer hover:bg-[#efe9d2]/60 hover:shadow-md transition-all ${selectedCard === 'active' ? 'demo-card-selected' : ''}`}
+                    >
                       <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-center">
                           <span className="text-[10px] font-extrabold text-earth-cocoa/85 uppercase">Active Accounts</span>
@@ -239,7 +244,10 @@ Is there a specific account or recent system event you would like me to analyze?
                     </div>
 
                     {/* Health distribution block */}
-                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm w-full">
+                    <div
+                      onClick={() => setSelectedCard('health')}
+                      className={`bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm w-full cursor-pointer hover:bg-[#efe9d2]/60 hover:shadow-md transition-all ${selectedCard === 'health' ? 'demo-card-selected' : ''}`}
+                    >
                       <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
                         <span className="text-[10px] font-extrabold text-earth-cocoa/85 uppercase">CUSTOMER HEALTH DISTRIBUTION</span>
                         <span className="text-[10px] font-extrabold text-earth-cocoa/70 uppercase">Segmentation by active user count</span>
@@ -281,7 +289,10 @@ Is there a specific account or recent system event you would like me to analyze?
                     <div className="lg:col-span-6 flex flex-col gap-6 w-full">
                       
                       {/* Telemetry Status Breakdown */}
-                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
+                      <div
+                        onClick={() => setSelectedCard('status')}
+                        className={`bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left cursor-pointer hover:bg-[#efe9d2]/60 hover:shadow-md transition-all ${selectedCard === 'status' ? 'demo-card-selected' : ''}`}
+                      >
                         <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
                           <span className="text-[10px] font-black uppercase text-earth-cocoa/90 tracking-wider">SYSTEM STATUS BREAKDOWN</span>
                           <span className="text-[10px] font-extrabold text-earth-cocoa/75 uppercase">System checks</span>
@@ -372,7 +383,10 @@ Is there a specific account or recent system event you would like me to analyze?
                     {/* Right Column (Span 6) */}
                     <div className="lg:col-span-6 flex flex-col gap-6 w-full">
                       {/* Customer's Health */}
-                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
+                      <div
+                        onClick={() => setSelectedCard('customer-health')}
+                        className={`bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left cursor-pointer hover:bg-[#efe9d2]/60 hover:shadow-md transition-all ${selectedCard === 'customer-health' ? 'demo-card-selected' : ''}`}
+                      >
                         <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2 w-full">
                           <div className="flex flex-col gap-1">
                             <span className="text-[10px] font-black uppercase text-earth-cocoa/90 tracking-wider">CUSTOMER'S HEALTH</span>

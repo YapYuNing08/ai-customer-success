@@ -5,6 +5,8 @@ import { downloadReport } from '../../utils/reports';
 export function ReportsTab(props: any) {
   const { reports, users, generateReport } = props;
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  // Demo aid: the panel the presenter last clicked keeps a pulsing border until another is clicked.
+  const [selectedPanel, setSelectedPanel] = useState<string | null>(null);
   return (
                 <>
                   {/* Reports View */}
@@ -34,7 +36,10 @@ export function ReportsTab(props: any) {
                     
                     {/* Left Column - Reports Archive (Span 8) */}
                     <div className="lg:col-span-8 flex flex-col gap-6 w-full">
-                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl overflow-hidden shadow-sm w-full text-left">
+                      <div
+                        onClick={() => setSelectedPanel('generated')}
+                        className={`bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl overflow-hidden shadow-sm w-full text-left cursor-pointer hover:shadow-md transition-all ${selectedPanel === 'generated' ? 'demo-card-selected' : ''}`}
+                      >
                         <div className="p-5 border-b border-earth-sage/20 bg-earth-sage/5">
                           <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">GENERATED REPORTS</span>
                           <h3 className="text-sm font-bold text-earth-cocoa mt-0.5">Select and view compiled analytical outputs</h3>
@@ -75,7 +80,10 @@ export function ReportsTab(props: any) {
 
                     {/* Right Column - Report Operations (Span 4) */}
                     <div className="lg:col-span-4 flex flex-col gap-6 w-full text-left">
-                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm h-full justify-between">
+                      <div
+                        onClick={() => setSelectedPanel('operations')}
+                        className={`bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm h-full justify-between cursor-pointer hover:shadow-md transition-all ${selectedPanel === 'operations' ? 'demo-card-selected' : ''}`}
+                      >
                         <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full">
                           <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">REPORT OPERATIONS</span>
                           <span className="text-[10px] font-bold text-earth-sage uppercase">Generate new exports</span>

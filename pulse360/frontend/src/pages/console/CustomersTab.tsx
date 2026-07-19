@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Search, Clock, ArrowLeft } from 'lucide-react';
 import { ActiveUserInsight } from '../../components/ActiveUserInsight';
 
@@ -12,6 +13,9 @@ const getEstimatedLeaveDate = (probability: number) => {
 
 export function CustomersTab(props: any) {
   const { selectedConsoleUser, setSelectedConsoleUser, users, handleUpdateUser, customerSearch, setCustomerSearch, filterPlan, setFilterPlan, filterRisk, setFilterRisk, filteredConsoleUsers, silentDrilldown, onBackFromSilent } = props;
+  // Demo aid: flash the clicked card's border, then drill into its insights view.
+  const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
+  const handleSelectCustomer = (u: any) => { setSelectedCardId(u.id); setTimeout(() => setSelectedConsoleUser(u), 600); };
   return (
                 selectedConsoleUser ? (
                   <ActiveUserInsight 
@@ -102,9 +106,10 @@ export function CustomersTab(props: any) {
                         const isHighRisk = u.churnProbability > 50;
                         const isMedRisk = u.churnProbability <= 50 && u.churnProbability > 15;
                         return (
-                          <div 
-                            key={u.id} 
-                            className="bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all text-earth-cocoa hover:bg-[#efe9d2]/60"
+                          <div
+                            key={u.id}
+                            onClick={() => handleSelectCustomer(u)}
+                            className={`bg-[#efe9d2]/40 border border-earth-sage/30 p-5 rounded-2xl flex flex-col justify-between gap-4 shadow-sm hover:shadow-md transition-all text-earth-cocoa hover:bg-[#efe9d2]/60 cursor-pointer ${selectedCardId === u.id ? 'demo-card-selected' : ''}`}
                           >
                             <div className="flex flex-col gap-3">
                               {/* Card Header */}
@@ -175,10 +180,8 @@ export function CustomersTab(props: any) {
 
                             {/* Card Footer Actions */}
                             <div className="border-t border-earth-sage/10 pt-3 flex gap-2 w-full mt-1">
-                              <button 
-                                onClick={() => {
-                                  setSelectedConsoleUser(u);
-                                }}
+                              <button
+                                onClick={(e) => { e.stopPropagation(); handleSelectCustomer(u); }}
                                 className="flex-1 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-xs py-2 rounded-xl transition-all cursor-pointer text-center"
                               >
                                 View Insights
