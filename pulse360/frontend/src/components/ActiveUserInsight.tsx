@@ -964,7 +964,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
       {/* 5. RAG AI Copilot & Value Injections panel */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* RAG Copilot */}
-        <div className="console-card-dark rounded-2xl p-5 flex flex-col gap-4 lg:col-span-2 shadow-sm">
+        <div className="console-card-dark rounded-2xl p-5 flex flex-col gap-4 lg:col-span-2 shadow-sm order-2">
           <div className="flex justify-between items-center">
             <h3 className="text-base font-bold console-text-primary flex items-center gap-2">
               <Zap className="w-4 h-4 text-earth-clay" />
@@ -1092,14 +1092,14 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               </>
             ) : (
               <div className="console-card-dark-inner rounded-xl p-6 border border-dashed console-border text-center text-xs text-black font-normal">
-                Select one of the Quick Actions on the right to automatically generate a tailored follow-up email draft here.
+                Select one of the Quick Actions on the left to automatically generate a tailored follow-up email draft here.
               </div>
             )}
           </div>
         </div>
 
         {/* Value Injections Playbook */}
-        <div className="console-card-dark rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-sm">
+        <div className="console-card-dark rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-sm order-1">
           {(() => {
             const getMostRecommendedAction = () => {
               if (user.warningFlags.includes('Failed Payment')) {

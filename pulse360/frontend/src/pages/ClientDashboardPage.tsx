@@ -13,6 +13,8 @@ export function ClientDashboardPage(props: any) {
   const [portalNotification, setPortalNotification] = useState<{ title: string; message: string; type: 'success' | 'info' | 'warning' } | null>(null);
   const [showWizard, setShowWizard] = useState(false);
   const [showPlanPicker, setShowPlanPicker] = useState(false);
+  // Demo aid: the card the presenter last clicked keeps a pulsing border until another is clicked.
+  const [selectedCard, setSelectedCard] = useState<string | null>(null);
 
   const loggedInUser = users.find((u: any) => u.id === clientUserId) || users[0];
   const hasFailedPayment = loggedInUser?.warningFlags?.includes('Failed Payment');
@@ -50,8 +52,7 @@ export function ClientDashboardPage(props: any) {
         {/* Header section */}
         <div className="flex justify-between items-center border-b pb-4 border-slate-200">
           <div>
-            <span className="text-xs uppercase font-bold text-[#0064DC] tracking-wider">Subscriber Portal</span>
-            <h2 className="text-3xl font-extrabold mt-1 text-[#001871] font-serif">Telco Customer Console</h2>
+            <h2 className="text-3xl font-extrabold mt-1 text-[#001871] font-serif">Telco Customer Portal</h2>
           </div>
           <button 
             onClick={() => setCurrentPage('marketing')}
@@ -63,7 +64,10 @@ export function ClientDashboardPage(props: any) {
         </div>
 
         {/* Profile Switcher dropdown */}
-        <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
+        <div
+          onClick={() => setSelectedCard('switcher')}
+          className={`bg-white border border-slate-200 p-5 rounded-2xl flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm cursor-pointer transition-all ${selectedCard === 'switcher' ? 'demo-card-selected-client' : ''}`}
+        >
           <div className="flex-1">
             <h3 className="text-sm font-bold text-[#001871]">Switch Client View (CSM Sandbox Tool)</h3>
             <p className="text-xs text-slate-600 mt-1">
@@ -88,7 +92,10 @@ export function ClientDashboardPage(props: any) {
           <div className="flex flex-col md:flex-row gap-6 w-full items-stretch">
             
             {/* Profile Card */}
-            <div className="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between flex-1 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
+            <div
+              onClick={() => setSelectedCard('profile')}
+              className={`bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between flex-1 shadow-sm hover:border-[#0064DC]/20 transition-all text-left cursor-pointer ${selectedCard === 'profile' ? 'demo-card-selected-client' : ''}`}
+            >
               <div>
                 <span className="text-xs uppercase font-bold text-[#0064DC] tracking-wider">Account Identity</span>
                 <div className="flex items-center gap-4 mt-3">
@@ -138,7 +145,10 @@ export function ClientDashboardPage(props: any) {
             </div>
 
             {/* Usage statistics card */}
-            <div className="bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between flex-1 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
+            <div
+              onClick={() => setSelectedCard('usage')}
+              className={`bg-white border border-slate-200 p-6 rounded-2xl flex flex-col justify-between flex-1 shadow-sm hover:border-[#0064DC]/20 transition-all text-left cursor-pointer ${selectedCard === 'usage' ? 'demo-card-selected-client' : ''}`}
+            >
               <div>
                 <span className="text-xs uppercase font-bold text-[#0064DC] tracking-wider">Data Thresholds</span>
                 <div className="flex flex-col gap-2 mt-4">
@@ -184,7 +194,10 @@ export function ClientDashboardPage(props: any) {
             <div className="flex flex-col gap-6 w-full">
               
               {/* Suggestions block / AI Plan Optimization Card */}
-              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
+              <div
+                onClick={() => setSelectedCard('optimization')}
+                className={`bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3 shadow-sm hover:border-[#0064DC]/20 transition-all text-left cursor-pointer ${selectedCard === 'optimization' ? 'demo-card-selected-client' : ''}`}
+              >
                 <div>
                   <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">AI PLAN OPTIMIZATION</span>
                   
@@ -298,7 +311,10 @@ export function ClientDashboardPage(props: any) {
               </div>
 
               {/* Add-on deals card */}
-              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
+              <div
+                onClick={() => setSelectedCard('addons')}
+                className={`bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all text-left cursor-pointer ${selectedCard === 'addons' ? 'demo-card-selected-client' : ''}`}
+              >
                 <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">PERSONALIZED ADD-ON DEALS</span>
                 <div className="flex flex-col gap-3 mt-1.5">
                   <div className="flex justify-between items-center border-b border-slate-100 pb-2">
@@ -352,7 +368,10 @@ export function ClientDashboardPage(props: any) {
               </div>
 
               {/* Service Log Ticker / History Log Card */}
-              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3 shadow-sm hover:border-[#0064DC]/20 transition-all text-left">
+              <div
+                onClick={() => setSelectedCard('history')}
+                className={`bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3 shadow-sm hover:border-[#0064DC]/20 transition-all text-left cursor-pointer ${selectedCard === 'history' ? 'demo-card-selected-client' : ''}`}
+              >
                 <span className="text-xs font-bold uppercase tracking-wider text-slate-600">YOUR RECENT ACCOUNT HISTORY LOG</span>
                 <div className="flex-1 flex flex-col gap-2 overflow-y-auto mt-2 max-h-[120px] border border-slate-200 rounded-xl p-2.5 bg-slate-50">
                   {(loggedInUser?.activityLogs || []).map((log, idx) => (

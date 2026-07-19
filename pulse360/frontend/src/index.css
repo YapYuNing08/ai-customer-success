@@ -99,6 +99,35 @@
   animation: pulse-glow-earth 2.5s infinite ease-in-out;
 }
 
+/* Demo aid: the card the presenter last clicked keeps a pulsing clay ring +
+   solid accent border so the audience sees exactly which card is active. */
+@keyframes card-select-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(157, 102, 56, 0.55); }
+  70%  { box-shadow: 0 0 0 10px rgba(157, 102, 56, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(157, 102, 56, 0); }
+}
+.demo-card-selected {
+  border-color: var(--color-earth-clay);
+  animation: card-select-pulse 1.3s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-card-selected { animation: none; box-shadow: 0 0 0 3px rgba(157, 102, 56, 0.45); }
+}
+
+/* Client portal variant — same pulse in the portal's blue accent (#0064DC). */
+@keyframes card-select-pulse-client {
+  0%   { box-shadow: 0 0 0 0 rgba(0, 100, 220, 0.5); }
+  70%  { box-shadow: 0 0 0 10px rgba(0, 100, 220, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 100, 220, 0); }
+}
+.demo-card-selected-client {
+  border-color: #0064DC;
+  animation: card-select-pulse-client 1.3s ease-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .demo-card-selected-client { animation: none; box-shadow: 0 0 0 3px rgba(0, 100, 220, 0.4); }
+}
+
 /* Landing hero falcon: the SubSentry "sentinel" gently hovering over the
    live user globe — slow vertical bob + faint sway so it reads as watching. */
 @keyframes falcon-hover {

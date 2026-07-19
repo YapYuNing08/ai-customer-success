@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowDown, ChevronRight, MessageSquare, Cpu, HeartHandshake } from 'lucide-react';
+import { ArrowDown, ChevronRight, Cpu, Gauge, EyeOff, History, Lightbulb, SlidersHorizontal, Compass } from 'lucide-react';
 import { Globe } from '../components/Globe';
 import { ModelAnalyticsModal } from '../components/modals/ModelAnalyticsModal';
 
@@ -33,7 +33,7 @@ export function MarketingPage(props: any) {
 
                 {/* Hero Description */}
                 <p className="text-sm md:text-base text-earth-cocoa/80 leading-relaxed">
-                  Falcon360 watches how your customers use your product, spots the ones losing interest before they cancel, explains in plain language what's frustrating them, and drafts personalized win-back emails based on what has worked before.
+                  Falcon360 is a multi-agent AI ecosystem for customer success. Its agents predict who's about to churn and score every customer's health, flag the silent ones drifting away without ever raising a ticket, replay each customer's full journey at a glance, explain exactly why they're at risk and what to do next, let you simulate any intervention before you act, and guide new signups to the right plan the moment they hesitate.
                 </p>
 
                 {/* Hero CTAs */}
@@ -61,19 +61,19 @@ export function MarketingPage(props: any) {
                 <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-earth-sage/20 text-xs text-earth-cocoa/70 font-semibold">
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-earth-clay" />
-                    <span>Live Activity Tracking</span>
+                    <span>Silent Churn Detection</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-earth-sage" />
-                    <span>Plain-Language Risk Reasons</span>
+                    <span>Explainable Risk + Next Best Action</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-earth-clay" />
-                    <span>AI Email Assistant</span>
+                    <span>What-If Simulator</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="w-1.5 h-1.5 rounded-full bg-earth-sage" />
-                    <span>Extra Time for Payment Issues</span>
+                    <span>Onboarding Guide</span>
                   </div>
                 </div>
               </div>
@@ -116,41 +116,74 @@ export function MarketingPage(props: any) {
                   <span className="text-[10px] uppercase font-extrabold tracking-widest text-earth-clay">What Falcon360 Does</span>
                   <h2 className="text-2xl font-extrabold text-earth-cocoa">Keep More Customers, With Less Guesswork.</h2>
                   <p className="text-xs text-earth-cocoa/75 leading-relaxed">
-                    Most businesses only find out why a customer left after it's too late. Falcon360 tells your team who is at risk, why, and exactly what to do about it — in plain language.
+                    Most businesses only find out why a customer left after it's too late. Falcon360 puts a team of specialized AI agents to work — each watching a different signal — so you know who's at risk, why, and exactly what to do next.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Feature 1 */}
+                  {/* Feature 1 — Churn Prediction & Health Score */}
                   <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-3 shadow-sm">
                     <div className="bg-earth-sage/20 text-earth-cocoa p-2.5 rounded-xl w-fit">
-                      <Cpu className="w-5 h-5 text-earth-clay" />
+                      <Gauge className="w-5 h-5 text-earth-clay" />
                     </div>
-                    <h3 className="font-bold text-earth-cocoa text-sm">Know Why, Not Just Who</h3>
+                    <h3 className="font-bold text-earth-cocoa text-sm">Churn Prediction & Health Score</h3>
                     <p className="text-xs text-earth-cocoa/70 leading-relaxed">
-                      We don't just flag customers who might leave. For each one, we show exactly which behaviors are raising or lowering their risk — no guesswork needed.
+                      A single health score for every customer, plus an AI churn forecast that flags who's likely to leave — long before they reach for the cancel button.
                     </p>
                   </div>
 
-                  {/* Feature 2 */}
+                  {/* Feature 2 — Silent Customer Detector (Sentinel Agent) */}
                   <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-3 shadow-sm">
                     <div className="bg-earth-sage/20 text-earth-cocoa p-2.5 rounded-xl w-fit">
-                      <MessageSquare className="w-5 h-5 text-earth-clay" />
+                      <EyeOff className="w-5 h-5 text-earth-clay" />
                     </div>
-                    <h3 className="font-bold text-earth-cocoa text-sm">Learn From Past Wins</h3>
+                    <h3 className="font-bold text-earth-cocoa text-sm">Silent Customer Detector</h3>
                     <p className="text-xs text-earth-cocoa/70 leading-relaxed">
-                      Falcon360 compares each at-risk customer with similar customers from the past — and shows you which rescue strategies actually kept them around.
+                      The Sentinel Agent catches customers quietly slipping away — disengaging and at risk without ever complaining or raising a support ticket.
                     </p>
                   </div>
 
-                  {/* Feature 3 */}
+                  {/* Feature 3 — AI Journey Replay (Chronicle Agent) */}
                   <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-3 shadow-sm">
                     <div className="bg-earth-sage/20 text-earth-cocoa p-2.5 rounded-xl w-fit">
-                      <HeartHandshake className="w-5 h-5 text-earth-clay" />
+                      <History className="w-5 h-5 text-earth-clay" />
                     </div>
-                    <h3 className="font-bold text-earth-cocoa text-sm">One-Click Actions</h3>
+                    <h3 className="font-bold text-earth-cocoa text-sm">AI Journey Replay</h3>
                     <p className="text-xs text-earth-cocoa/70 leading-relaxed">
-                      Help your team act fast: give customers extra time on a missed payment, send helpful tutorials, or schedule a check-in call — all with one click.
+                      The Chronicle Agent auto-builds a timeline of each customer's history, interactions and behavior shifts — no more manual digging before a call.
+                    </p>
+                  </div>
+
+                  {/* Feature 4 — Explainable AI & Next Best Action (Strategist Agent) */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-3 shadow-sm">
+                    <div className="bg-earth-sage/20 text-earth-cocoa p-2.5 rounded-xl w-fit">
+                      <Lightbulb className="w-5 h-5 text-earth-clay" />
+                    </div>
+                    <h3 className="font-bold text-earth-cocoa text-sm">Explainable AI & Next Best Action</h3>
+                    <p className="text-xs text-earth-cocoa/70 leading-relaxed">
+                      The Strategist Agent explains exactly why a customer is at risk and hands your team a data-backed, ready-to-run recommendation.
+                    </p>
+                  </div>
+
+                  {/* Feature 5 — What-If Simulator */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-3 shadow-sm">
+                    <div className="bg-earth-sage/20 text-earth-cocoa p-2.5 rounded-xl w-fit">
+                      <SlidersHorizontal className="w-5 h-5 text-earth-clay" />
+                    </div>
+                    <h3 className="font-bold text-earth-cocoa text-sm">What-If Simulator</h3>
+                    <p className="text-xs text-earth-cocoa/70 leading-relaxed">
+                      Test any intervention before you commit — simulate how a discount, plan change or check-in call would move a customer's predicted churn.
+                    </p>
+                  </div>
+
+                  {/* Feature 6 — Proactive Assistance (Guide & Coach Agents) */}
+                  <div className="bg-[#efe9d2]/40 border border-earth-sage/30 p-6 rounded-2xl flex flex-col gap-3 shadow-sm">
+                    <div className="bg-earth-sage/20 text-earth-cocoa p-2.5 rounded-xl w-fit">
+                      <Compass className="w-5 h-5 text-earth-clay" />
+                    </div>
+                    <h3 className="font-bold text-earth-cocoa text-sm">Proactive Onboarding Assistance</h3>
+                    <p className="text-xs text-earth-cocoa/70 leading-relaxed">
+                      The Guide and Coach Agents step in during signup — spotting hesitation and recommending the right plan so new customers start on the best fit.
                     </p>
                   </div>
                 </div>
