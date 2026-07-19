@@ -49,12 +49,80 @@ export const PLAN_OPTIONS = {
 
 export type PlanKey = keyof typeof PLAN_OPTIONS;
 
-const TOTAL_STEPS = 4;
+// Profile questions asked BEFORE the plan step — the answers drive the
+// AI plan suggestion (deterministic scoring below, no live model call).
+export const OCCUPATION_OPTIONS = {
+  student: 'Student',
+  professional: 'Working professional',
+  business: 'Business owner',
+  retiree: 'Retiree',
+} as const;
+export type OccupationKey = keyof typeof OCCUPATION_OPTIONS;
+
+export const DATA_USAGE_OPTIONS = {
+  wifi: 'Mostly Wi-Fi',
+  mixed: 'A mix of both',
+  mobile: 'Mostly mobile data',
+} as const;
+export type DataUsageKey = keyof typeof DATA_USAGE_OPTIONS;
+
+export const LOCATION_OPTIONS = {
+  city: 'City centre',
+  suburb: 'Suburban area',
+  rural: 'Small town / rural',
+} as const;
+export type LocationKey = keyof typeof LOCATION_OPTIONS;
+
+// Deterministic plan suggestion from the profile answers. Business owners map
+// straight to Enterprise (support + SLA is the selling point, not data volume);
+// everyone else is scored on how data-hungry their answers are.
+export function recommendPlan(occupation: OccupationKey, dataUsage: DataUsageKey, location: LocationKey): { plan: PlanKey; reason: string } {
+  const usageText = {
+    wifi: "you're on Wi-Fi most of the time",
+    mixed: 'you split your time between Wi-Fi and mobile data',
+    mobile: 'you rely on mobile data through the day',
+  }[dataUsage];
+  const locText = {
+    city: 'around the city, where our 5G coverage is strongest',
+    suburb: 'in suburban areas',
+    rural: 'in smaller towns, where our 4G network is rock-solid',
+  }[location];
+
+  if (occupation === 'business') {
+    return {
+      plan: 'Enterprise',
+      reason: `You run a business and ${usageText} ${locText} — Enterprise keeps you unlimited with dedicated support and an SLA, so downtime never costs you money.`,
+    };
+  }
+
+  const score =
+    ({ wifi: 0, mixed: 2, mobile: 4 } as const)[dataUsage] +
+    ({ student: 0, retiree: 0, professional: 2, business: 3 } as const)[occupation] +
+    ({ rural: 0, suburb: 1, city: 2 } as const)[location];
+  const plan: PlanKey = score >= 6 ? 'Pro' : score >= 3 ? 'Growth' : 'Starter';
+
+  const planPitch = {
+    Starter: 'Starter covers you comfortably without paying for data you won’t use',
+    Growth: 'Growth gives you the best value — plenty of data for streaming and social, with 5G access',
+    Pro: 'Pro keeps you unlimited with 5G priority and hotspot, so you never have to ration data',
+    Enterprise: 'Enterprise keeps you unlimited with dedicated support',
+  }[plan];
+
+  return {
+    plan,
+    reason: `As a ${OCCUPATION_OPTIONS[occupation].toLowerCase()}, ${usageText} ${locText} — ${planPitch}.`,
+  };
+}
+
+const TOTAL_STEPS = 5;
 
 export interface WizardResult {
   simChoice: 'physical' | 'esim';
   lifestyle: LifestyleKey;
   plan: PlanKey;
+  occupation: OccupationKey;
+  dataUsage: DataUsageKey;
+  location: LocationKey;
   aiInterventions: number;
   // Present in signup mode only.
   name?: string;
@@ -63,13 +131,13 @@ export interface WizardResult {
 }
 
 interface HelperState {
-  topic: 'details' | 'plan' | 'sim' | 'prefs';
+  topic: 'details' | 'profile' | 'plan' | 'sim' | 'prefs';
   trigger: 'idle' | 'clicks';
 }
 
 // Which helper topic the AI agent uses on each wizard step.
 const STEP_TOPICS: Record<number, HelperState['topic']> = {
-  1: 'details', 2: 'plan', 3: 'sim', 4: 'prefs',
+  1: 'details', 2: 'profile', 3: 'plan', 4: 'sim', 5: 'prefs',
 };
 
 // mode 'assist': re-run setup for an existing customer (launched from the
@@ -88,15 +156,17 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
   const displayName = mode === 'signup' ? (name.trim() || 'there') : customerName;
   const firstName = displayName.split(' ')[0] || 'there';
   const [step, setStep] = useState(1);
+  const [occupation, setOccupation] = useState<OccupationKey | null>(null);
+  const [dataUsage, setDataUsage] = useState<DataUsageKey | null>(null);
+  const [location, setLocation] = useState<LocationKey | null>(null);
   const [plan, setPlan] = useState<PlanKey | null>(null);
-  const [aiRecommendedPlan, setAiRecommendedPlan] = useState(false);
   const [simChoice, setSimChoice] = useState<'physical' | 'esim' | null>(null);
   const [aiRecommendedSim, setAiRecommendedSim] = useState(false);
   const [aiRecommendedPref, setAiRecommendedPref] = useState<LifestyleKey | null>(null);
   const [lifestyle, setLifestyle] = useState<LifestyleKey | null>(null);
   const [interventions, setInterventions] = useState(0);
   const [helper, setHelper] = useState<HelperState | null>(null);
-  const helperShown = useRef<Record<HelperState['topic'], boolean>>({ details: false, plan: false, sim: false, prefs: false });
+  const helperShown = useRef<Record<HelperState['topic'], boolean>>({ details: false, profile: false, plan: false, sim: false, prefs: false });
   const clickCounts = useRef<Record<string, number>>({});
   const lastActivity = useRef(Date.now());
 
@@ -111,6 +181,9 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
   const emailValid = /^\S+@\S+\.\S+$/.test(email.trim());
   const phoneValid = phone.replace(/\D/g, '').length >= 9;
   const detailsComplete = mode !== 'signup' || (!!name.trim() && emailValid && phoneValid);
+  const profileComplete = !!occupation && !!dataUsage && !!location;
+  // Plan suggestion derived from the profile answers; available from step 3 on.
+  const suggestion = occupation && dataUsage && location ? recommendPlan(occupation, dataUsage, location) : null;
 
   // The agent watches until the customer ADVANCES the step (clicks Continue /
   // Start Setup / Finish). Picking an option but hesitating to move on still
@@ -153,6 +226,13 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
 
   const radioClass = (selected: boolean) =>
     `flex items-start gap-3 p-3.5 rounded-xl border text-left cursor-pointer transition-all w-full ${
+      selected
+        ? 'bg-earth-cocoa text-earth-bg border-earth-cocoa shadow-sm'
+        : 'bg-earth-bg/60 text-earth-cocoa border-earth-sage/35 hover:border-earth-clay/50'
+    }`;
+
+  const pillClass = (selected: boolean) =>
+    `px-3 py-2 rounded-xl border text-[10px] font-bold cursor-pointer transition-all ${
       selected
         ? 'bg-earth-cocoa text-earth-bg border-earth-cocoa shadow-sm'
         : 'bg-earth-bg/60 text-earth-cocoa border-earth-sage/35 hover:border-earth-clay/50'
@@ -244,11 +324,87 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
           {step === 2 && (
             <>
               <div>
+                <h2 className="text-base font-extrabold text-earth-cocoa">Tell Us About You</h2>
+                <p className="text-xs text-earth-cocoa/70 mt-1 flex items-center gap-1.5">
+                  <Bot className="w-3.5 h-3.5 text-earth-clay" /> Three quick questions so I can suggest the right plan for you.
+                </p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-cocoa/70">What best describes you?</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(Object.keys(OCCUPATION_OPTIONS) as OccupationKey[]).map(key => (
+                    <button key={key} className={pillClass(occupation === key)} onClick={() => { registerClick(OCCUPATION_OPTIONS[key]); setOccupation(key); }}>
+                      {OCCUPATION_OPTIONS[key]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-cocoa/70">How do you usually get online?</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(Object.keys(DATA_USAGE_OPTIONS) as DataUsageKey[]).map(key => (
+                    <button key={key} className={pillClass(dataUsage === key)} onClick={() => { registerClick(DATA_USAGE_OPTIONS[key]); setDataUsage(key); }}>
+                      {DATA_USAGE_OPTIONS[key]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-cocoa/70">Where do you usually stay?</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {(Object.keys(LOCATION_OPTIONS) as LocationKey[]).map(key => (
+                    <button key={key} className={pillClass(location === key)} onClick={() => { registerClick(LOCATION_OPTIONS[key]); setLocation(key); }}>
+                      {LOCATION_OPTIONS[key]}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Not disabled= so clicks on the "inactive" button still count
+                  toward the confusion trigger — the classic lost-user signal. */}
+              <button
+                onClick={() => {
+                  registerClick('Continue');
+                  if (profileComplete) setStep(3);
+                }}
+                className={`font-extrabold text-xs px-6 py-2.5 rounded-xl transition-all mt-auto ${
+                  profileComplete
+                    ? 'bg-earth-cocoa hover:bg-earth-clay text-earth-bg cursor-pointer shadow-sm'
+                    : 'bg-earth-sage/20 text-earth-cocoa/40 cursor-not-allowed'
+                }`}
+              >
+                Continue
+              </button>
+            </>
+          )}
+
+          {step === 3 && (
+            <>
+              <div>
                 <h2 className="text-base font-extrabold text-earth-cocoa">Choose Your Package</h2>
                 <p className="text-xs text-earth-cocoa/70 mt-1 flex items-center gap-1.5">
                   <Bot className="w-3.5 h-3.5 text-earth-clay" /> Pick a plan — you can change it anytime, no lock-in.
                 </p>
               </div>
+              {suggestion && (
+                <div className="bg-earth-clay/8 border border-earth-clay/25 rounded-xl p-3 flex flex-col gap-1.5 animate-fadeIn">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay flex items-center gap-1.5">
+                    <Sparkles className="w-3 h-3" /> AI Suggestion: {suggestion.plan} — RM{PLAN_OPTIONS[suggestion.plan].price}/mo
+                  </span>
+                  <p className="text-[10px] text-earth-cocoa leading-relaxed">{suggestion.reason}</p>
+                  {plan !== suggestion.plan && (
+                    <button
+                      onClick={() => {
+                        registerClick('Use suggested plan');
+                        setPlan(suggestion.plan);
+                        addTelemetry(`AI Onboarding Agent suggested the ${suggestion.plan} plan to ${displayName} (profile-based).`);
+                      }}
+                      className="self-start bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-[10px] px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                    >
+                      Use suggested plan
+                    </button>
+                  )}
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-2">
                 {(Object.keys(PLAN_OPTIONS) as PlanKey[]).map(key => (
                   <button
@@ -259,7 +415,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                     <span className="text-[11px] font-bold leading-tight flex flex-col items-start gap-1">
                       <span className="flex items-center gap-2">
                         {key}
-                        {aiRecommendedPlan && key === 'Growth' && aiBadge(plan === key)}
+                        {suggestion?.plan === key && aiBadge(plan === key)}
                       </span>
                       <span className={`text-[13px] font-extrabold ${plan === key ? 'text-earth-bg' : 'text-earth-clay'}`}>RM{PLAN_OPTIONS[key].price}/mo</span>
                       <span className={`text-[9px] font-medium leading-snug ${plan === key ? 'text-earth-bg/80' : 'text-earth-cocoa/65'}`}>{PLAN_OPTIONS[key].blurb}</span>
@@ -272,7 +428,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
               <button
                 onClick={() => {
                   registerClick('Continue');
-                  if (plan) setStep(3);
+                  if (plan) setStep(4);
                 }}
                 className={`font-extrabold text-xs px-6 py-2.5 rounded-xl transition-all mt-auto ${
                   plan
@@ -285,7 +441,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
             </>
           )}
 
-          {step === 3 && (
+          {step === 4 && (
             <>
               <div>
                 <h2 className="text-base font-extrabold text-earth-cocoa">Activate SIM</h2>
@@ -313,7 +469,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
               <button
                 onClick={() => {
                   registerClick('Continue');
-                  if (simChoice) setStep(4);
+                  if (simChoice) setStep(5);
                 }}
                 className={`font-extrabold text-xs px-6 py-2.5 rounded-xl transition-all mt-auto ${
                   simChoice
@@ -326,7 +482,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
             </>
           )}
 
-          {step === 4 && (
+          {step === 5 && (
             <>
               <div>
                 <h2 className="text-base font-extrabold text-earth-cocoa">Configure Preferences</h2>
@@ -376,6 +532,9 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                       simChoice: simChoice || 'esim',
                       lifestyle,
                       plan: plan || 'Starter',
+                      occupation: occupation || 'professional',
+                      dataUsage: dataUsage || 'mixed',
+                      location: location || 'city',
                       aiInterventions: interventions,
                       ...(mode === 'signup' ? { name: name.trim(), email: email.trim(), phone: phone.trim() } : {})
                     });
@@ -418,7 +577,9 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                       ? "Looks like that button isn't doing what you expected — let me help."
                       : helper.topic === 'details'
                         ? 'Need a hand getting started?'
-                        : 'Need help choosing?'}
+                        : helper.topic === 'profile'
+                          ? 'Wondering why I ask? These answers help me find your best-fit plan.'
+                          : 'Need help choosing?'}
                   </p>
                 </div>
               </div>
@@ -431,6 +592,14 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                   • <strong>Mobile number</strong> — the number to activate (or port over from your current provider)<br />
                   <span className="block mt-1 text-earth-cocoa/65">Your details stay private — we only use them to set up your line.</span>
                 </div>
+              ) : helper.topic === 'profile' ? (
+                <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-2.5 text-[9px] text-earth-cocoa leading-relaxed">
+                  <span className="font-extrabold text-[10px] block mb-1">Why I'm asking</span>
+                  • <strong>What you do</strong> — students & retirees usually need lighter plans; businesses need support & SLA<br />
+                  • <strong>Wi-Fi vs mobile data</strong> — the biggest driver of how much data you actually need<br />
+                  • <strong>Where you stay</strong> — matches you to our 5G or 4G coverage strengths<br />
+                  <span className="block mt-1 text-earth-cocoa/65">Answer all three and I'll suggest a plan on the next step — nothing is locked in.</span>
+                </div>
               ) : helper.topic === 'plan' ? (
                 <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-2.5 text-[9px] text-earth-cocoa leading-relaxed">
                   <span className="font-extrabold text-[10px] block mb-1">Quick guide</span>
@@ -438,7 +607,11 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                   • <strong>Growth</strong> — everyday streaming & social, best value<br />
                   • <strong>Pro</strong> — heavy data, hotspot, 5G priority<br />
                   • <strong>Enterprise</strong> — teams & business accounts<br />
-                  <span className="block mt-1 text-earth-cocoa/65">Most new customers start on Growth — you can switch plans anytime with no penalty.</span>
+                  <span className="block mt-1 text-earth-cocoa/65">
+                    {suggestion
+                      ? `Based on your answers, ${suggestion.plan} looks like your best fit — you can switch plans anytime with no penalty.`
+                      : 'Most new customers start on Growth — you can switch plans anytime with no penalty.'}
+                  </span>
                 </div>
               ) : helper.topic === 'sim' ? (
                 <div className="grid grid-cols-2 gap-2 text-[9px] text-earth-cocoa leading-relaxed">
@@ -466,13 +639,13 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
               )}
 
               <div className="flex flex-col gap-1.5">
-                {helper.topic !== 'details' && (
+                {helper.topic !== 'details' && helper.topic !== 'profile' && (
                 <button
                   onClick={() => {
                     if (helper.topic === 'plan') {
-                      setPlan('Growth');
-                      setAiRecommendedPlan(true);
-                      addTelemetry(`AI Onboarding Agent recommended the Growth plan to ${displayName}.`);
+                      const recommended = suggestion?.plan || 'Growth';
+                      setPlan(recommended);
+                      addTelemetry(`AI Onboarding Agent recommended the ${recommended} plan to ${displayName}.`);
                     } else if (helper.topic === 'sim') {
                       setSimChoice('esim');
                       setAiRecommendedSim(true);
@@ -493,7 +666,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                   onClick={() => setHelper(null)}
                   className="w-full bg-transparent hover:bg-earth-sage/10 text-earth-cocoa/70 font-bold text-[11px] py-1.5 rounded-xl transition-all cursor-pointer border border-earth-sage/30"
                 >
-                  {helper.topic === 'details' ? 'Got it, thanks' : 'Continue'}
+                  {helper.topic === 'details' || helper.topic === 'profile' ? 'Got it, thanks' : 'Continue'}
                 </button>
               </div>
             </div>

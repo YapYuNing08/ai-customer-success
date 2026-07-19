@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import { downgradeSavings } from '../utils/mockData';
+import { downgradeSavings, suggestPlanChange } from '../utils/mockData';
 import { PortalNotificationModal } from '../components/modals/PortalNotificationModal';
-import { OnboardingWizard, LIFESTYLE_CONFIG, type WizardResult } from '../components/OnboardingWizard';
+import { OnboardingWizard, LIFESTYLE_CONFIG, PLAN_OPTIONS, type PlanKey, type WizardResult } from '../components/OnboardingWizard';
 
 export function ClientDashboardPage(props: any) {
   const { users, clientUserId, setClientUserId, handleClientAction, addTelemetry, setCurrentPage, signupCompleted, onSignup, onSignupSkip } = props;
@@ -12,9 +12,25 @@ export function ClientDashboardPage(props: any) {
   const [chatInput, setChatInput] = useState('');
   const [portalNotification, setPortalNotification] = useState<{ title: string; message: string; type: 'success' | 'info' | 'warning' } | null>(null);
   const [showWizard, setShowWizard] = useState(false);
+  const [showPlanPicker, setShowPlanPicker] = useState(false);
 
   const loggedInUser = users.find((u: any) => u.id === clientUserId) || users[0];
   const hasFailedPayment = loggedInUser?.warningFlags?.includes('Failed Payment');
+  // Threshold-rule suggestion (same rule the 1-click actions use) so the plan
+  // picker can flag the AI's pick alongside the customer's free choice.
+  const planSuggestion = loggedInUser
+    ? suggestPlanChange(loggedInUser.plan, loggedInUser.metrics?.usageVelocity || 0, loggedInUser.mrr)
+    : null;
+
+  const handleSelfServePlanChange = (targetPlan: PlanKey) => {
+    handleClientAction(clientUserId, 'change_plan', targetPlan);
+    setShowPlanPicker(false);
+    setPortalNotification({
+      title: 'Plan Changed',
+      message: `✅ Your subscription has been switched to the ${targetPlan} Plan. The new rate applies from your next billing cycle.`,
+      type: 'success'
+    });
+  };
 
   useEffect(() => {
     if (!signupCompleted) {
@@ -229,6 +245,53 @@ export function ClientDashboardPage(props: any) {
                     </div>
                   )}
                 </div>
+
+                {/* Self-service plan change — always available, independent of
+                    whether the AI raised a recommendation above */}
+                <div className="border-t border-slate-100 pt-3 flex flex-col gap-2.5">
+                  <div className="flex justify-between items-center gap-3">
+                    <span className="text-xs font-bold text-slate-600">Prefer to choose yourself? Switch to any plan, anytime.</span>
+                    <button
+                      onClick={() => setShowPlanPicker(v => !v)}
+                      className="bg-white hover:bg-[#0064DC]/5 text-[#0064DC] border border-[#0064DC]/40 font-extrabold text-xs px-3.5 py-1.5 rounded-lg transition-all cursor-pointer whitespace-nowrap"
+                    >
+                      {showPlanPicker ? 'Hide Plans' : 'Change Plan'}
+                    </button>
+                  </div>
+                  {showPlanPicker && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 animate-fadeIn">
+                      {(Object.keys(PLAN_OPTIONS) as PlanKey[]).map(key => {
+                        const isCurrent = loggedInUser?.plan === key;
+                        const isAiPick = planSuggestion?.targetPlan === key;
+                        return (
+                          <button
+                            key={key}
+                            disabled={isCurrent}
+                            onClick={() => handleSelfServePlanChange(key)}
+                            className={`p-3 rounded-xl border text-left transition-all flex flex-col gap-1 ${
+                              isCurrent
+                                ? 'bg-slate-50 border-slate-200 cursor-default opacity-70'
+                                : 'bg-white border-slate-200 hover:border-[#0064DC] hover:shadow-sm cursor-pointer'
+                            }`}
+                          >
+                            <span className="flex items-center gap-2 text-xs font-extrabold text-[#001871]">
+                              {key}
+                              {isCurrent && (
+                                <span className="text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded-full bg-slate-200 text-slate-600">Current</span>
+                              )}
+                              {!isCurrent && isAiPick && (
+                                <span className="text-[9px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded-full bg-[#0064DC]/10 text-[#0064DC] border border-[#0064DC]/30">AI Suggested</span>
+                              )}
+                            </span>
+                            <span className="text-xs font-extrabold text-[#0064DC]">RM{PLAN_OPTIONS[key].price}/mo</span>
+                            <span className="text-[10px] text-slate-500 leading-snug">{PLAN_OPTIONS[key].blurb}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
                 <span className="text-xs text-slate-500 mt-2 leading-tight block">
                   💡 Optimization recommendation algorithm auto-syncs every 60 seconds to right-size contracts.
                 </span>
@@ -348,7 +411,7 @@ export function ClientDashboardPage(props: any) {
                       } else if (lower.includes("roaming") || lower.includes("travel") || lower.includes("abroad")) {
                         botReply = "Planning a trip? Buy our APAC & Europe Roaming Pass add-on for $15/mo to get high-speed connection abroad!";
                       } else if (lower.includes("upgrade") || lower.includes("downgrade") || lower.includes("plan")) {
-                        botReply = `You are on the ${loggedInUser.plan} subscription plan. If you need plan suggestions, our optimization dashboard recommends right-sizing to match your telemetry metrics.`;
+                        botReply = `You are on the ${loggedInUser.plan} subscription plan. You can switch to any plan yourself with the "Change Plan" button in the AI Plan Optimization panel — the AI will flag its suggested tier for you.`;
                       }
                       setChatbotMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
                     }, 500);
