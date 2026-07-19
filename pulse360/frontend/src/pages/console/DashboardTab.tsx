@@ -568,30 +568,30 @@ Is there a specific account or recent system event you would like me to analyze?
                       onClick={() => setActiveBroadcast(null)}
                     >
                       <div 
-                        className="bg-[#efe9d2] border-2 border-earth-sage text-earth-cocoa rounded-3xl max-w-lg w-full p-6 text-left relative shadow-2xl flex flex-col gap-4 animate-scaleUp font-sans"
+                        className="bg-[#efe9d2] border-2 border-earth-sage text-earth-cocoa rounded-3xl max-w-3xl w-full p-8 text-left relative shadow-2xl flex flex-col gap-5 animate-scaleUp font-sans"
                         onClick={(e) => e.stopPropagation()}
                       >
                         {/* Broadcast Header */}
                         <div className="flex items-center gap-4">
-                          <div className={`p-3 rounded-full border w-fit ${
+                          <div className={`p-4 rounded-full border w-fit ${
                             activeBroadcast.type === 'email' 
                               ? 'bg-earth-clay/25 border-earth-clay/35 text-earth-clay' 
                               : 'bg-[#25D366]/20 border-[#25D366]/40 text-[#128C7E]'
                           }`}>
-                            {activeBroadcast.type === 'email' ? <Mail className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}
+                            {activeBroadcast.type === 'email' ? <Mail className="w-8 h-8" /> : <MessageCircle className="w-8 h-8" />}
                           </div>
                           <div>
-                            <span className="text-[10px] uppercase font-extrabold text-earth-clay tracking-wider">Group Broadcast Operations</span>
-                            <h2 className="text-base font-bold text-earth-cocoa mt-0.5">
+                            <span className="text-xs uppercase font-extrabold text-earth-clay tracking-wider">Group Broadcast Operations</span>
+                            <h2 className="text-xl font-extrabold text-earth-cocoa mt-0.5">
                               Send Broadcast to {activeBroadcast.groupName}
                             </h2>
                           </div>
                         </div>
 
                         {/* Recipients list with Search bar */}
-                        <div className="text-xs border-y border-earth-sage/20 py-3 flex flex-col gap-2">
+                        <div className="text-sm border-y border-earth-sage/20 py-4 flex flex-col gap-3">
                           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                            <span className="font-extrabold text-[10px] text-earth-clay uppercase tracking-wider">
+                            <span className="font-extrabold text-xs text-earth-clay uppercase tracking-wider">
                               RECIPIENT PORTFOLIOS ({selectedRecipientIds.length}/{activeBroadcast.recipients.length} SELECTED):
                             </span>
                             <input
@@ -599,11 +599,11 @@ Is there a specific account or recent system event you would like me to analyze?
                               placeholder="Search by name or email..."
                               value={recipientSearch}
                               onChange={(e) => setRecipientSearch(e.target.value)}
-                              className="bg-earth-bg/50 border border-earth-sage/35 rounded-lg px-2.5 py-1 text-[10px] text-earth-cocoa font-bold outline-none focus:border-earth-clay placeholder-earth-cocoa/50 w-full sm:w-48"
+                              className="bg-white border border-earth-sage/35 rounded-xl px-3.5 py-1.5 text-xs text-earth-cocoa font-bold outline-none focus:border-earth-clay placeholder-earth-cocoa/50 w-full sm:w-64 shadow-sm"
                             />
                           </div>
 
-                          <div className="flex flex-wrap gap-1.5 mt-1 max-h-[90px] overflow-y-auto pr-1">
+                          <div className="flex flex-wrap gap-2 mt-1 max-h-[160px] overflow-y-auto pr-1">
                             {(() => {
                               const filtered = activeBroadcast.recipients.filter((r: any) =>
                                 r.name.toLowerCase().includes(recipientSearch.toLowerCase()) ||
@@ -612,7 +612,7 @@ Is there a specific account or recent system event you would like me to analyze?
 
                               if (filtered.length === 0) {
                                 return (
-                                  <span className="text-[10px] text-earth-cocoa/50 italic py-1">
+                                  <span className="text-xs text-earth-cocoa/50 italic py-1">
                                     No recipients match your search.
                                   </span>
                                 );
@@ -631,16 +631,16 @@ Is there a specific account or recent system event you would like me to analyze?
                                         setSelectedRecipientIds(prev => [...prev, r.id]);
                                       }
                                     }}
-                                    className={`flex items-center gap-1.5 px-2 py-0.5 rounded-lg text-[10px] font-bold transition-all border cursor-pointer disabled:cursor-not-allowed ${
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border-2 cursor-pointer disabled:cursor-not-allowed ${
                                       isSelected
-                                        ? 'bg-earth-cocoa text-earth-bg border-earth-cocoa shadow-sm font-extrabold'
-                                        : 'bg-earth-bg/30 text-earth-cocoa/40 border-earth-sage/20 opacity-60'
+                                        ? 'bg-white text-earth-cocoa border-status-healthy shadow-sm font-extrabold'
+                                        : 'bg-earth-bg/25 text-earth-cocoa/50 border-earth-sage/35 opacity-70 hover:bg-earth-bg/40'
                                     }`}
                                   >
-                                    <span className={`w-3.5 h-3.5 rounded border flex items-center justify-center text-[9px] font-black transition-all shrink-0 ${
+                                    <span className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] font-black transition-all shrink-0 ${
                                       isSelected 
-                                        ? 'bg-status-healthy border-status-healthy text-earth-bg' 
-                                        : 'border-earth-cocoa/40 bg-transparent text-transparent'
+                                        ? 'bg-status-healthy border-status-healthy text-white' 
+                                        : 'border-earth-cocoa/40 bg-white text-transparent'
                                     }`}>
                                       ✓
                                     </span>
@@ -654,17 +654,17 @@ Is there a specific account or recent system event you would like me to analyze?
 
                         {/* Editor / Template display */}
                         <div className="flex flex-col gap-2">
-                          <span className="font-extrabold text-[10px] text-earth-clay uppercase tracking-wider">AI BROADCAST MESSAGE TEMPLATE:</span>
+                          <span className="font-extrabold text-xs text-earth-clay uppercase tracking-wider">AI BROADCAST MESSAGE TEMPLATE:</span>
                           {activeBroadcast.type === 'email' && (
-                            <div className="flex flex-col gap-1 bg-earth-bg/35 border border-earth-sage/15 p-2 rounded-xl text-xs">
-                              <span className="font-bold text-earth-cocoa/60 text-[9px] uppercase">Subject Line:</span>
-                              <div className="font-black text-earth-cocoa border-b border-earth-sage/10 pb-1 mb-1">{activeBroadcast.subject}</div>
+                            <div className="flex flex-col gap-1.5 bg-earth-bg/35 border border-earth-sage/15 p-3 rounded-xl text-xs">
+                              <span className="font-bold text-earth-cocoa/60 text-xs uppercase">Subject Line:</span>
+                              <div className="font-black text-sm text-earth-cocoa border-b border-earth-sage/10 pb-1.5 mb-0.5">{activeBroadcast.subject}</div>
                             </div>
                           )}
                           <textarea
                             readOnly
                             value={activeBroadcast.body}
-                            className="w-full h-44 bg-earth-bg/35 border border-earth-sage/25 p-3 rounded-xl text-xs font-mono text-earth-cocoa leading-relaxed outline-none resize-none"
+                            className="w-full h-56 bg-earth-bg/35 border border-earth-sage/25 p-4 rounded-2xl text-sm font-mono text-earth-cocoa leading-relaxed outline-none resize-none"
                           />
                         </div>
 
@@ -680,7 +680,7 @@ Is there a specific account or recent system event you would like me to analyze?
                             <button 
                               disabled={isSendingBroadcast}
                               onClick={() => setActiveBroadcast(null)}
-                              className="px-4 py-2.5 bg-[#e4ddc3] hover:bg-[#d8cfb3] text-earth-cocoa font-bold text-xs rounded-xl transition-all cursor-pointer border border-earth-sage/20 disabled:opacity-50"
+                              className="px-6 py-3 bg-[#e4ddc3] hover:bg-[#d8cfb3] text-earth-cocoa font-bold text-sm rounded-xl transition-all cursor-pointer border border-earth-sage/20 disabled:opacity-50"
                             >
                               Cancel
                             </button>
@@ -689,7 +689,7 @@ Is there a specific account or recent system event you would like me to analyze?
                           {broadcastSuccess ? (
                             <button 
                               onClick={() => setActiveBroadcast(null)}
-                              className="px-5 py-2.5 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs rounded-xl transition-all cursor-pointer shadow-md"
+                              className="px-6 py-3 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-sm rounded-xl transition-all cursor-pointer shadow-md"
                             >
                               Close Dialog
                             </button>
@@ -698,15 +698,15 @@ Is there a specific account or recent system event you would like me to analyze?
                               disabled={isSendingBroadcast || selectedRecipientIds.length === 0}
                               onClick={() => {
                                 setIsSendingBroadcast(true);
-                                setTimeout(() => {
-                                  setIsSendingBroadcast(false);
-                                  setBroadcastSuccess(true);
-                                  if (addTelemetry) {
-                                    addTelemetry(`Transmitted group ${activeBroadcast.type} broadcast to ${selectedRecipientIds.length} accounts (${activeBroadcast.groupName}).`);
-                                  }
-                                }, 1500);
+                                  setTimeout(() => {
+                                    setIsSendingBroadcast(false);
+                                    setBroadcastSuccess(true);
+                                    if (addTelemetry) {
+                                      addTelemetry(`Transmitted group ${activeBroadcast.type} broadcast to ${selectedRecipientIds.length} accounts (${activeBroadcast.groupName}).`);
+                                    }
+                                  }, 1500);
                               }}
-                              className="px-5 py-2.5 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="px-6 py-3 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-sm rounded-xl transition-all cursor-pointer flex items-center gap-1.5 shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                               {isSendingBroadcast ? (
                                 <>
