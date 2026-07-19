@@ -271,9 +271,12 @@ Is there a specific account or recent system event you would like me to analyze?
                             <div className="flex justify-between items-baseline text-xs">
                               <div>
                                 <span className="font-bold text-earth-cocoa block">Login Frequency (Engagement)</span>
-                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">How often customers log in to use the platform</span>
+                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">A positive delta shows customer check-in methods are working. If negative, refine onboarding engagement plans.</span>
                               </div>
-                              <span className="font-extrabold text-status-healthy font-sans">82%</span>
+                              <div className="flex items-center gap-1.5 shrink-0 ml-4">
+                                <span className="text-[10px] text-status-healthy font-extrabold">+5%</span>
+                                <span className="font-extrabold text-status-healthy font-sans text-xs">82%</span>
+                              </div>
                             </div>
                             <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
                               <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '82%' }} />
@@ -285,9 +288,12 @@ Is there a specific account or recent system event you would like me to analyze?
                             <div className="flex justify-between items-baseline text-xs">
                               <div>
                                 <span className="font-bold text-earth-cocoa block">Feature Utilization (Usage)</span>
-                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">Adoption levels of advanced analytics and core system features</span>
+                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">An increase confirms new features are successfully adopted. A drop indicates a need to schedule tutorial broadcasts.</span>
                               </div>
-                              <span className="font-extrabold text-earth-clay font-sans">64%</span>
+                              <div className="flex items-center gap-1.5 shrink-0 ml-4">
+                                <span className="text-[10px] text-status-healthy font-extrabold">+8%</span>
+                                <span className="font-extrabold text-earth-clay font-sans text-xs">64%</span>
+                              </div>
                             </div>
                             <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
                               <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '64%' }} />
@@ -299,9 +305,12 @@ Is there a specific account or recent system event you would like me to analyze?
                             <div className="flex justify-between items-baseline text-xs">
                               <div>
                                 <span className="font-bold text-earth-cocoa block">Support Ticket Resolution (Response)</span>
-                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">Average time and success rate of customer support resolutions</span>
+                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">Higher rates validate successful CSM support interventions. A drop highlights resource bottlenecks needing attention.</span>
                               </div>
-                              <span className="font-extrabold text-status-healthy font-sans">91%</span>
+                              <div className="flex items-center gap-1.5 shrink-0 ml-4">
+                                <span className="text-[10px] text-status-healthy font-extrabold">+3%</span>
+                                <span className="font-extrabold text-status-healthy font-sans text-xs">91%</span>
+                              </div>
                             </div>
                             <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
                               <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '91%' }} />
@@ -313,9 +322,12 @@ Is there a specific account or recent system event you would like me to analyze?
                             <div className="flex justify-between items-baseline text-xs">
                               <div>
                                 <span className="font-bold text-earth-cocoa block">Payment & Invoicing (Billing)</span>
-                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">Success rate of monthly subscription credit card auto-payments</span>
+                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">A stable rate shows automated invoicing is reliable. A drop warns of payment failures requiring grace-period playbooks.</span>
                               </div>
-                              <span className="font-extrabold text-status-healthy font-sans">94%</span>
+                              <div className="flex items-center gap-1.5 shrink-0 ml-4">
+                                <span className="text-[10px] text-status-critical font-bold">-2%</span>
+                                <span className="font-extrabold text-status-healthy font-sans text-xs">94%</span>
+                              </div>
                             </div>
                             <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
                               <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '94%' }} />
