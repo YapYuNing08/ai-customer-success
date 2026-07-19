@@ -267,10 +267,13 @@ Is there a specific account or recent system event you would like me to analyze?
 
                         <div className="flex flex-col gap-4">
                           {/* Item 1 */}
-                          <div className="flex flex-col gap-1">
+                          <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-baseline text-xs">
-                              <span className="font-bold text-earth-cocoa">Login Frequency (Engagement)</span>
-                              <span className="font-extrabold text-status-healthy">82%</span>
+                              <div>
+                                <span className="font-bold text-earth-cocoa block">Login Frequency (Engagement)</span>
+                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">How often customers log in to use the platform</span>
+                              </div>
+                              <span className="font-extrabold text-status-healthy font-sans">82%</span>
                             </div>
                             <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
                               <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '82%' }} />
@@ -278,10 +281,13 @@ Is there a specific account or recent system event you would like me to analyze?
                           </div>
 
                           {/* Item 2 */}
-                          <div className="flex flex-col gap-1">
+                          <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-baseline text-xs">
-                              <span className="font-bold text-earth-cocoa">Feature Utilization (Usage)</span>
-                              <span className="font-extrabold text-earth-clay">64%</span>
+                              <div>
+                                <span className="font-bold text-earth-cocoa block">Feature Utilization (Usage)</span>
+                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">Adoption levels of advanced analytics and core system features</span>
+                              </div>
+                              <span className="font-extrabold text-earth-clay font-sans">64%</span>
                             </div>
                             <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
                               <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '64%' }} />
@@ -289,10 +295,13 @@ Is there a specific account or recent system event you would like me to analyze?
                           </div>
 
                           {/* Item 3 */}
-                          <div className="flex flex-col gap-1">
+                          <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-baseline text-xs">
-                              <span className="font-bold text-earth-cocoa">Support Ticket Resolution (Response)</span>
-                              <span className="font-extrabold text-status-healthy">91%</span>
+                              <div>
+                                <span className="font-bold text-earth-cocoa block">Support Ticket Resolution (Response)</span>
+                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">Average time and success rate of customer support resolutions</span>
+                              </div>
+                              <span className="font-extrabold text-status-healthy font-sans">91%</span>
                             </div>
                             <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
                               <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '91%' }} />
@@ -300,10 +309,13 @@ Is there a specific account or recent system event you would like me to analyze?
                           </div>
 
                           {/* Item 4 */}
-                          <div className="flex flex-col gap-1">
+                          <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-baseline text-xs">
-                              <span className="font-bold text-earth-cocoa">Payment & Invoicing (Billing)</span>
-                              <span className="font-extrabold text-status-healthy">94%</span>
+                              <div>
+                                <span className="font-bold text-earth-cocoa block">Payment & Invoicing (Billing)</span>
+                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">Success rate of monthly subscription credit card auto-payments</span>
+                              </div>
+                              <span className="font-extrabold text-status-healthy font-sans">94%</span>
                             </div>
                             <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
                               <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '94%' }} />
@@ -317,48 +329,6 @@ Is there a specific account or recent system event you would like me to analyze?
 
                     {/* Right Column (Span 6) */}
                     <div className="lg:col-span-6 flex flex-col gap-6 w-full">
-                      {/* Experience drivers */}
-                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm h-fit">
-                        <div className="flex flex-col gap-1 border-b border-earth-sage/20 pb-2 w-full text-left">
-                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER SATISFACTION DRIVERS</span>
-                          <span className="text-[10px] font-bold text-earth-sage uppercase">What keeps customers happy & loyal</span>
-                        </div>
-
-                        <div className="flex flex-col gap-4 text-xs font-bold text-earth-cocoa/80 text-left">
-                          <div className="flex justify-between items-center p-2 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
-                            <div>
-                              <span>System Reliability</span>
-                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">How often the app is online & working</span>
-                            </div>
-                            <span className="text-status-healthy font-extrabold">+18%</span>
-                          </div>
-
-                          <div className="flex justify-between items-center p-2 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
-                            <div>
-                              <span>Increasing Usage</span>
-                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">Customers using more features over time</span>
-                            </div>
-                            <span className="text-status-healthy font-extrabold">+12%</span>
-                          </div>
-
-                          <div className="flex justify-between items-center p-2 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
-                            <div>
-                              <span>Regular Check-Ins</span>
-                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">Our customer support talking with them</span>
-                            </div>
-                            <span className="text-status-healthy font-extrabold">+15%</span>
-                          </div>
-
-                          <div className="flex justify-between items-center p-2 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
-                            <div>
-                              <span>Failed Payments</span>
-                              <span className="text-[9px] text-earth-cocoa/50 block font-normal mt-0.5">How often credit card renewals decline</span>
-                            </div>
-                            <span className="text-status-critical font-extrabold">-8%</span>
-                          </div>
-                        </div>
-                      </div>
-
                       {/* Customer's Health */}
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
                         <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2 w-full">
