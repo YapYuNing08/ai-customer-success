@@ -5,6 +5,7 @@ export interface UserActivityLog {
 }
 
 export interface ChurnFactor {
+  feature?: string;
   name: string;
   impact: number;
 }
@@ -552,6 +553,7 @@ export const mergeBackendCustomer = (backendCust: any): ActiveUser => {
         : 120,
     },
     churnFactors: (backendCust.shap_reasons || []).map((r: any) => ({
+      feature: r.feature,
       name: r.feature.split('_').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' '),
       impact: Math.round(r.contribution * 100)
     })),
