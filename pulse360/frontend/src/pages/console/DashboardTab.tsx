@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
-import { Cpu, Users, Heart, Clock, Activity, Send, Mail, MessageCircle } from 'lucide-react';
+import { Cpu, Users, Heart, Clock, Activity, Send, Mail, MessageCircle, EyeOff } from 'lucide-react';
 
 export function DashboardTab(props: any) {
-  const { dist, expScore, expLabel, users, addTelemetry } = props;
+  const { dist, expScore, expLabel, users, addTelemetry, onViewSilentChurners } = props;
   const [activeSubTab, setActiveSubTab] = useState<'distribution' | 'interventions'>('distribution');
   const [activeBroadcast, setActiveBroadcast] = useState<{
     groupName: string;
@@ -30,6 +30,7 @@ export function DashboardTab(props: any) {
   const getBroadcastTemplate = (groupName: string, type: 'email' | 'whatsapp', names: string[]) => {
     const isBilling = groupName.includes('Billing') || groupName.includes('Payment');
     const isOutage = groupName.includes('Outage');
+    const isSilent = groupName.includes('Silent');
 
     let subject = '';
     let body = '';
@@ -57,6 +58,18 @@ System uptime and latency have returned to our baseline SLA levels of 24ms. Than
 
 Best regards,
 Falcon360 Infrastructure Team`;
+      } else if (isSilent) {
+        subject = 'We noticed things have gone quiet — can we help?';
+        body = `Dear Falcon360 Customer,
+
+We haven't seen much activity on your workspace lately — and since you haven't raised any support requests either, we wanted to check in personally. In our experience, quiet usually means something isn't quite clicking, and we'd rather hear about it early.
+
+We would love to set up a complimentary 15-minute success session with your dedicated CSM to walk through your setup, share tailored tips, and make sure the platform is pulling its weight for your team.
+
+No pressure at all — just reply to this email and we'll find a time that works for you.
+
+Best regards,
+Customer Success Team`;
       } else {
         subject = 'Unlocking the full value of Falcon360';
         body = `Dear Falcon360 Customer,
@@ -73,6 +86,8 @@ Customer Success Team`;
         body = `*Falcon360 Billing Update* ⚠️\nWe noticed a card renewal failure on your account. We have activated a 14-day grace period to keep your workspace online. Please check your billing dashboard to update details.`;
       } else if (isOutage) {
         body = `*Falcon360 System Recovery* 🔌\nThe regional West-US connectivity spike is now resolved. All integrations and API rates are back to stable levels (24ms). Thank you for your patience!`;
+      } else if (isSilent) {
+        body = `*Falcon360 check-in* 👋\nWe noticed your workspace has gone a little quiet lately. Everything okay? Your CSM would love to offer a free 15-minute success session with tailored tips to get more value from your plan. Just reply here to book a slot!`;
       } else {
         body = `*Falcon360 Customer Success check-in* 📈\nWe noticed your usage dropped this week. Would your team like a quick 10-minute review with your Success Manager to help optimize integrations? Let us know!`;
       }
@@ -90,6 +105,7 @@ Customer Success Team`;
           if (flag === 'Failed Payment') cleanName = 'Failed Payments (Billing)';
           else if (flag === 'Regional Outage') cleanName = 'Regional Outages (Infrastructure)';
           else if (flag === 'Using It Less' || flag === 'Low Usage') cleanName = 'Low Usage (Engagement)';
+          else if (flag === 'Silent Churner') cleanName = 'Silent Churn (Quiet Disengagement)';
           else cleanName = `${flag} Triggers`;
 
           if (!groups[cleanName]) {
@@ -159,7 +175,7 @@ Is there a specific account or recent system event you would like me to analyze?
                   {/* Dashboard View */}
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full">
                     <div>
-                      <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight">Client Experience Dashboard</h1>
+                      <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight">Customer Success Manager Dashboard</h1>
                       <p className="text-sm text-black mt-1 max-w-xl font-normal">
                         Strategic metrics, health distribution, and experience analytics across your customer base.
                       </p>
@@ -177,7 +193,37 @@ Is there a specific account or recent system event you would like me to analyze?
                   </div>
 
                   {/* Metric Cards Row */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-stretch">
+                  <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full items-stretch">
+                    {/* Silent Churn Card — disengaging quietly, no tickets raised. Clicking opens the filtered customer list. */}
+                    <div
+                      onClick={onViewSilentChurners}
+                      title="Disengaging quietly — low logins, no support tickets raised. Click to view these accounts."
+                      className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-5 flex flex-col justify-between shadow-sm w-full cursor-pointer hover:bg-[#efe9d2]/60 hover:shadow-md transition-all"
+                    >
+                      <div className="flex flex-col gap-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-extrabold text-earth-cocoa/85 uppercase">Silent Churn Risk</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] font-extrabold text-earth-clay uppercase">View accounts →</span>
+                            <EyeOff className="w-4 h-4 text-status-risk" />
+                          </div>
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-4xl font-black text-black">{(dist.silent_churn_count ?? 0).toLocaleString()}</span>
+                          <span className="text-xs font-extrabold text-status-risk">{dist.silent_churn_pct ?? 0}% of accounts</span>
+                        </div>
+                      </div>
+                      <div className="border-t border-earth-sage/20 pt-2 mt-4 flex items-center justify-between gap-2">
+                        <span className="text-xs font-semibold text-black">RM{Math.round(dist.silent_churn_mrr ?? 0).toLocaleString()}/mo revenue at risk</span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setActiveSubTab('interventions'); }}
+                          className="text-[10px] font-extrabold uppercase text-earth-clay hover:underline shrink-0"
+                        >
+                          Re-engage all
+                        </button>
+                      </div>
+                    </div>
+
                     {/* Active Accounts Card */}
                     <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-5 flex flex-col justify-between shadow-sm w-full">
                       <div className="flex flex-col gap-2">

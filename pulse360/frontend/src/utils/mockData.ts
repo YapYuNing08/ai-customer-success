@@ -528,6 +528,14 @@ export const mergeBackendCustomer = (backendCust: any): ActiveUser => {
       if (backendCust.risk_tier === 'high') flags.add('Likely to Leave');
       if (backendCust.payment_status === 'past_due') flags.add('Failed Payment');
       if (backendCust.login_frequency != null && backendCust.login_frequency < 2) flags.add('Using It Less');
+      // Mirrors backend _SILENT_CHURN (repository.py) — keep thresholds in sync.
+      // NEW-* signups excluded: fresh-account defaults would match on day 0.
+      if (
+        !String(backendCust.customer_id).startsWith('NEW-') &&
+        backendCust.login_frequency != null && backendCust.login_frequency < 2.5 &&
+        backendCust.support_ticket_count != null && backendCust.support_ticket_count <= 2 &&
+        backendCust.health_score > 40
+      ) flags.add('Silent Churner');
       return [...flags];
     })(),
     metrics: {

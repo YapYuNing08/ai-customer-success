@@ -1,4 +1,4 @@
-import { Search, Clock } from 'lucide-react';
+import { Search, Clock, ArrowLeft } from 'lucide-react';
 import { ActiveUserInsight } from '../../components/ActiveUserInsight';
 
 const getEstimatedLeaveDate = (probability: number) => {
@@ -11,7 +11,7 @@ const getEstimatedLeaveDate = (probability: number) => {
 };
 
 export function CustomersTab(props: any) {
-  const { selectedConsoleUser, setSelectedConsoleUser, users, handleUpdateUser, customerSearch, setCustomerSearch, filterPlan, setFilterPlan, filterRisk, setFilterRisk, filteredConsoleUsers } = props;
+  const { selectedConsoleUser, setSelectedConsoleUser, users, handleUpdateUser, customerSearch, setCustomerSearch, filterPlan, setFilterPlan, filterRisk, setFilterRisk, filteredConsoleUsers, silentDrilldown, onBackFromSilent } = props;
   return (
                 selectedConsoleUser ? (
                   <ActiveUserInsight 
@@ -24,6 +24,16 @@ export function CustomersTab(props: any) {
                   />
                 ) : (
                   <>
+                    {/* Back to the dashboard after drilling in via the Silent Churn KPI card */}
+                    {silentDrilldown && (
+                      <button
+                        onClick={onBackFromSilent}
+                        className="flex items-center gap-2 text-xs font-bold text-earth-cocoa/80 hover:text-earth-clay transition-colors self-start cursor-pointer animate-fadeIn"
+                      >
+                        <ArrowLeft className="w-4 h-4" />
+                        Back to Dashboard
+                      </button>
+                    )}
                     {/* Customers View */}
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full animate-fadeIn">
                     <div>
@@ -80,6 +90,7 @@ export function CustomersTab(props: any) {
                         <option value="low">Low Risk</option>
                         <option value="medium">Medium Risk</option>
                         <option value="high">High Risk</option>
+                        <option value="silent">Silent Churn</option>
                       </select>
                     </div>
                   </div>
