@@ -113,45 +113,44 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users 
 
     const userDots: { user: ActiveUser; mesh: THREE.Mesh; pulseRing: THREE.Mesh }[] = [];
 
-    const latLngToVector3 = (lat: number, lng: number, radius: number) => {
-      const phi = (90 - lat) * (Math.PI / 180);
-      const theta = (lng + 180) * (Math.PI / 180);
+    // Spread the dots EVENLY across the whole globe surface via a Fibonacci
+    // (golden-spiral) sphere. This is a purely visual placement so the "Global
+    // User Heatmap" reads as worldwide coverage instead of one clump over SEA —
+    // each customer's real location label (Kuala Lumpur, etc.) is preserved
+    // untouched in the tooltip and customer table; only the plotted position is
+    // decoupled from lat/lng.
+    const surfaceRadius = 2.41;
+    const goldenAngle = Math.PI * (3 - Math.sqrt(5)); // ~2.39996 rad
+    const total = Math.max(1, activeUsersList.length);
+    const positionedUsers = activeUsersList.map((user, i) => {
+      // +0.5 centers the sample band so no dot lands exactly on a pole.
+      const y = 1 - ((i + 0.5) / total) * 2; // 1 → -1, top to bottom
+      const ringRadius = Math.sqrt(Math.max(0, 1 - y * y));
+      const theta = goldenAngle * i;
+      const pos = new THREE.Vector3(
+        Math.cos(theta) * ringRadius,
+        y,
+        Math.sin(theta) * ringRadius
+      ).multiplyScalar(surfaceRadius);
+      return { user, pos };
+    });
 
-      const x = -(radius * Math.sin(phi) * Math.sin(theta));
-      const y = radius * Math.cos(phi);
-      const z = radius * Math.sin(phi) * Math.cos(theta);
-
-      return new THREE.Vector3(x, y, z);
-    };
-
-    // Convert all users to initial spherical coordinates
-    const positionedUsers = activeUsersList.map((user) => ({
-      user,
-      pos: latLngToVector3(user.lat, user.lng, 2.41),
-    }));
-
-    // Repulsion pass to push close dots apart (so cities close to each other are separated)
-    const minDistance = 0.45; // Minimum visual distance between dots on 2.41 radius
-    const iterations = 8;
-    for (let step = 0; step < iterations; step++) {
-      for (let i = 0; i < positionedUsers.length; i++) {
-        for (let j = i + 1; j < positionedUsers.length; j++) {
-          const p1 = positionedUsers[i].pos;
-          const p2 = positionedUsers[j].pos;
-          const dist = p1.distanceTo(p2);
-          if (dist < minDistance && dist > 0.001) {
-            const diff = new THREE.Vector3().subVectors(p1, p2).normalize();
-            const pushAmount = (minDistance - dist) * 0.5;
-            p1.addScaledVector(diff, pushAmount);
-            p2.addScaledVector(diff, -pushAmount);
-
-            // Re-project back onto the surface sphere of radius 2.41
-            p1.normalize().multiplyScalar(2.41);
-            p2.normalize().multiplyScalar(2.41);
-          }
-        }
+    // Shared flat 5-point star geometry used for every customer marker (built
+    // once, reused per-dot; only the material color differs by health status).
+    const buildStarGeometry = (outer: number, inner: number, points = 5) => {
+      const shape = new THREE.Shape();
+      for (let i = 0; i < points * 2; i++) {
+        const r = i % 2 === 0 ? outer : inner;
+        const a = (i / (points * 2)) * Math.PI * 2 - Math.PI / 2; // first tip up
+        const x = Math.cos(a) * r;
+        const y = Math.sin(a) * r;
+        if (i === 0) shape.moveTo(x, y);
+        else shape.lineTo(x, y);
       }
-    }
+      shape.closePath();
+      return new THREE.ShapeGeometry(shape);
+    };
+    const starGeometry = buildStarGeometry(0.13, 0.055);
 
     positionedUsers.forEach(({ user, pos }) => {
       // Status colors (deep variants — dots render over the light cream globe)
@@ -159,15 +158,16 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users 
       if (user.healthScore < 40) color = 0xa81e17; // critical
       else if (user.healthScore < 70) color = 0xd97706; // at-risk
 
-      // Core dot
-      const dotGeometry = new THREE.SphereGeometry(0.08, 12, 12);
+      // Core marker — a flat star lying tangent to the globe, facing outward
       const dotMaterial = new THREE.MeshBasicMaterial({
         color: color,
+        side: THREE.DoubleSide,
         transparent: true,
-        opacity: 0.9,
+        opacity: 0.95,
       });
-      const dotMesh = new THREE.Mesh(dotGeometry, dotMaterial);
+      const dotMesh = new THREE.Mesh(starGeometry, dotMaterial);
       dotMesh.position.copy(pos);
+      dotMesh.lookAt(new THREE.Vector3(0, 0, 0));
       dotMesh.userData = { userId: user.id };
       dotsGroup.add(dotMesh);
 
