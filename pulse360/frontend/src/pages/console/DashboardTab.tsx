@@ -182,7 +182,7 @@ Is there a specific account or recent system event you would like me to analyze?
                     <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-5 flex flex-col justify-between shadow-sm w-full">
                       <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Active Accounts</span>
+                          <span className="text-[10px] font-extrabold text-earth-cocoa/85 uppercase">Active Accounts</span>
                           <Users className="w-4 h-4 text-earth-clay" />
                         </div>
                         <div className="flex items-baseline gap-2">
@@ -195,8 +195,8 @@ Is there a specific account or recent system event you would like me to analyze?
                     {/* Health distribution block */}
                     <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm w-full">
                       <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
-                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">CUSTOMER HEALTH DISTRIBUTION</span>
-                        <span className="text-[10px] font-bold text-earth-sage uppercase">Segmentation by active user count</span>
+                        <span className="text-[10px] font-extrabold text-earth-cocoa/85 uppercase">CUSTOMER HEALTH DISTRIBUTION</span>
+                        <span className="text-[10px] font-extrabold text-earth-cocoa/70 uppercase">Segmentation by active user count</span>
                       </div>
 
                       {/* Stacked bar chart representation */}
@@ -237,8 +237,8 @@ Is there a specific account or recent system event you would like me to analyze?
                       {/* Telemetry Status Breakdown */}
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
                         <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
-                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">SYSTEM STATUS BREAKDOWN</span>
-                          <span className="text-[10px] font-bold text-earth-sage uppercase">System checks</span>
+                          <span className="text-[10px] font-black uppercase text-earth-cocoa/90 tracking-wider">SYSTEM STATUS BREAKDOWN</span>
+                          <span className="text-[10px] font-extrabold text-earth-cocoa/75 uppercase">System checks</span>
                         </div>
 
                         <div className="flex flex-col gap-4">
@@ -329,8 +329,8 @@ Is there a specific account or recent system event you would like me to analyze?
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
                         <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2 w-full">
                           <div className="flex flex-col gap-1">
-                            <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER'S HEALTH</span>
-                            <span className="text-[10px] font-bold text-earth-sage uppercase">Distribution & Actions</span>
+                            <span className="text-[10px] font-black uppercase text-earth-cocoa/90 tracking-wider">CUSTOMER'S HEALTH</span>
+                            <span className="text-[10px] font-extrabold text-earth-cocoa/75 uppercase">Distribution & Actions</span>
                           </div>
                         </div>
 
