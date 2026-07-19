@@ -84,6 +84,16 @@ export function MarketingPage(props: any) {
                   <span className="text-[10px] uppercase font-bold text-earth-cocoa/50 tracking-wider">Live System Activity</span>
                   <h2 className="text-sm font-bold text-earth-cocoa mt-0.5">Global User Heatmap</h2>
                 </div>
+
+                {/* SubSentry falcon: the "sentinel" watching over the live user globe */}
+                <div className="falcon-hero absolute top-2 right-3 md:top-3 md:right-4 z-20 pointer-events-none select-none">
+                  <img
+                    src="/falcon.png"
+                    alt="SubSentry sentinel falcon watching over your customers"
+                    className="w-24 md:w-36 lg:w-44 h-auto"
+                  />
+                </div>
+
                 <Globe onSelectUser={handleSelectUser} selectedUser={selectedUser} users={users} pulseTrigger={pulseTrigger} />
               </div>
 

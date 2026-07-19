@@ -99,6 +99,28 @@
   animation: pulse-glow-earth 2.5s infinite ease-in-out;
 }
 
+/* Landing hero falcon: the SubSentry "sentinel" gently hovering over the
+   live user globe — slow vertical bob + faint sway so it reads as watching. */
+@keyframes falcon-hover {
+  0%, 100% { transform: translateY(0) rotate(-2deg); }
+  50%      { transform: translateY(-14px) rotate(1deg); }
+}
+@keyframes falcon-enter {
+  from { opacity: 0; transform: translateY(-24px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.falcon-hero {
+  animation: falcon-enter 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.falcon-hero img {
+  animation: falcon-hover 4.5s ease-in-out infinite;
+  filter: drop-shadow(0 12px 18px rgba(75, 54, 33, 0.28));
+  transform-origin: center;
+}
+@media (prefers-reduced-motion: reduce) {
+  .falcon-hero, .falcon-hero img { animation: none; }
+}
+
 /* Console Light-Mode Utilities (Matching Landing Page theme) */
 .console-bg-dark {
   background-color: #F7F1DE;
