@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, X } from 'lucide-react';
 import { downgradeSavings, suggestPlanChange } from '../utils/mockData';
 import { PortalNotificationModal } from '../components/modals/PortalNotificationModal';
 import { OnboardingWizard, LIFESTYLE_CONFIG, PLAN_OPTIONS, type PlanKey, type WizardResult } from '../components/OnboardingWizard';
@@ -15,6 +15,9 @@ export function ClientDashboardPage(props: any) {
   const [showPlanPicker, setShowPlanPicker] = useState(false);
   // Demo aid: the card the presenter last clicked keeps a pulsing border until another is clicked.
   const [selectedCard, setSelectedCard] = useState<string | null>(null);
+  // Floating Falcon assistant: closed by default, with a proactive teaser bubble.
+  const [chatbotOpen, setChatbotOpen] = useState(false);
+  const [showChatTeaser, setShowChatTeaser] = useState(false);
 
   const loggedInUser = users.find((u: any) => u.id === clientUserId) || users[0];
   const hasFailedPayment = loggedInUser?.warningFlags?.includes('Failed Payment');
@@ -41,6 +44,13 @@ export function ClientDashboardPage(props: any) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Proactively pop the assistant teaser bubble a beat after load so the
+  // floating Falcon widget invites the customer to start a chat.
+  useEffect(() => {
+    const t = setTimeout(() => setShowChatTeaser(true), 1400);
+    return () => clearTimeout(t);
+  }, []);
+
   const handleWizardComplete = (result: WizardResult) => {
     setShowWizard(false);
     onSignup(result);
@@ -48,7 +58,7 @@ export function ClientDashboardPage(props: any) {
 
   return (
     <>
-      <div className="w-full max-w-7xl mx-auto px-6 py-12 text-left flex flex-col gap-8 animate-fadeIn bg-white min-h-[calc(100vh-80px)] font-sans">
+      <div className="w-full px-6 sm:px-10 lg:px-16 py-12 text-left flex flex-col gap-8 animate-fadeIn bg-white min-h-[calc(100vh-80px)] font-sans">
         {/* Header section */}
         <div className="flex justify-between items-center border-b pb-4 border-slate-200">
           <div>
@@ -187,10 +197,11 @@ export function ClientDashboardPage(props: any) {
 
           </div>
 
-          {/* Row 2: Interaction Actions, AI Optimization, & Chatbot (2 main layout columns) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-stretch">
+          {/* Row 2: two columns — left AI optimization, right add-ons + history.
+              The AI chatbot is now a floating Falcon widget (bottom-right). */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-start">
             
-            {/* Left Column: Stack of Checklist, Plan Optimization, Add-ons, and History Log */}
+            {/* Left Column: AI Plan Optimization */}
             <div className="flex flex-col gap-6 w-full">
               
               {/* Suggestions block / AI Plan Optimization Card */}
@@ -309,6 +320,10 @@ export function ClientDashboardPage(props: any) {
                   💡 Optimization recommendation algorithm auto-syncs every 60 seconds to right-size contracts.
                 </span>
               </div>
+            </div>
+
+            {/* Right Column: Personalized add-ons & recent account history */}
+            <div className="flex flex-col gap-6 w-full">
 
               {/* Add-on deals card */}
               <div
@@ -386,22 +401,38 @@ export function ClientDashboardPage(props: any) {
 
             </div>
 
-            {/* Right Column: AI Chatbot Assistant */}
-            <div className="w-full">
-              <div className="bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3.5 shadow-sm hover:border-[#0064DC]/20 transition-all text-left h-[480px] justify-between">
-                <div className="flex justify-between items-center border-b border-slate-200 pb-2">
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">AI PLAN ASSISTANT CHATBOT</span>
-                  <span className="w-2 h-2 rounded-full bg-[#0064DC] animate-pulse" />
+            {/* Floating Falcon AI assistant — position:fixed lifts it out of the
+                grid flow to the bottom-right of the viewport, so the two-column
+                add-ons/history layout above is unaffected. */}
+            <div className="fixed bottom-6 right-6 z-40 flex flex-col items-end gap-3">
+
+              {/* Chat panel (opens above the Falcon launcher) */}
+              {chatbotOpen && (
+              <div className="bg-white border border-slate-200 rounded-2xl flex flex-col shadow-2xl w-[360px] max-w-[calc(100vw-3rem)] h-[480px] overflow-hidden animate-fadeIn text-left">
+                <div className="flex justify-between items-center border-b border-slate-200 px-4 py-3 bg-[#001871]">
+                  <div className="flex items-center gap-2">
+                    <img src="/falcon-icon.png" alt="" className="w-6 h-6 object-contain" />
+                    <span className="text-xs font-extrabold uppercase tracking-wider text-white">Falcon360 AI Assistant</span>
+                    <span className="w-2 h-2 rounded-full bg-[#FFD400] animate-pulse" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setChatbotOpen(false)}
+                    aria-label="Close assistant"
+                    className="text-white/70 hover:text-white transition-colors cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
                 </div>
 
-                <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 py-2 font-sans pr-1 text-xs">
+                <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 p-4 font-sans text-xs bg-slate-50/60">
                   {chatbotMessages.map((msg, idx) => (
                     <div 
                       key={idx} 
                       className={`p-2.5 rounded-2xl max-w-[85%] leading-relaxed ${
                         msg.sender === 'user' 
                           ? 'bg-[#0064DC] text-white ml-auto rounded-tr-none shadow-sm' 
-                          : 'bg-slate-100 text-[#001871] mr-auto rounded-tl-none border border-slate-200/80 shadow-sm'
+                          : 'bg-white text-[#001871] mr-auto rounded-tl-none border border-slate-200/80 shadow-sm'
                       }`}
                     >
                       {msg.text}
@@ -435,7 +466,7 @@ export function ClientDashboardPage(props: any) {
                       setChatbotMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
                     }, 500);
                   }}
-                  className="flex gap-2 border-t border-slate-200 pt-2.5"
+                  className="flex gap-2 border-t border-slate-200 p-3 bg-white"
                 >
                   <input 
                     type="text" 
@@ -452,6 +483,37 @@ export function ClientDashboardPage(props: any) {
                   </button>
                 </form>
               </div>
+              )}
+
+              {/* Proactive teaser (prewritten pop-up message) */}
+              {!chatbotOpen && showChatTeaser && (
+                <div className="relative bg-white border border-slate-200 rounded-2xl rounded-br-md shadow-xl p-3.5 pr-7 max-w-[260px] animate-fadeIn text-left">
+                  <button
+                    type="button"
+                    onClick={() => setShowChatTeaser(false)}
+                    aria-label="Dismiss message"
+                    className="absolute top-1.5 right-1.5 text-slate-300 hover:text-slate-500 transition-colors cursor-pointer"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                  <p className="text-xs text-[#001871] font-semibold leading-relaxed">
+                    👋 Hi! I'm your Falcon360 assistant. Need help with your plan, billing, or roaming add-ons?
+                  </p>
+                </div>
+              )}
+
+              {/* Falcon launcher button */}
+              <button
+                type="button"
+                onClick={() => { setChatbotOpen(v => !v); setShowChatTeaser(false); }}
+                aria-label={chatbotOpen ? 'Close assistant' : 'Open assistant'}
+                className="relative w-16 h-16 rounded-full bg-white shadow-2xl ring-2 ring-[#001871]/10 hover:ring-[#0064DC]/40 flex items-center justify-center transition-all hover:scale-105 cursor-pointer"
+              >
+                <img src="/falcon-icon-flipped.png" alt="Falcon360 assistant" className="w-11 h-11 object-contain" />
+                {!chatbotOpen && (
+                  <span className="absolute top-1 right-1 w-3.5 h-3.5 rounded-full bg-status-risk border-2 border-white animate-pulse" />
+                )}
+              </button>
             </div>
           </div>
         </div>
