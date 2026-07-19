@@ -7,7 +7,7 @@ import { OnboardingWizard, LIFESTYLE_CONFIG, type WizardResult } from '../compon
 export function ClientDashboardPage(props: any) {
   const { users, clientUserId, setClientUserId, handleClientAction, addTelemetry, setCurrentPage, signupCompleted, onSignup, onSignupSkip } = props;
   const [chatbotMessages, setChatbotMessages] = useState<{ sender: 'user' | 'bot'; text: string }[]>([
-    { sender: 'bot', text: "Hello! I'm your Telco AI assistant. Ask me anything about your mobile plan, billing renewal, data usage, or roaming add-ons!" }
+    { sender: 'bot', text: "Hello! I'm your Falcon360 assistant. Ask me anything about your mobile plan, billing renewal, data usage, or roaming add-ons!" }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [portalNotification, setPortalNotification] = useState<{ title: string; message: string; type: 'success' | 'info' | 'warning' } | null>(null);
