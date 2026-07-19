@@ -177,17 +177,54 @@ Is there a specific account or recent system event you would like me to analyze?
                   </div>
 
                   {/* Metric Cards Row */}
-                  <div className="w-full">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-stretch">
                     {/* Active Accounts Card */}
-                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm w-full">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Active Accounts</span>
-                        <Users className="w-4 h-4 text-earth-clay" />
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-5 flex flex-col justify-between shadow-sm w-full">
+                      <div className="flex flex-col gap-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Active Accounts</span>
+                          <Users className="w-4 h-4 text-earth-clay" />
+                        </div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-3xl font-black text-earth-cocoa">{dist.total_customers.toLocaleString()}</span>
+                        </div>
                       </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-earth-cocoa">{dist.total_customers.toLocaleString()}</span>
+                      <span className="text-[9px] text-earth-cocoa/65 border-t border-earth-sage/20 pt-2 mt-4 block">{dist.critical_count.toLocaleString()} accounts in critical state</span>
+                    </div>
+
+                    {/* Health distribution block */}
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-5 flex flex-col justify-between gap-4 shadow-sm w-full">
+                      <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
+                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">CUSTOMER HEALTH DISTRIBUTION</span>
+                        <span className="text-[10px] font-bold text-earth-sage uppercase">Segmentation by active user count</span>
                       </div>
-                      <span className="text-[9px] text-earth-cocoa/65">{dist.critical_count.toLocaleString()} accounts in critical state</span>
+
+                      {/* Stacked bar chart representation */}
+                      <div className="flex flex-col gap-4 justify-center flex-1">
+                        <div className="w-full h-5 rounded-lg flex overflow-hidden border border-earth-sage/20">
+                          <div className="h-full bg-status-healthy" style={{ width: `${dist.healthy_pct}%` }} title={`Healthy: ${dist.healthy_pct}%`} />
+                          <div className="h-full bg-status-risk" style={{ width: `${dist.at_risk_pct}%` }} title={`Warning: ${dist.at_risk_pct}%`} />
+                          <div className="h-full bg-status-critical" style={{ width: `${dist.critical_pct}%` }} title={`Critical: ${dist.critical_pct}%`} />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-4 text-xs font-bold text-earth-cocoa/80">
+                          <div className="flex flex-col gap-0.5 border-l-4 border-status-healthy pl-2">
+                            <span className="text-[9px] text-earth-cocoa/50 uppercase">Healthy</span>
+                            <span className="text-xs font-black">{dist.healthy_count.toLocaleString()} users</span>
+                            <span className="text-[9px] text-status-healthy font-extrabold">{dist.healthy_pct}%</span>
+                          </div>
+                          <div className="flex flex-col gap-0.5 border-l-4 border-status-risk pl-2">
+                            <span className="text-[9px] text-earth-cocoa/50 uppercase">Warning</span>
+                            <span className="text-xs font-black">{dist.at_risk_count.toLocaleString()} users</span>
+                            <span className="text-[9px] text-status-risk font-extrabold">{dist.at_risk_pct}%</span>
+                          </div>
+                          <div className="flex flex-col gap-0.5 border-l-4 border-status-critical pl-2">
+                            <span className="text-[9px] text-earth-cocoa/50 uppercase font-bold">Critical</span>
+                            <span className="text-xs font-black">{dist.critical_count.toLocaleString()} users</span>
+                            <span className="text-[9px] text-status-critical font-extrabold">{dist.critical_pct}%</span>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -196,41 +233,7 @@ Is there a specific account or recent system event you would like me to analyze?
                     
                     {/* Left Column (Span 6) */}
                     <div className="lg:col-span-6 flex flex-col gap-6 w-full">
-                      {/* Health distribution block */}
-                      <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm">
-                        <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
-                          <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER HEALTH DISTRIBUTION</span>
-                          <span className="text-[10px] font-bold text-earth-sage uppercase">Segmentation by active user count</span>
-                        </div>
-
-                        {/* Stacked bar chart representation */}
-                        <div className="flex flex-col gap-4">
-                          <div className="w-full h-5 rounded-lg flex overflow-hidden border border-earth-sage/20">
-                            <div className="h-full bg-status-healthy" style={{ width: `${dist.healthy_pct}%` }} title={`Healthy: ${dist.healthy_pct}%`} />
-                            <div className="h-full bg-status-risk" style={{ width: `${dist.at_risk_pct}%` }} title={`Warning: ${dist.at_risk_pct}%`} />
-                            <div className="h-full bg-status-critical" style={{ width: `${dist.critical_pct}%` }} title={`Critical: ${dist.critical_pct}%`} />
-                          </div>
-
-                          <div className="grid grid-cols-3 gap-4 text-xs font-bold text-earth-cocoa/80">
-                            <div className="flex flex-col gap-0.5 border-l-4 border-status-healthy pl-2">
-                              <span className="text-[9px] text-earth-cocoa/50 uppercase">Healthy</span>
-                              <span className="text-sm font-black">{dist.healthy_count.toLocaleString()} users</span>
-                              <span className="text-[9px] text-status-healthy font-extrabold">{dist.healthy_pct}%</span>
-                            </div>
-                            <div className="flex flex-col gap-0.5 border-l-4 border-status-risk pl-2">
-                              <span className="text-[9px] text-earth-cocoa/50 uppercase">Warning</span>
-                              <span className="text-sm font-black">{dist.at_risk_count.toLocaleString()} users</span>
-                              <span className="text-[9px] text-status-risk font-extrabold">{dist.at_risk_pct}%</span>
-                            </div>
-                            <div className="flex flex-col gap-0.5 border-l-4 border-status-critical pl-2">
-                              <span className="text-[9px] text-earth-cocoa/50 uppercase">Critical</span>
-                              <span className="text-sm font-black">{dist.critical_count.toLocaleString()} users</span>
-                              <span className="text-[9px] text-status-critical font-extrabold">{dist.critical_pct}%</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
+                      
                       {/* Telemetry Status Breakdown */}
                       <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left">
                         <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
