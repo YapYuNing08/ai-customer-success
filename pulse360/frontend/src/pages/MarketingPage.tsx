@@ -33,7 +33,7 @@ export function MarketingPage(props: any) {
 
                 {/* Hero Description */}
                 <p className="text-sm md:text-base text-earth-cocoa/80 leading-relaxed">
-                  SubSentry watches how your customers use your product, spots the ones losing interest before they cancel, explains in plain language what's frustrating them, and drafts personalized win-back emails based on what has worked before.
+                  Falcon360 watches how your customers use your product, spots the ones losing interest before they cancel, explains in plain language what's frustrating them, and drafts personalized win-back emails based on what has worked before.
                 </p>
 
                 {/* Hero CTAs */}
@@ -103,10 +103,10 @@ export function MarketingPage(props: any) {
             <div id="features" className="w-full bg-[#efe9d2]/20 border-y border-earth-sage/30 py-16 px-6 text-left select-none">
               <div className="max-w-7xl mx-auto flex flex-col gap-10">
                 <div className="text-center max-w-xl mx-auto flex flex-col gap-2">
-                  <span className="text-[10px] uppercase font-extrabold tracking-widest text-earth-clay">What SubSentry Does</span>
+                  <span className="text-[10px] uppercase font-extrabold tracking-widest text-earth-clay">What Falcon360 Does</span>
                   <h2 className="text-2xl font-extrabold text-earth-cocoa">Keep More Customers, With Less Guesswork.</h2>
                   <p className="text-xs text-earth-cocoa/75 leading-relaxed">
-                    Most businesses only find out why a customer left after it's too late. SubSentry tells your team who is at risk, why, and exactly what to do about it — in plain language.
+                    Most businesses only find out why a customer left after it's too late. Falcon360 tells your team who is at risk, why, and exactly what to do about it — in plain language.
                   </p>
                 </div>
 
@@ -129,7 +129,7 @@ export function MarketingPage(props: any) {
                     </div>
                     <h3 className="font-bold text-earth-cocoa text-sm">Learn From Past Wins</h3>
                     <p className="text-xs text-earth-cocoa/70 leading-relaxed">
-                      SubSentry compares each at-risk customer with similar customers from the past — and shows you which rescue strategies actually kept them around.
+                      Falcon360 compares each at-risk customer with similar customers from the past — and shows you which rescue strategies actually kept them around.
                     </p>
                   </div>
 
@@ -157,7 +157,7 @@ export function MarketingPage(props: any) {
               
               <div className="flex justify-between items-center border-b pb-4 border-earth-sage/35">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-earth-clay tracking-wider">SubSentry Workspace</span>
+                  <span className="text-[10px] uppercase font-bold text-earth-clay tracking-wider">Falcon360 Workspace</span>
                   <h2 className="text-xl font-extrabold mt-0.5 text-earth-cocoa">Customer Directory Panel</h2>
                 </div>
                 <button 

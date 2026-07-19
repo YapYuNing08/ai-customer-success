@@ -16,7 +16,7 @@ export function OutageAlertModal({ onClose, onNavigate }: { onClose: () => void;
                 <ShieldAlert className="w-8 h-8" />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-extrabold text-status-critical tracking-wider">SubSentry Incident Injection</span>
+                <span className="text-[10px] uppercase font-extrabold text-status-critical tracking-wider">Falcon360 Incident Injection</span>
                 <h2 className="text-lg font-serif font-black text-earth-cocoa mt-0.5">Outage Injected!</h2>
               </div>
             </div>

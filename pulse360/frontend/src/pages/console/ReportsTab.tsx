@@ -27,34 +27,7 @@ export function ReportsTab(props: any) {
                     </div>
                   </div>
 
-                  {/* Reports Metric Cards Row */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full animate-fadeIn">
-                    {/* Card 1 */}
-                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Generated Reports</span>
-                        <FileText className="w-4 h-4 text-earth-clay" />
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-earth-cocoa">12</span>
-                        <span className="text-[9px] bg-status-healthy/15 text-status-healthy px-1.5 py-0.5 rounded font-extrabold uppercase">Archived</span>
-                      </div>
-                      <span className="text-[9px] text-earth-cocoa/65">Historical runs preserved</span>
-                    </div>
 
-                    {/* Card 2 */}
-                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Rescue Recommendations</span>
-                        <Cpu className="w-4 h-4 text-status-healthy" />
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-earth-cocoa">3 Drafted</span>
-                        <span className="text-[9px] bg-status-healthy/15 text-status-healthy px-1.5 py-0.5 rounded font-extrabold uppercase">Ready</span>
-                      </div>
-                      <span className="text-[9px] text-earth-cocoa/65">Based on active churn risks</span>
-                    </div>
-                  </div>
 
                   {/* Main reports grid */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch animate-fadeIn">
