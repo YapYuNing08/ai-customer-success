@@ -177,24 +177,9 @@ Is there a specific account or recent system event you would like me to analyze?
                   </div>
 
                   {/* Metric Cards Row */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full">
-                    {/* Card 1 */}
-                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Experience Score</span>
-                        <Heart className="w-4 h-4 text-status-healthy" />
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-earth-cocoa">{expScore}</span>
-                        <span className={`text-[9px] px-1.5 py-0.5 rounded font-extrabold uppercase ${
-                          expScore > 70 ? 'bg-status-healthy/15 text-status-healthy' : expScore > 40 ? 'bg-status-risk/15 text-status-risk' : 'bg-status-critical/15 text-status-critical'
-                        }`}>{expLabel}</span>
-                      </div>
-                      <span className="text-[9px] text-earth-cocoa/65">Average health across all customers</span>
-                    </div>
-
-                    {/* Card 2 */}
-                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
+                  <div className="w-full">
+                    {/* Active Accounts Card */}
+                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm w-full">
                       <div className="flex justify-between items-center">
                         <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">Active Accounts</span>
                         <Users className="w-4 h-4 text-earth-clay" />
@@ -203,18 +188,6 @@ Is there a specific account or recent system event you would like me to analyze?
                         <span className="text-2xl font-black text-earth-cocoa">{dist.total_customers.toLocaleString()}</span>
                       </div>
                       <span className="text-[9px] text-earth-cocoa/65">{dist.critical_count.toLocaleString()} accounts in critical state</span>
-                    </div>
-
-                    {/* Card 3 */}
-                    <div className="bg-[#efe9d2]/40 border border-earth-sage/30 rounded-xl p-4 flex flex-col gap-2 shadow-sm">
-                      <div className="flex justify-between items-center">
-                        <span className="text-[10px] font-bold text-earth-cocoa/50 uppercase">System Avg Response Time</span>
-                        <Activity className="w-4 h-4 text-earth-clay" />
-                      </div>
-                      <div className="flex items-baseline gap-2">
-                        <span className="text-2xl font-black text-earth-cocoa">24ms</span>
-                      </div>
-                      <span className="text-[9px] text-earth-cocoa/65">99.99% uptime</span>
                     </div>
                   </div>
 
