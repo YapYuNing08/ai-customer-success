@@ -1,6 +1,15 @@
 import { Search, Clock } from 'lucide-react';
 import { ActiveUserInsight } from '../../components/ActiveUserInsight';
 
+const getEstimatedLeaveDate = (probability: number) => {
+  if (probability <= 15) return 'N/A (Stable)';
+  const days = Math.round(100 - probability);
+  const date = new Date('2026-07-19'); // Mock current local date
+  date.setDate(date.getDate() + days);
+  const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return `${formattedDate} (~${days} days)`;
+};
+
 export function CustomersTab(props: any) {
   const { selectedConsoleUser, setSelectedConsoleUser, users, handleUpdateUser, customerSearch, setCustomerSearch, filterPlan, setFilterPlan, filterRisk, setFilterRisk, filteredConsoleUsers } = props;
   return (
@@ -119,6 +128,14 @@ export function CustomersTab(props: any) {
                                     {Math.round(u.churnProbability)}%
                                   </span>
                                 </div>
+                              </div>
+
+                              {/* Est. Leave Date */}
+                              <div className="text-[11px] text-black font-normal text-left px-1 flex justify-between items-center w-full">
+                                <span className="font-semibold text-black/75">Est. Leave Date:</span>
+                                <span className={u.churnProbability > 15 ? 'text-status-critical font-bold' : 'text-status-healthy font-bold'}>
+                                  {getEstimatedLeaveDate(u.churnProbability)}
+                                </span>
                               </div>
 
                               {/* Warning Flags */}

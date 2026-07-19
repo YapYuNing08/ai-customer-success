@@ -13,6 +13,15 @@ interface ActiveUserInsightProps {
   onUpdateUser: (updatedUser: ActiveUser) => void;
 }
 
+const getEstimatedLeaveDate = (probability: number) => {
+  if (probability <= 15) return 'N/A (Stable)';
+  const days = Math.round(100 - probability);
+  const date = new Date('2026-07-19'); // Mock current local date
+  date.setDate(date.getDate() + days);
+  const formattedDate = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return `${formattedDate} (~${days} days)`;
+};
+
 export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBack, onUpdateUser }) => {
   const [copied, setCopied] = useState(false);
   const [activePlaybook, setActivePlaybook] = useState<string | null>(null);
@@ -437,6 +446,12 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                 </>
               )}
             </div>
+            <div className="mt-2.5 text-xs text-black font-normal leading-none flex items-center gap-1">
+              <span className="font-bold text-black/75">Est. Leave Date:</span>
+              <span className={user.churnProbability > 15 ? 'text-status-critical font-bold' : 'text-status-healthy font-bold'}>
+                {getEstimatedLeaveDate(user.churnProbability)}
+              </span>
+            </div>
           </div>
 
           <div className="w-full bg-earth-cocoa/15 rounded-full h-2">
@@ -761,6 +776,12 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                     <span className={`text-[10px] font-bold mt-1.5 block ${simResult.delta_churn < 0 ? 'text-status-healthy' : simResult.delta_churn > 0 ? 'text-status-critical' : 'text-black/60'}`}>
                       {simResult.delta_churn < 0 ? `Reduced risk by ${Math.round(Math.abs(simResult.delta_churn) * 100)}%` : simResult.delta_churn > 0 ? `Increased risk by ${Math.round(simResult.delta_churn * 100)}%` : 'No risk changes'}
                     </span>
+                    <div className="text-[10px] text-black font-normal mt-1 border-t border-earth-sage/10 pt-1">
+                      <span className="font-semibold text-black/75">Est. Leave:</span>{' '}
+                      <span className="line-through text-black/50">{getEstimatedLeaveDate(simResult.baseline_churn_probability * 100).split(' (')[0]}</span>
+                      {' '}&rarr;{' '}
+                      <span className="font-bold text-earth-clay">{getEstimatedLeaveDate(simResult.simulated_churn_probability * 100).split(' (')[0]}</span>
+                    </div>
                   </div>
 
                   {/* Health Score Change */}
