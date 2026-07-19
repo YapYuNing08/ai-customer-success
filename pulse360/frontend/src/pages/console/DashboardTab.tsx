@@ -706,15 +706,22 @@ Is there a specific account or recent system event you would like me to analyze?
                               onClick={() => {
                                 setIsSendingBroadcast(true);
                                 
-                                // Check if Yap is among the selected recipients
+                                // Check if Yap or Yu Ning is among the selected recipients
                                 const yapRecipient = activeBroadcast.recipients.find((r: any) => 
                                   selectedRecipientIds.includes(r.id) && r.name.toLowerCase().includes('yap')
                                 );
+                                const yuningRecipient = activeBroadcast.recipients.find((r: any) => 
+                                  selectedRecipientIds.includes(r.id) && r.name.toLowerCase().includes('yuning')
+                                );
                                 
-                                if (activeBroadcast.type === 'whatsapp' && yapRecipient) {
-                                  // Open real WhatsApp window pre-filled with the message
+                                if (activeBroadcast.type === 'whatsapp') {
                                   const text = `Dear Customer,\n\n${activeBroadcast.body}`;
-                                  window.open(`https://wa.me/60162897881?text=${encodeURIComponent(text)}`, '_blank');
+                                  if (yapRecipient) {
+                                    window.open(`https://wa.me/60162897881?text=${encodeURIComponent(text)}`, '_blank');
+                                  }
+                                  if (yuningRecipient) {
+                                    window.open(`https://wa.me/60122293817?text=${encodeURIComponent(text)}`, '_blank');
+                                  }
                                 }
 
                                   setTimeout(() => {

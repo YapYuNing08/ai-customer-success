@@ -10,11 +10,44 @@ import { useChurnSimulation } from './hooks/useChurnSimulation';
 import { getCustomers, getCustomerStats, createCustomer } from './lib/api';
 import { useEffect } from 'react';
 
+const buildYuNingUser = (): ActiveUser => ({
+  id: "cus_yuning",
+  name: "Yu Ning",
+  email: "yuning@example.com",
+  avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
+  location: 'Kuala Lumpur, Malaysia',
+  lat: 3.1390,
+  lng: 101.6869,
+  plan: 'Pro',
+  mrr: 1200,
+  healthScore: 45,
+  churnProbability: 55,
+  warningFlags: ['Using It Less'],
+  metrics: {
+    usageVelocity: 0.45,
+    featureAdoption: 0.35,
+    frictionIndex: 5,
+    failedPayments: 0,
+    daysSinceOnboarding: 45,
+  },
+  churnFactors: [
+    { name: 'Low feature usage', impact: 20 },
+    { name: 'Low login frequency', impact: 15 },
+    { name: 'Failed payment warning', impact: 10 },
+  ],
+  activityLogs: [
+    { date: '2026-07-18', type: 'login', details: 'Logged in for 1 minute' },
+    { date: '2026-07-16', type: 'feature_use', details: 'Used basic dashboard' },
+  ],
+  pastJourneys: [],
+  state: 'disengaged',
+});
+
 function App() {
   const [currentPage, setCurrentPage] = useState<'marketing' | 'client_console' | 'client_dashboard' | 'insight'>('marketing');
-  const [users, setUsers] = useState<ActiveUser[]>(mockUsers);
+  const [users, setUsers] = useState<ActiveUser[]>([buildYuNingUser(), ...mockUsers]);
   const [selectedUser, setSelectedUser] = useState<ActiveUser | null>(null);
-  const [clientUserId, setClientUserId] = useState<string>('1');
+  const [clientUserId, setClientUserId] = useState<string>('cus_yuning');
   // First visit to the client dashboard runs the guided setup as a sign-up
   // flow; once completed (or skipped) it never auto-opens again this session.
   const [signupCompleted, setSignupCompleted] = useState(false);
@@ -53,8 +86,10 @@ function App() {
       .then((data) => {
         if (data && data.length > 0) {
           const merged = data.map((c: any) => mergeBackendCustomer(c));
-          setUsers(merged);
-          if (merged[0]) setClientUserId(merged[0].id);
+          const hasYuNing = merged.some((u: any) => u.name.toLowerCase().includes('yuning'));
+          const finalUsers = hasYuNing ? merged : [buildYuNingUser(), ...merged];
+          setUsers(finalUsers);
+          setClientUserId('cus_yuning');
           setTelemetryFeed(prev => [
             `[${new Date().toLocaleTimeString()}] Connected to live data. Showing ${merged.length} active customers.`,
             ...prev

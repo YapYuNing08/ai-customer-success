@@ -919,16 +919,17 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                   )}
                 </button>
 
-                {user.name.toLowerCase().includes('yap') && (
+                {(user.name.toLowerCase().includes('yap') || user.name.toLowerCase().includes('yuning')) && (
                   <button
                     onClick={() => {
                       const whatsappText = `Hi ${user.name},\n\n${body}`;
-                      window.open(`https://wa.me/60162897881?text=${encodeURIComponent(whatsappText)}`, '_blank');
+                      const phone = user.name.toLowerCase().includes('yap') ? '60162897881' : '60122293817';
+                      window.open(`https://wa.me/${phone}?text=${encodeURIComponent(whatsappText)}`, '_blank');
                     }}
                     className="w-full py-2.5 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm mt-2"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />
-                    <span>Send WhatsApp Message (0162897881)</span>
+                    <span>Send WhatsApp Message ({user.name.toLowerCase().includes('yap') ? '0162897881' : '012-229 3817'})</span>
                   </button>
                 )}
 
