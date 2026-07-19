@@ -157,18 +157,22 @@ export function CustomersTab(props: any) {
                               {/* Warning Flags */}
                               <div className="flex flex-wrap gap-1.5 min-h-[22px] items-center">
                                 {u.warningFlags.length > 0 ? (
-                                  u.warningFlags.map((flag, idx) => (
-                                    <span 
-                                      key={idx} 
-                                      className={`text-[9.5px] px-2 py-0.5 rounded font-extrabold uppercase tracking-wider ${
-                                        flag === 'Regional Outage' || flag === 'Failed Payment'
-                                          ? 'bg-status-critical/15 text-status-critical border border-status-critical/35'
-                                          : 'bg-status-risk/15 text-status-risk border border-status-risk/35'
-                                      }`}
-                                    >
-                                      ⚠️ {flag}
-                                    </span>
-                                  ))
+                                  u.warningFlags.map((flag, idx) => {
+                                    const isCritical = flag === 'Regional Outage' || flag === 'Failed Payment';
+                                    return (
+                                      <span
+                                        key={idx}
+                                        className={`text-[9.5px] px-2 py-0.5 rounded font-extrabold uppercase tracking-wider flex items-center gap-1 ${
+                                          isCritical
+                                            ? 'bg-status-critical/15 text-status-critical-deep border border-status-critical-deep/40'
+                                            : 'bg-status-risk/20 text-status-risk-deep border border-status-risk-deep/45'
+                                        }`}
+                                      >
+                                        <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${isCritical ? 'bg-status-critical-deep' : 'bg-status-risk-deep'}`} />
+                                        {flag}
+                                      </span>
+                                    );
+                                  })
                                 ) : (
                                   <span className="text-xs text-status-healthy font-extrabold uppercase tracking-wider flex items-center gap-1">
                                     <span className="w-1.5 h-1.5 bg-status-healthy rounded-full" />
