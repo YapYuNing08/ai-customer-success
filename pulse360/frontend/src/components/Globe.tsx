@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { type ActiveUser, mockUsers } from '../utils/mockData';
+import Avatar from './Avatar';
 
 interface GlobeProps {
   onSelectUser: (user: ActiveUser) => void;
@@ -434,10 +435,9 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users 
 
           {/* User details */}
           <div className="flex items-center gap-3 pr-4">
-            <img
-              src={activeUserPin.avatar}
-              alt={activeUserPin.name}
-              className="w-10 h-10 rounded-full border border-earth-sage object-cover"
+            <Avatar
+              name={activeUserPin.name}
+              className="w-10 h-10 text-sm rounded-full border border-earth-sage"
             />
             <div>
               <h4 className="text-earth-cocoa font-bold text-sm leading-tight">

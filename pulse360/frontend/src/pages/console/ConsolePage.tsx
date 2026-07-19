@@ -8,6 +8,7 @@ import { OutageAlertModal } from '../../components/modals/OutageAlertModal';
 import { DashboardTab } from './DashboardTab';
 import { CustomersTab } from './CustomersTab';
 import { ReportsTab } from './ReportsTab';
+import Avatar from '../../components/Avatar';
 
 export function ConsolePage(props: any) {
   const { users, setUsers, telemetryFeed, setTelemetryFeed, isSimulating, setIsSimulating, outageRate, setOutageRate, billingFailureRate, setBillingFailureRate, addTelemetry, handleUpdateUser, dist, expScore, expLabel } = props;
@@ -238,7 +239,7 @@ export function ConsolePage(props: any) {
                       </div>
                     )}
                   </div>
-                  <img src={users[0]?.avatar} className="w-6 h-6 rounded-full border border-earth-sage/40 object-cover" />
+                  <Avatar name={users[0]?.name} className="w-6 h-6 text-[10px] rounded-full border border-earth-sage/40" />
                 </div>
               </div>
               {consoleTab === 'dashboard' ? (
