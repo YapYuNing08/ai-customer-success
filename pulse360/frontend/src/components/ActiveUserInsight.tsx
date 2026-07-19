@@ -228,24 +228,24 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
       return { subject: '', body: '' };
     }
 
-    let subject = `Optimizing your experience with SubSentry`;
-    let body = `Hi ${user.name.split(' ')[0]},\n\nI'm checking in from the SubSentry team. We noticed you've been working with our platform for the past ${user.metrics.daysSinceOnboarding} days. `;
+    let subject = `Optimizing your experience with Falcon360`;
+    let body = `Hi ${user.name.split(' ')[0]},\n\nI'm checking in from the Falcon360 team. We noticed you've been working with our platform for the past ${user.metrics.daysSinceOnboarding} days. `;
 
     if (lastClickedAction === 'grace_period') {
-      subject = `Action Required: Keeping your SubSentry account active`;
+      subject = `Action Required: Keeping your Falcon360 account active`;
       body += `We recently encountered a renewal issue with your subscription payment card on file. \n\nTo ensure your service is not interrupted, we've extended a 14-day grace period on your account. You can securely update your card details in your billing console whenever you're ready.\n\nLet me know if we can help you with anything else!`;
     } else if (lastClickedAction === 'training') {
-      subject = `Unlocking the full value of SubSentry`;
+      subject = `Unlocking the full value of Falcon360`;
       body += `We want to make sure you're getting the absolute best value out of your active package plan. We noticed you haven't had a chance to explore all our advanced integrations yet.\n\nSent you helpful video tutorials and how-to guides to get started. I'd love to schedule a quick 10-minute walkthrough to help configure these pipelines for you.\n\nWhat is your availability this week?`;
     } else if (lastClickedAction === 'discount') {
-      subject = `Loyalty Appreciation: 20% discount on SubSentry`;
+      subject = `Loyalty Appreciation: 20% discount on Falcon360`;
       body += `I wanted to reach out and thank you for being a valued customer. As a token of our appreciation, we have applied a 20% loyalty discount to your subscription for the next 3 months.\n\nLet me know if you would be interested in discussing advanced usage strategies!`;
     } else if (lastClickedAction === 'csm_call') {
-      subject = `SubSentry Customer Success Check-in Call`;
-      body += `I wanted to reach out to check how your team is getting along with SubSentry. We've noticed some outstanding support inquiries and want to make sure we resolve all friction.\n\nWould you have 10 minutes next week for a quick sync call?\n\nLet me know if we can help you with anything else!`;
+      subject = `Falcon360 Customer Success Check-in Call`;
+      body += `I wanted to reach out to check how your team is getting along with Falcon360. We've noticed some outstanding support inquiries and want to make sure we resolve all friction.\n\nWould you have 10 minutes next week for a quick sync call?\n\nLet me know if we can help you with anything else!`;
     }
 
-    body += `\n\nBest regards,\nCustomer Success Team\nSubSentry`;
+    body += `\n\nBest regards,\nCustomer Success Team\nFalcon360`;
     return { subject, body };
   }
 

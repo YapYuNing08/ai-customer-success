@@ -36,8 +36,8 @@ export function DashboardTab(props: any) {
 
     if (type === 'email') {
       if (isBilling) {
-        subject = 'Action Required: Updating your SubSentry payment card';
-        body = `Dear SubSentry Customer,
+        subject = 'Action Required: Updating your Falcon360 payment card';
+        body = `Dear Falcon360 Customer,
 
 We recently encountered a renewal issue with your subscription payment card on file.
 
@@ -49,17 +49,17 @@ Best regards,
 Customer Success Team`;
       } else if (isOutage) {
         subject = 'Resolved: West-US node connectivity recovery';
-        body = `Dear SubSentry Customer,
+        body = `Dear Falcon360 Customer,
 
 We are writing to inform you that the regional node connectivity latency spike in West-US has been fully resolved.
 
 System uptime and latency have returned to our baseline SLA levels of 24ms. Thank you for your patience as our network engineering team stabilized the servers.
 
 Best regards,
-SubSentry Infrastructure Team`;
+Falcon360 Infrastructure Team`;
       } else {
-        subject = 'Unlocking the full value of SubSentry';
-        body = `Dear SubSentry Customer,
+        subject = 'Unlocking the full value of Falcon360';
+        body = `Dear Falcon360 Customer,
 
 We noticed that your team has logged in less frequently this week. We want to make sure you are getting the absolute best value out of your active package plan.
 
@@ -70,11 +70,11 @@ Customer Success Team`;
       }
     } else {
       if (isBilling) {
-        body = `*SubSentry Billing Update* ⚠️\nWe noticed a card renewal failure on your account. We have activated a 14-day grace period to keep your workspace online. Please check your billing dashboard to update details.`;
+        body = `*Falcon360 Billing Update* ⚠️\nWe noticed a card renewal failure on your account. We have activated a 14-day grace period to keep your workspace online. Please check your billing dashboard to update details.`;
       } else if (isOutage) {
-        body = `*SubSentry System Recovery* 🔌\nThe regional West-US connectivity spike is now resolved. All integrations and API rates are back to stable levels (24ms). Thank you for your patience!`;
+        body = `*Falcon360 System Recovery* 🔌\nThe regional West-US connectivity spike is now resolved. All integrations and API rates are back to stable levels (24ms). Thank you for your patience!`;
       } else {
-        body = `*SubSentry Customer Success check-in* 📈\nWe noticed your usage dropped this week. Would your team like a quick 10-minute review with your Success Manager to help optimize integrations? Let us know!`;
+        body = `*Falcon360 Customer Success check-in* 📈\nWe noticed your usage dropped this week. Would your team like a quick 10-minute review with your Success Manager to help optimize integrations? Let us know!`;
       }
     }
 
@@ -103,7 +103,7 @@ Customer Success Team`;
   })();
   const [showAiChat, setShowAiChat] = useState(false);
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'ai'; text: string }>>([
-    { sender: 'ai', text: "Hello! I'm your SubSentry AI Portfolio Advisor. Ask me anything about customer health trends, critical account updates, or risk distribution." }
+    { sender: 'ai', text: "Hello! I'm your Falcon360 AI Portfolio Advisor. Ask me anything about customer health trends, critical account updates, or risk distribution." }
   ]);
   const [userInput, setUserInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);

@@ -17,7 +17,7 @@ export function ReportSuccessModal({ data, onClose }: { data: any; onClose: () =
                 <ShieldCheck className="w-8 h-8" />
               </div>
               <div>
-                <span className="text-[10px] uppercase font-extrabold text-earth-clay tracking-wider">SubSentry Success Engine</span>
+                <span className="text-[10px] uppercase font-extrabold text-earth-clay tracking-wider">Falcon360 Success Engine</span>
                 <h2 className="text-lg font-serif font-black text-earth-cocoa mt-0.5">Report Generated!</h2>
               </div>
             </div>

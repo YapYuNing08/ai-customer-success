@@ -174,7 +174,7 @@ export function ConsolePage(props: any) {
               {/* Top Navigation */}
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-earth-sage/20 w-full">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] uppercase font-extrabold tracking-widest text-earth-clay">SubSentry Workspace</span>
+                  <span className="text-[10px] uppercase font-extrabold tracking-widest text-earth-clay">Falcon360 Workspace</span>
                 </div>
                 
                 <div className="flex items-center gap-4 w-full sm:w-auto">

@@ -58,27 +58,27 @@ export interface CoordinateMap {
 
 export const staticCustomerMetadata: Record<string, CoordinateMap> = {
   "cus_001": {
-    email: 'contact@northwind.com',
+    email: 'contact@yap.my',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
-    location: 'New York, USA',
-    lat: 40.7128,
-    lng: -74.0060,
-    mrr: 4500,
+    location: 'Kuala Lumpur',
+    lat: 3.1390,
+    lng: 101.6869,
+    mrr: 199,
     warningFlags: ['Using It Less'],
     activityLogs: [
       { date: '2026-07-15', type: 'feature_use', details: 'Used Advanced Analytics dashboard' },
       { date: '2026-07-14', type: 'login', details: 'Logged in from desktop browser' },
-      { date: '2026-07-10', type: 'payment_success', details: 'Invoice #1092 paid (RM4,500.00)' }
+      { date: '2026-07-10', type: 'payment_success', details: 'Invoice #1092 paid (RM199.00)' }
     ],
     pastJourneys: []
   },
   "cus_002": {
-    email: 'ops@acmerobotics.co.jp',
+    email: 'ops@acmeselangor.com.my',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-    location: 'Tokyo, Japan',
-    lat: 35.6762,
-    lng: 139.6503,
-    mrr: 1500,
+    location: 'Petaling Jaya, Selangor',
+    lat: 3.1073,
+    lng: 101.6067,
+    mrr: 79,
     warningFlags: ['Not Using Key Features'],
     activityLogs: [
       { date: '2026-07-12', type: 'login', details: 'Logged in for 2 minutes' }
@@ -86,12 +86,12 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_003": {
-    email: 'support@blueharbor.es',
+    email: 'support@blueharbor.com.my',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-    location: 'London, UK',
-    lat: 51.5074,
-    lng: -0.1278,
-    mrr: 5000,
+    location: 'George Town, Penang',
+    lat: 5.4141,
+    lng: 100.3288,
+    mrr: 199,
     warningFlags: [],
     activityLogs: [
       { date: '2026-07-16', type: 'login', details: 'Logged in from desktop' }
@@ -99,12 +99,12 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_004": {
-    email: 'billing@cedarco.de',
+    email: 'billing@cedarmalaysia.my',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-    location: 'Cape Town, South Africa',
-    lat: -33.9249,
-    lng: 18.4241,
-    mrr: 400,
+    location: 'Johor Bahru, Johor',
+    lat: 1.4927,
+    lng: 103.7414,
+    mrr: 39,
     warningFlags: ['Failed Payment'],
     activityLogs: [
       { date: '2026-07-10', type: 'payment_fail', details: 'Invoice failed (Declined by Bank)' }
@@ -112,12 +112,12 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_005": {
-    email: 'analytics@summit.au',
+    email: 'analytics@summitkl.my',
     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80',
-    location: 'Sydney, Australia',
-    lat: -33.8688,
-    lng: 151.2093,
-    mrr: 1500,
+    location: 'Ipoh, Perak',
+    lat: 4.5921,
+    lng: 101.0901,
+    mrr: 79,
     warningFlags: [],
     activityLogs: [
       { date: '2026-07-16', type: 'feature_use', details: 'Triggered automated campaign pipeline' }
@@ -125,12 +125,12 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_006": {
-    email: 'ops@londonfinancial.co.uk',
+    email: 'ops@melakafinancial.my',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-    location: 'São Paulo, Brazil',
-    lat: -23.5505,
-    lng: -46.6333,
-    mrr: 4500,
+    location: 'Melaka City, Melaka',
+    lat: 2.1896,
+    lng: 102.2501,
+    mrr: 199,
     warningFlags: [],
     activityLogs: [
       { date: '2026-07-16', type: 'login', details: 'Logged in from Corporate VPN' }
@@ -138,12 +138,12 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_007": {
-    email: 'contact@parislogistics.fr',
+    email: 'contact@kuchinglogistics.my',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-    location: 'Nairobi, Kenya',
-    lat: -1.2921,
-    lng: 36.8219,
-    mrr: 1200,
+    location: 'Kuching, Sarawak',
+    lat: 1.5533,
+    lng: 110.3592,
+    mrr: 79,
     warningFlags: ['Not Using Key Features'],
     activityLogs: [
       { date: '2026-07-15', type: 'login', details: 'Unusual low session login (30s)' }
@@ -151,12 +151,12 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_008": {
-    email: 'operations@singaporetech.sg',
+    email: 'operations@sabahtech.my',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-    location: 'Singapore',
-    lat: 1.3521,
-    lng: 103.8198,
-    mrr: 5000,
+    location: 'Kota Kinabalu, Sabah',
+    lat: 5.9804,
+    lng: 116.0735,
+    mrr: 199,
     warningFlags: ['Likely to Leave'],
     activityLogs: [
       { date: '2026-07-16', type: 'support_open', details: 'Opened critical bug report on API latency' }
@@ -164,25 +164,25 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_009": {
-    email: 'compras@saopauloretail.com.br',
+    email: 'compras@selangorretail.my',
     avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&q=80',
-    location: 'Los Angeles, USA',
-    lat: 34.0522,
-    lng: -118.2437,
-    mrr: 400,
+    location: 'Shah Alam, Selangor',
+    lat: 3.0738,
+    lng: 101.5183,
+    mrr: 39,
     warningFlags: [],
     activityLogs: [
-      { date: '2026-07-15', type: 'payment_success', details: 'Invoice paid (RM400.00)' }
+      { date: '2026-07-15', type: 'payment_success', details: 'Invoice paid (RM39.00)' }
     ],
     pastJourneys: []
   },
   "cus_010": {
-    email: 'info@torontodevs.ca',
+    email: 'info@klangdevs.my',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
-    location: 'Mumbai, India',
-    lat: 19.0760,
-    lng: 72.8777,
-    mrr: 1200,
+    location: 'Klang, Selangor',
+    lat: 3.0333,
+    lng: 101.4500,
+    mrr: 79,
     warningFlags: [],
     activityLogs: [
       { date: '2026-07-16', type: 'feature_use', details: 'Setup advanced webhook integrations' }
@@ -190,122 +190,122 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_011": {
-    email: 'operations@anchorage.net',
+    email: 'operations@pahangshipping.my',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
-    location: 'Reykjavík, Iceland',
-    lat: 64.1466,
-    lng: -21.9426,
-    mrr: 800,
+    location: 'Kuantan, Pahang',
+    lat: 3.8077,
+    lng: 103.3260,
+    mrr: 79,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Reykjavik terminal connected.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Kuantan terminal connected.' }],
     pastJourneys: []
   },
   "cus_012": {
-    email: 'ceo@lagosventures.ng',
+    email: 'ceo@kedahventures.my',
     avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&q=80',
-    location: 'Lagos, Nigeria',
-    lat: 6.5244,
-    lng: 3.3792,
-    mrr: 3500,
+    location: 'Alor Setar, Kedah',
+    lat: 6.1210,
+    lng: 100.3601,
+    mrr: 199,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Account active from Lagos.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Account active from Alor Setar.' }],
     pastJourneys: []
   },
   "cus_013": {
-    email: 'staff@aucklandmedia.co.nz',
+    email: 'staff@terengganumedia.my',
     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80',
-    location: 'Auckland, New Zealand',
-    lat: -36.8485,
-    lng: 174.7633,
-    mrr: 1200,
+    location: 'Kuala Terengganu, Terengganu',
+    lat: 5.3302,
+    lng: 103.1408,
+    mrr: 79,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'support_open', details: 'Auckland team opened API review.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'support_open', details: 'Kuala Terengganu team opened API review.' }],
     pastJourneys: []
   },
   "cus_014": {
-    email: 'admin@reykjavikfisheries.is',
+    email: 'admin@kelantanfisheries.my',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-    location: 'Lima, Peru',
-    lat: -12.0464,
-    lng: -77.0428,
-    mrr: 600,
+    location: 'Kota Bharu, Kelantan',
+    lat: 6.1254,
+    lng: 102.2381,
+    mrr: 39,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Logged in from Peru.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Logged in from Kota Bharu.' }],
     pastJourneys: []
   },
   "cus_015": {
-    email: 'contact@limagri.pe',
+    email: 'contact@serembanagri.my',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-    location: 'Honolulu, Hawaii, USA',
-    lat: 21.3069,
-    lng: -157.8583,
-    mrr: 1400,
+    location: 'Seremban, Negeri Sembilan',
+    lat: 2.7258,
+    lng: 101.9378,
+    mrr: 79,
     warningFlags: ['Failed Payment'],
-    activityLogs: [{ date: '2026-07-15', type: 'payment_fail', details: 'Dunning alert on Hawaii account.' }],
+    activityLogs: [{ date: '2026-07-15', type: 'payment_fail', details: 'Dunning alert on Seremban account.' }],
     pastJourneys: []
   },
   "cus_016": {
-    email: 'honolulu@resortnet.com',
+    email: 'miri@resortnet.my',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
-    location: 'Dubai, UAE',
-    lat: 25.2048,
-    lng: 55.2708,
-    mrr: 4000,
+    location: 'Miri, Sarawak',
+    lat: 4.3995,
+    lng: 113.9914,
+    mrr: 199,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'feature_use', details: 'Dubai team operations.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'feature_use', details: 'Miri team operations.' }],
     pastJourneys: []
   },
   "cus_017": {
-    email: 'dubai@hospitality.ae',
+    email: 'sandakan@hospitality.my',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-    location: 'Stockholm, Sweden',
-    lat: 59.3293,
-    lng: 18.0686,
-    mrr: 2200,
+    location: 'Sandakan, Sabah',
+    lat: 5.8402,
+    lng: 118.1179,
+    mrr: 79,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Stockholm workspace sync.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Sandakan workspace sync.' }],
     pastJourneys: []
   },
   "cus_018": {
-    email: 'sales@casablancatextile.ma',
+    email: 'sales@taipingtextile.my',
     avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&q=80',
-    location: 'Anchorage, Alaska, USA',
-    lat: 61.2181,
-    lng: -149.9003,
-    mrr: 500,
+    location: 'Taiping, Perak',
+    lat: 4.8500,
+    lng: 100.7333,
+    mrr: 39,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Anchorage check-in.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Taiping check-in.' }],
     pastJourneys: []
   },
   "cus_019": {
-    email: 'semiconductors@seoul.kr',
+    email: 'semiconductors@sibu.my',
     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80',
-    location: 'Casablanca, Morocco',
-    lat: 33.5731,
-    lng: -7.5898,
-    mrr: 4800,
+    location: 'Sibu, Sarawak',
+    lat: 2.3000,
+    lng: 111.8167,
+    mrr: 199,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'feature_use', details: 'Casablanca batch sync triggered.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'feature_use', details: 'Sibu batch sync triggered.' }],
     pastJourneys: []
   },
   "cus_020": {
-    email: 'dev@vancouveranalytics.ca',
+    email: 'dev@bataupahatanalytics.my',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-    location: 'Nuuk, Greenland',
-    lat: 64.1743,
-    lng: -51.7373,
-    mrr: 1800,
+    location: 'Batu Pahat, Johor',
+    lat: 1.8500,
+    lng: 102.9300,
+    mrr: 79,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'support_open', details: 'Greenland dev logged ticket.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'support_open', details: 'Batu Pahat dev logged ticket.' }],
     pastJourneys: []
   }
 };
 
 const offlineNames: Record<string, string> = {
-  "cus_001": "Northwind Traders", "cus_002": "Acme Robotics", "cus_003": "Blue Harbor Health", "cus_004": "Cedar & Co.", "cus_005": "Summit Analytics",
-  "cus_006": "London Financial", "cus_007": "Paris Logistics", "cus_008": "Singapore Tech", "cus_009": "São Paulo Retail", "cus_010": "Toronto Devs",
-  "cus_011": "Anchorage Shipping", "cus_012": "Lagos Ventures", "cus_013": "Auckland Media", "cus_014": "Reykjavík Fisheries", "cus_015": "Lima Agricultures",
-  "cus_016": "Honolulu Resorts", "cus_017": "Dubai Hospitality", "cus_018": "Casablanca Textile", "cus_019": "Seoul Semiconductors", "cus_020": "Vancouver Analytics"
+  "cus_001": "Yap", "cus_002": "Acme Selangor", "cus_003": "Blue Harbor Penang", "cus_004": "Cedar Malaysia", "cus_005": "Summit KL",
+  "cus_006": "Melaka Financial", "cus_007": "Kuching Logistics", "cus_008": "Sabah Tech", "cus_009": "Selangor Retail", "cus_010": "Klang Devs",
+  "cus_011": "Pahang Shipping", "cus_012": "Kedah Ventures", "cus_013": "Terengganu Media", "cus_014": "Kelantan Fisheries", "cus_015": "Seremban Agricultures",
+  "cus_016": "Miri Resorts", "cus_017": "Sandakan Hospitality", "cus_018": "Taiping Textile", "cus_019": "Sibu Semiconductors", "cus_020": "Batu Pahat Analytics"
 };
 
 const offlinePlans: Record<string, string> = {
@@ -534,7 +534,7 @@ export const mergeBackendCustomer = (backendCust: any): ActiveUser => {
     location: geo.location,
     lat: geo.lat,
     lng: geo.lng,
-    mrr: backendCust.subscription_plan === 'Enterprise' ? 4000 : backendCust.subscription_plan === 'Pro' ? 1200 : 400,
+    mrr: backendCust.subscription_plan === 'Enterprise' ? 199 : backendCust.subscription_plan === 'Pro' ? 79 : 39,
     warningFlags: [],
     activityLogs: [],
     pastJourneys: []

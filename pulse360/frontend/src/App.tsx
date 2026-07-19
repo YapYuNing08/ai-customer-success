@@ -19,7 +19,7 @@ const buildYuNingUser = (): ActiveUser => ({
   lat: 3.1390,
   lng: 101.6869,
   plan: 'Pro',
-  mrr: 1200,
+  mrr: 79,
   healthScore: 45,
   churnProbability: 55,
   warningFlags: ['Using It Less'],
@@ -57,7 +57,7 @@ function App() {
   const [outageRate, setOutageRate] = useState(15);
   const [billingFailureRate, setBillingFailureRate] = useState(10);
   const [telemetryFeed, setTelemetryFeed] = useState<string[]>([
-    'SubSentry is up and running. Watching customer activity in real time.',
+    'Falcon360 is up and running. Watching customer activity in real time.',
     'Tracking 8 active customers around the world.',
   ]);
   const [pulseTrigger, setPulseTrigger] = useState(0);
@@ -211,7 +211,7 @@ function App() {
       lat: 3.139,
       lng: 101.6869,
       plan,
-      mrr: planMrr[plan],
+      mrr: plan === 'Enterprise' ? 199 : plan === 'Pro' ? 79 : 39,
       healthScore: 85,
       churnProbability: 8,
       warningFlags: [],
@@ -360,7 +360,7 @@ function App() {
 
       {/* Global Footer */}
       <footer className="bg-earth-bg border-t border-earth-sage/35 py-6 text-center text-earth-cocoa/50 text-[10px] select-none mt-auto">
-        <p>&copy; 2026 SubSentry Platform. Helping subscription businesses keep their customers happy.</p>
+        <p>&copy; 2026 Falcon360 Platform. Helping subscription businesses keep their customers happy.</p>
       </footer>
     </div>
   );
