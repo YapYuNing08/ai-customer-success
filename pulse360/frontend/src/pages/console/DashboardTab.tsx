@@ -366,30 +366,32 @@ Is there a specific account or recent system event you would like me to analyze?
                             <span className="text-[10px] font-extrabold uppercase text-earth-cocoa/75 tracking-wider">CUSTOMER'S HEALTH</span>
                             <span className="text-[10px] font-bold text-earth-sage uppercase">Distribution & Actions</span>
                           </div>
-                          
-                          {/* Tabs Pill Selector */}
-                          <div className="flex bg-earth-bg/30 p-1 rounded-xl border border-earth-sage/10 text-[9px] font-bold">
-                            <button
-                              onClick={() => setActiveSubTab('distribution')}
-                              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                                activeSubTab === 'distribution'
-                                  ? 'bg-earth-cocoa text-earth-bg shadow-sm'
-                                  : 'text-earth-cocoa/60 hover:text-earth-cocoa'
-                              }`}
-                            >
-                              Overview
-                            </button>
-                            <button
-                              onClick={() => setActiveSubTab('interventions')}
-                              className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
-                                activeSubTab === 'interventions'
-                                  ? 'bg-earth-cocoa text-earth-bg shadow-sm'
-                                  : 'text-earth-cocoa/60 hover:text-earth-cocoa'
-                              }`}
-                            >
-                              Group Actions
-                            </button>
-                          </div>
+                        </div>
+
+                        {/* High-visibility Tab Toggle Mode */}
+                        <div className="w-full flex bg-earth-bg/30 p-1 rounded-xl border border-earth-sage/20 text-xs font-bold shadow-inner">
+                          <button
+                            onClick={() => setActiveSubTab('distribution')}
+                            className={`flex-1 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                              activeSubTab === 'distribution'
+                                ? 'bg-earth-cocoa text-earth-bg shadow-sm font-extrabold'
+                                : 'text-earth-cocoa/60 hover:text-earth-cocoa hover:bg-earth-bg/25'
+                            }`}
+                          >
+                            <Activity className="w-3.5 h-3.5" />
+                            <span>Overview</span>
+                          </button>
+                          <button
+                            onClick={() => setActiveSubTab('interventions')}
+                            className={`flex-1 py-1.5 rounded-lg transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
+                              activeSubTab === 'interventions'
+                                ? 'bg-earth-cocoa text-earth-bg shadow-sm font-extrabold'
+                                : 'text-earth-cocoa/60 hover:text-earth-cocoa hover:bg-earth-bg/25'
+                            }`}
+                          >
+                            <Users className="w-3.5 h-3.5" />
+                            <span>Group Actions</span>
+                          </button>
                         </div>
 
                         {activeSubTab === 'distribution' ? (
