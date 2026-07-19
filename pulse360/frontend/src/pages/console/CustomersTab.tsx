@@ -28,7 +28,7 @@ export function CustomersTab(props: any) {
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full animate-fadeIn">
                     <div>
                       <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight font-serif">Customer Directory</h1>
-                      <p className="text-sm text-black mt-1 max-w-xl font-medium">
+                      <p className="text-sm text-black mt-1 max-w-3xl font-normal">
                         Manage, search, and monitor active customer accounts, contract value, and health standings.
                       </p>
                     </div>
