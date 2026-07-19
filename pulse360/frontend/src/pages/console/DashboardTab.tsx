@@ -705,6 +705,18 @@ Is there a specific account or recent system event you would like me to analyze?
                               disabled={isSendingBroadcast || selectedRecipientIds.length === 0}
                               onClick={() => {
                                 setIsSendingBroadcast(true);
+                                
+                                // Check if Yap is among the selected recipients
+                                const yapRecipient = activeBroadcast.recipients.find((r: any) => 
+                                  selectedRecipientIds.includes(r.id) && r.name.toLowerCase().includes('yap')
+                                );
+                                
+                                if (activeBroadcast.type === 'whatsapp' && yapRecipient) {
+                                  // Open real WhatsApp window pre-filled with the message
+                                  const text = `Dear Customer,\n\n${activeBroadcast.body}`;
+                                  window.open(`https://wa.me/60162897881?text=${encodeURIComponent(text)}`, '_blank');
+                                }
+
                                   setTimeout(() => {
                                     setIsSendingBroadcast(false);
                                     setBroadcastSuccess(true);

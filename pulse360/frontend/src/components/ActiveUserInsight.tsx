@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, TrendingDown, TrendingUp, UserCheck, 
   Clock, CreditCard, MessageSquare, DollarSign, CheckCircle, 
-  Copy, Zap, BookOpen, HeartHandshake, ShieldAlert, Cpu, Send
+  Copy, Zap, BookOpen, HeartHandshake, ShieldAlert, Cpu, Send, MessageCircle
 } from 'lucide-react';
 import { type ActiveUser } from '../utils/mockData';
 import { explainSimulation, getCustomer, getRecommendation, simulate } from '../lib/api';
@@ -901,7 +901,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                   <div className="whitespace-pre-line console-text-primary">{body}</div>
                 </div>
 
-                <button
+                 <button
                   disabled={isSendingEmail}
                   onClick={handleSendEmail}
                   className="w-full py-2.5 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm disabled:opacity-50 mt-1"
@@ -918,6 +918,19 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                     </>
                   )}
                 </button>
+
+                {user.name.toLowerCase().includes('yap') && (
+                  <button
+                    onClick={() => {
+                      const whatsappText = `Hi ${user.name},\n\n${body}`;
+                      window.open(`https://wa.me/60162897881?text=${encodeURIComponent(whatsappText)}`, '_blank');
+                    }}
+                    className="w-full py-2.5 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm mt-2"
+                  >
+                    <MessageCircle className="w-3.5 h-3.5" />
+                    <span>Send WhatsApp Message (0162897881)</span>
+                  </button>
+                )}
 
                 {emailSentSuccess && (
                   <div className="bg-[#276B2B]/15 border border-[#276B2B]/35 text-status-healthy p-2.5 rounded-xl text-[10px] font-bold text-center animate-scaleUp">
