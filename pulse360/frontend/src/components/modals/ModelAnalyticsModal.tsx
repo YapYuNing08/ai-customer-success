@@ -63,7 +63,7 @@ export function ModelAnalyticsModal({ onClose }: { onClose: () => void }) {
                 <h4 className="text-xs font-bold text-earth-bg uppercase tracking-wider">Telling At-Risk From Loyal Customers</h4>
                 <img src="/roc_auc_curve.png" alt="Chart showing how well the system separates at-risk customers from loyal ones" className="w-full h-auto rounded-xl border border-earth-sage/20 object-cover bg-white" />
                 <p className="text-[10px] text-earth-bg/60 leading-normal">
-                  <strong>What this means</strong>: This chart measures how well SubSentry separates customers likely to leave from loyal ones. It scores <strong>83 out of 100</strong> — well above chance (50) — so the risk scores you see are dependable at any customer volume.
+                  <strong>What this means</strong>: This chart measures how well Falcon360 separates customers likely to leave from loyal ones. It scores <strong>83 out of 100</strong> — well above chance (50) — so the risk scores you see are dependable at any customer volume.
                 </p>
               </div>
             </div>

@@ -58,27 +58,27 @@ export interface CoordinateMap {
 
 export const staticCustomerMetadata: Record<string, CoordinateMap> = {
   "cus_001": {
-    email: 'contact@northwind.com',
+    email: 'contact@yap.my',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
-    location: 'New York, USA',
-    lat: 40.7128,
-    lng: -74.0060,
-    mrr: 4500,
+    location: 'Kuala Lumpur, Malaysia',
+    lat: 3.1390,
+    lng: 101.6869,
+    mrr: 199,
     warningFlags: ['Using It Less'],
     activityLogs: [
       { date: '2026-07-15', type: 'feature_use', details: 'Used Advanced Analytics dashboard' },
       { date: '2026-07-14', type: 'login', details: 'Logged in from desktop browser' },
-      { date: '2026-07-10', type: 'payment_success', details: 'Invoice #1092 paid (RM4,500.00)' }
+      { date: '2026-07-10', type: 'payment_success', details: 'Invoice #1092 paid (RM199.00)' }
     ],
     pastJourneys: []
   },
   "cus_002": {
-    email: 'ops@acmerobotics.co.jp',
+    email: 'ops@acmeselangor.com.my',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-    location: 'Tokyo, Japan',
-    lat: 35.6762,
-    lng: 139.6503,
-    mrr: 1500,
+    location: 'Petaling Jaya, Malaysia',
+    lat: 3.1073,
+    lng: 101.6067,
+    mrr: 79,
     warningFlags: ['Not Using Key Features'],
     activityLogs: [
       { date: '2026-07-12', type: 'login', details: 'Logged in for 2 minutes' }
@@ -86,12 +86,12 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_003": {
-    email: 'support@blueharbor.es',
+    email: 'support@nusantaratech.id',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-    location: 'London, UK',
-    lat: 51.5074,
-    lng: -0.1278,
-    mrr: 5000,
+    location: 'Jakarta, Indonesia',
+    lat: -6.2088,
+    lng: 106.8456,
+    mrr: 199,
     warningFlags: [],
     activityLogs: [
       { date: '2026-07-16', type: 'login', details: 'Logged in from desktop' }
@@ -99,12 +99,12 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_004": {
-    email: 'billing@cedarco.de',
+    email: 'billing@temasek.sg',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-    location: 'Cape Town, South Africa',
-    lat: -33.9249,
-    lng: 18.4241,
-    mrr: 400,
+    location: 'Singapore',
+    lat: 1.3521,
+    lng: 103.8198,
+    mrr: 39,
     warningFlags: ['Failed Payment'],
     activityLogs: [
       { date: '2026-07-10', type: 'payment_fail', details: 'Invoice failed (Declined by Bank)' }
@@ -112,12 +112,12 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_005": {
-    email: 'analytics@summit.au',
+    email: 'analytics@surabayamaritime.id',
     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80',
-    location: 'Sydney, Australia',
-    lat: -33.8688,
-    lng: 151.2093,
-    mrr: 1500,
+    location: 'Surabaya, Indonesia',
+    lat: -7.2575,
+    lng: 112.7521,
+    mrr: 79,
     warningFlags: [],
     activityLogs: [
       { date: '2026-07-16', type: 'feature_use', details: 'Triggered automated campaign pipeline' }
@@ -125,12 +125,12 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_006": {
-    email: 'ops@londonfinancial.co.uk',
+    email: 'ops@penangsemi.my',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-    location: 'São Paulo, Brazil',
-    lat: -23.5505,
-    lng: -46.6333,
-    mrr: 4500,
+    location: 'George Town, Malaysia',
+    lat: 5.4141,
+    lng: 100.3288,
+    mrr: 199,
     warningFlags: [],
     activityLogs: [
       { date: '2026-07-16', type: 'login', details: 'Logged in from Corporate VPN' }
@@ -138,12 +138,12 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_007": {
-    email: 'contact@parislogistics.fr',
+    email: 'contact@bandungcreative.id',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-    location: 'Nairobi, Kenya',
-    lat: -1.2921,
-    lng: 36.8219,
-    mrr: 1200,
+    location: 'Bandung, Indonesia',
+    lat: -6.9175,
+    lng: 107.6191,
+    mrr: 79,
     warningFlags: ['Not Using Key Features'],
     activityLogs: [
       { date: '2026-07-15', type: 'login', details: 'Unusual low session login (30s)' }
@@ -151,12 +151,12 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_008": {
-    email: 'operations@singaporetech.sg',
+    email: 'operations@batamelectronics.id',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-    location: 'Singapore',
-    lat: 1.3521,
-    lng: 103.8198,
-    mrr: 5000,
+    location: 'Batam, Indonesia',
+    lat: 1.0825,
+    lng: 104.0305,
+    mrr: 199,
     warningFlags: ['Likely to Leave'],
     activityLogs: [
       { date: '2026-07-16', type: 'support_open', details: 'Opened critical bug report on API latency' }
@@ -164,25 +164,25 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_009": {
-    email: 'compras@saopauloretail.com.br',
+    email: 'compras@johorlogistics.my',
     avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&q=80',
-    location: 'Los Angeles, USA',
-    lat: 34.0522,
-    lng: -118.2437,
-    mrr: 400,
+    location: 'Johor Bahru, Malaysia',
+    lat: 1.4927,
+    lng: 103.7414,
+    mrr: 39,
     warningFlags: [],
     activityLogs: [
-      { date: '2026-07-15', type: 'payment_success', details: 'Invoice paid (RM400.00)' }
+      { date: '2026-07-15', type: 'payment_success', details: 'Invoice paid (RM39.00)' }
     ],
     pastJourneys: []
   },
   "cus_010": {
-    email: 'info@torontodevs.ca',
+    email: 'info@orchardretail.sg',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
-    location: 'Mumbai, India',
-    lat: 19.0760,
-    lng: 72.8777,
-    mrr: 1200,
+    location: 'Singapore',
+    lat: 1.3600,
+    lng: 103.8200,
+    mrr: 79,
     warningFlags: [],
     activityLogs: [
       { date: '2026-07-16', type: 'feature_use', details: 'Setup advanced webhook integrations' }
@@ -190,122 +190,122 @@ export const staticCustomerMetadata: Record<string, CoordinateMap> = {
     pastJourneys: []
   },
   "cus_011": {
-    email: 'operations@anchorage.net',
+    email: 'operations@medanpalm.id',
     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
-    location: 'Reykjavík, Iceland',
-    lat: 64.1466,
-    lng: -21.9426,
-    mrr: 800,
+    location: 'Medan, Indonesia',
+    lat: 3.5952,
+    lng: 98.6722,
+    mrr: 79,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Reykjavik terminal connected.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Medan terminal connected.' }],
     pastJourneys: []
   },
   "cus_012": {
-    email: 'ceo@lagosventures.ng',
+    email: 'ceo@dewataresorts.id',
     avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&q=80',
-    location: 'Lagos, Nigeria',
-    lat: 6.5244,
-    lng: 3.3792,
-    mrr: 3500,
+    location: 'Bali, Indonesia',
+    lat: -8.6705,
+    lng: 115.2126,
+    mrr: 199,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Account active from Lagos.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Account active from Bali.' }],
     pastJourneys: []
   },
   "cus_013": {
-    email: 'staff@aucklandmedia.co.nz',
+    email: 'staff@peraktin.my',
     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80',
-    location: 'Auckland, New Zealand',
-    lat: -36.8485,
-    lng: 174.7633,
-    mrr: 1200,
+    location: 'Ipoh, Malaysia',
+    lat: 4.5921,
+    lng: 101.0901,
+    mrr: 79,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'support_open', details: 'Auckland team opened API review.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'support_open', details: 'Ipoh team opened API review.' }],
     pastJourneys: []
   },
   "cus_014": {
-    email: 'admin@reykjavikfisheries.is',
+    email: 'admin@borneoeco.my',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-    location: 'Lima, Peru',
-    lat: -12.0464,
-    lng: -77.0428,
-    mrr: 600,
+    location: 'Kuching, Malaysia',
+    lat: 1.5533,
+    lng: 110.3592,
+    mrr: 39,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Logged in from Peru.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Logged in from Kuching.' }],
     pastJourneys: []
   },
   "cus_015": {
-    email: 'contact@limagri.pe',
+    email: 'contact@javacoffee.id',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-    location: 'Honolulu, Hawaii, USA',
-    lat: 21.3069,
-    lng: -157.8583,
-    mrr: 1400,
+    location: 'Yogyakarta, Indonesia',
+    lat: -7.7956,
+    lng: 110.3695,
+    mrr: 79,
     warningFlags: ['Failed Payment'],
-    activityLogs: [{ date: '2026-07-15', type: 'payment_fail', details: 'Dunning alert on Hawaii account.' }],
+    activityLogs: [{ date: '2026-07-15', type: 'payment_fail', details: 'Dunning alert on Yogyakarta account.' }],
     pastJourneys: []
   },
   "cus_016": {
-    email: 'honolulu@resortnet.com',
+    email: 'changi@aerospace.sg',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
-    location: 'Dubai, UAE',
-    lat: 25.2048,
-    lng: 55.2708,
-    mrr: 4000,
+    location: 'Singapore',
+    lat: 1.3500,
+    lng: 103.9900,
+    mrr: 199,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'feature_use', details: 'Dubai team operations.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'feature_use', details: 'Changi team operations.' }],
     pastJourneys: []
   },
   "cus_017": {
-    email: 'dubai@hospitality.ae',
+    email: 'kinabalu@forestry.my',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-    location: 'Stockholm, Sweden',
-    lat: 59.3293,
-    lng: 18.0686,
-    mrr: 2200,
+    location: 'Kota Kinabalu, Malaysia',
+    lat: 5.9804,
+    lng: 116.0735,
+    mrr: 79,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Stockholm workspace sync.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Kota Kinabalu workspace sync.' }],
     pastJourneys: []
   },
   "cus_018": {
-    email: 'sales@casablancatextile.ma',
+    email: 'sales@palembangenergy.id',
     avatar: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&q=80',
-    location: 'Anchorage, Alaska, USA',
-    lat: 61.2181,
-    lng: -149.9003,
-    mrr: 500,
+    location: 'Palembang, Indonesia',
+    lat: -2.9909,
+    lng: 104.7566,
+    mrr: 39,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Anchorage check-in.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'login', details: 'Palembang check-in.' }],
     pastJourneys: []
   },
   "cus_019": {
-    email: 'semiconductors@seoul.kr',
+    email: 'makassar@shipping.id',
     avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80',
-    location: 'Casablanca, Morocco',
-    lat: 33.5731,
-    lng: -7.5898,
-    mrr: 4800,
+    location: 'Makassar, Indonesia',
+    lat: -5.1477,
+    lng: 119.4327,
+    mrr: 199,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'feature_use', details: 'Casablanca batch sync triggered.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'feature_use', details: 'Makassar batch sync triggered.' }],
     pastJourneys: []
   },
   "cus_020": {
-    email: 'dev@vancouveranalytics.ca',
+    email: 'dev@pontianakagro.id',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=100&q=80',
-    location: 'Nuuk, Greenland',
-    lat: 64.1743,
-    lng: -51.7373,
-    mrr: 1800,
+    location: 'Pontianak, Indonesia',
+    lat: -0.0263,
+    lng: 109.3425,
+    mrr: 79,
     warningFlags: [],
-    activityLogs: [{ date: '2026-07-16', type: 'support_open', details: 'Greenland dev logged ticket.' }],
+    activityLogs: [{ date: '2026-07-16', type: 'support_open', details: 'Pontianak dev logged ticket.' }],
     pastJourneys: []
   }
 };
 
 const offlineNames: Record<string, string> = {
-  "cus_001": "Northwind Traders", "cus_002": "Acme Robotics", "cus_003": "Blue Harbor Health", "cus_004": "Cedar & Co.", "cus_005": "Summit Analytics",
-  "cus_006": "London Financial", "cus_007": "Paris Logistics", "cus_008": "Singapore Tech", "cus_009": "São Paulo Retail", "cus_010": "Toronto Devs",
-  "cus_011": "Anchorage Shipping", "cus_012": "Lagos Ventures", "cus_013": "Auckland Media", "cus_014": "Reykjavík Fisheries", "cus_015": "Lima Agricultures",
-  "cus_016": "Honolulu Resorts", "cus_017": "Dubai Hospitality", "cus_018": "Casablanca Textile", "cus_019": "Seoul Semiconductors", "cus_020": "Vancouver Analytics"
+  "cus_001": "Yap", "cus_002": "Acme Selangor", "cus_003": "Nusantara Tech", "cus_004": "Temasek Holdings", "cus_005": "Surabaya Maritime",
+  "cus_006": "Penang Semiconductor", "cus_007": "Bandung Creative Labs", "cus_008": "Batam Electronics", "cus_009": "Johor Logistics Hub", "cus_010": "Orchard Retailers",
+  "cus_011": "Medan Palm Corp", "cus_012": "Dewata Resort Group", "cus_013": "Perak Tin Mining", "cus_014": "Borneo Eco Solutions", "cus_015": "Java Coffee Roasters",
+  "cus_016": "Changi Aerospace", "cus_017": "Kinabalu Forestry", "cus_018": "Palembang Energy", "cus_019": "Makassar Shipping", "cus_020": "Pontianak Agro"
 };
 
 const offlinePlans: Record<string, string> = {
@@ -347,55 +347,24 @@ const offlineUsage: Record<string, number> = {
 // metadata map get a deterministic pseudo-location: hash of the customer ID
 // picks a city, plus a small jitter so same-city dots don't stack on the globe.
 const GLOBE_CITIES: { city: string; lat: number; lng: number }[] = [
-  { city: 'San Francisco, USA', lat: 37.7749, lng: -122.4194 },
-  { city: 'New York, USA', lat: 40.7128, lng: -74.006 },
-  { city: 'Austin, USA', lat: 30.2672, lng: -97.7431 },
-  { city: 'Chicago, USA', lat: 41.8781, lng: -87.6298 },
-  { city: 'Seattle, USA', lat: 47.6062, lng: -122.3321 },
-  { city: 'Toronto, Canada', lat: 43.6532, lng: -79.3832 },
-  { city: 'Vancouver, Canada', lat: 49.2827, lng: -123.1207 },
-  { city: 'Mexico City, Mexico', lat: 19.4326, lng: -99.1332 },
-  { city: 'São Paulo, Brazil', lat: -23.5505, lng: -46.6333 },
-  { city: 'Buenos Aires, Argentina', lat: -34.6037, lng: -58.3816 },
-  { city: 'Santiago, Chile', lat: -33.4489, lng: -70.6693 },
-  { city: 'Bogotá, Colombia', lat: 4.711, lng: -74.0721 },
-  { city: 'London, UK', lat: 51.5074, lng: -0.1278 },
-  { city: 'Manchester, UK', lat: 53.4808, lng: -2.2426 },
-  { city: 'Paris, France', lat: 48.8566, lng: 2.3522 },
-  { city: 'Berlin, Germany', lat: 52.52, lng: 13.405 },
-  { city: 'Munich, Germany', lat: 48.1351, lng: 11.582 },
-  { city: 'Amsterdam, Netherlands', lat: 52.3676, lng: 4.9041 },
-  { city: 'Madrid, Spain', lat: 40.4168, lng: -3.7038 },
-  { city: 'Lisbon, Portugal', lat: 38.7223, lng: -9.1393 },
-  { city: 'Milan, Italy', lat: 45.4642, lng: 9.19 },
-  { city: 'Stockholm, Sweden', lat: 59.3293, lng: 18.0686 },
-  { city: 'Warsaw, Poland', lat: 52.2297, lng: 21.0122 },
-  { city: 'Dublin, Ireland', lat: 53.3498, lng: -6.2603 },
-  { city: 'Zurich, Switzerland', lat: 47.3769, lng: 8.5417 },
-  { city: 'Lagos, Nigeria', lat: 6.5244, lng: 3.3792 },
-  { city: 'Nairobi, Kenya', lat: -1.2921, lng: 36.8219 },
-  { city: 'Cape Town, South Africa', lat: -33.9249, lng: 18.4241 },
-  { city: 'Cairo, Egypt', lat: 30.0444, lng: 31.2357 },
-  { city: 'Dubai, UAE', lat: 25.2048, lng: 55.2708 },
-  { city: 'Tel Aviv, Israel', lat: 32.0853, lng: 34.7818 },
-  { city: 'Istanbul, Turkey', lat: 41.0082, lng: 28.9784 },
-  { city: 'Mumbai, India', lat: 19.076, lng: 72.8777 },
-  { city: 'Bengaluru, India', lat: 12.9716, lng: 77.5946 },
-  { city: 'Delhi, India', lat: 28.7041, lng: 77.1025 },
+  { city: 'Kuala Lumpur, Malaysia', lat: 3.1390, lng: 101.6869 },
   { city: 'Singapore', lat: 1.3521, lng: 103.8198 },
-  { city: 'Kuala Lumpur, Malaysia', lat: 3.139, lng: 101.6869 },
   { city: 'Jakarta, Indonesia', lat: -6.2088, lng: 106.8456 },
-  { city: 'Bangkok, Thailand', lat: 13.7563, lng: 100.5018 },
-  { city: 'Manila, Philippines', lat: 14.5995, lng: 120.9842 },
-  { city: 'Ho Chi Minh City, Vietnam', lat: 10.8231, lng: 106.6297 },
-  { city: 'Hong Kong', lat: 22.3193, lng: 114.1694 },
-  { city: 'Taipei, Taiwan', lat: 25.033, lng: 121.5654 },
-  { city: 'Seoul, South Korea', lat: 37.5665, lng: 126.978 },
-  { city: 'Tokyo, Japan', lat: 35.6762, lng: 139.6503 },
-  { city: 'Osaka, Japan', lat: 34.6937, lng: 135.5023 },
-  { city: 'Sydney, Australia', lat: -33.8688, lng: 151.2093 },
-  { city: 'Melbourne, Australia', lat: -37.8136, lng: 144.9631 },
-  { city: 'Auckland, New Zealand', lat: -36.8485, lng: 174.7633 },
+  { city: 'Petaling Jaya, Malaysia', lat: 3.1073, lng: 101.6067 },
+  { city: 'Surabaya, Indonesia', lat: -7.2575, lng: 112.7521 },
+  { city: 'George Town, Malaysia', lat: 5.4141, lng: 100.3288 },
+  { city: 'Bandung, Indonesia', lat: -6.9175, lng: 107.6191 },
+  { city: 'Johor Bahru, Malaysia', lat: 1.4927, lng: 103.7414 },
+  { city: 'Medan, Indonesia', lat: 3.5952, lng: 98.6722 },
+  { city: 'Batam, Indonesia', lat: 1.0825, lng: 104.0305 },
+  { city: 'Bali, Indonesia', lat: -8.6705, lng: 115.2126 },
+  { city: 'Ipoh, Malaysia', lat: 4.5921, lng: 101.0901 },
+  { city: 'Kuching, Malaysia', lat: 1.5533, lng: 110.3592 },
+  { city: 'Yogyakarta, Indonesia', lat: -7.7956, lng: 110.3695 },
+  { city: 'Kota Kinabalu, Malaysia', lat: 5.9804, lng: 116.0735 },
+  { city: 'Palembang, Indonesia', lat: -2.9909, lng: 104.7566 },
+  { city: 'Makassar, Indonesia', lat: -5.1477, lng: 119.4327 },
+  { city: 'Pontianak, Indonesia', lat: -0.0263, lng: 109.3425 }
 ];
 
 const hashId = (s: string): number => {
@@ -534,7 +503,7 @@ export const mergeBackendCustomer = (backendCust: any): ActiveUser => {
     location: geo.location,
     lat: geo.lat,
     lng: geo.lng,
-    mrr: backendCust.subscription_plan === 'Enterprise' ? 4000 : backendCust.subscription_plan === 'Pro' ? 1200 : 400,
+    mrr: backendCust.subscription_plan === 'Enterprise' ? 199 : backendCust.subscription_plan === 'Pro' ? 79 : 39,
     warningFlags: [],
     activityLogs: [],
     pastJourneys: []

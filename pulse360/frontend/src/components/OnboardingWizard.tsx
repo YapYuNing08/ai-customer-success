@@ -192,7 +192,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
           {step === 1 && (
             <div className="flex flex-col gap-4 items-center text-center my-auto">
               <span className="text-3xl">📡</span>
-              <h2 className="text-xl font-extrabold font-serif text-earth-cocoa">Welcome to Pulse360 Telecom!</h2>
+              <h2 className="text-xl font-extrabold font-serif text-earth-cocoa">Welcome to Falcon360 Telecom!</h2>
               <p className="text-xs text-earth-cocoa/75">Let's get your account ready.</p>
               <span className="text-[10px] font-bold text-earth-clay bg-earth-clay/10 border border-earth-clay/25 px-3 py-1 rounded-full uppercase tracking-wider">
                 Estimated time: 3 minutes

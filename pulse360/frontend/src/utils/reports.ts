@@ -58,12 +58,12 @@ System Status: Live
 \n${userBreakdownText}
 
 ## 💡 EXECUTIVE SUGGESTIONS
-1. **Billing Grace Periods**: For customers suffering from card renewal failures, configure automated billing extension webhooks via SubSentry APIs.
+1. **Billing Grace Periods**: For customers suffering from card renewal failures, configure automated billing extension webhooks via Falcon360 APIs.
 2. **Usage Right-Sizing**: Downgrade underutilizing growth plans proactively. This strengthens enterprise customer trust and secures long-term retention.
 3. **Product Outage Response**: Trigger targeted re-engagement campaigns immediately following regional service interruptions.
 
 ---
-*Report compiled automatically by SubSentry Churn Forecasting Engine. SHA-256 Checksum: ${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}*`;
+*Report compiled automatically by Falcon360 Churn Forecasting Engine. SHA-256 Checksum: ${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}*`;
 
     const newReport: Report = {
       id: String(Date.now()),
