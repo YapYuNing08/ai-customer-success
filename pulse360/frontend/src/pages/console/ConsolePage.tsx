@@ -186,48 +186,50 @@ export function ConsolePage(props: any) {
                       className="p-1.5 hover:bg-[#efe9d2]/40 rounded-lg text-earth-cocoa/60 hover:text-earth-cocoa cursor-pointer relative"
                     >
                       <Bell className="w-4 h-4" />
-                      <span className="absolute top-1 right-1 w-2 h-2 bg-status-critical rounded-full animate-pulse" />
+                      {users.filter((u: any) => u.warningFlags.length > 0 || u.healthScore < 50 || u.churnProbability > 50).length > 0 && (
+                        <span className="absolute top-1 right-1 w-2 h-2 bg-status-critical rounded-full animate-pulse" />
+                      )}
                     </button>
                     
                     {showNotifications && (
-                      <div className="absolute right-0 mt-2 w-72 bg-[#efe9d2] border border-earth-sage rounded-2xl shadow-xl z-50 p-4 animate-fadeIn text-left text-xs">
+                      <div className="absolute right-0 mt-2 w-80 bg-[#efe9d2] border border-earth-sage rounded-2xl shadow-xl z-50 p-4 animate-fadeIn text-left text-xs">
                         <div className="font-bold text-earth-cocoa border-b border-earth-sage/20 pb-2 mb-2 flex justify-between items-center">
-                          <span>Recent Warnings</span>
-                          <span className="text-[9px] bg-status-critical/15 text-status-critical px-2 py-0.5 rounded font-extrabold uppercase">3 Unread</span>
+                          <span>Accounts Requiring Attention</span>
+                          <span className="text-[9px] bg-status-critical/15 text-status-critical px-2 py-0.5 rounded font-extrabold uppercase">
+                            {users.filter((u: any) => u.warningFlags.length > 0 || u.healthScore < 50 || u.churnProbability > 50).length} Warnings
+                          </span>
                         </div>
-                        <div className="flex flex-col gap-2.5 mt-2">
-                          <div className="flex flex-col gap-0.5 border-b border-earth-sage/10 pb-2">
-                            <span className="font-bold text-earth-cocoa flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 bg-status-critical rounded-full shrink-0" />
-                              ⚠️ Failed Card Renewal
-                            </span>
-                            <span className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
-                              Northwind Traders bank transaction renewal failed. Grace period active.
-                            </span>
-                            <span className="text-[8px] text-earth-cocoa/50 mt-1 font-mono">2 hours ago</span>
-                          </div>
-                          
-                          <div className="flex flex-col gap-0.5 border-b border-earth-sage/10 pb-2">
-                            <span className="font-bold text-earth-cocoa flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 bg-status-critical rounded-full shrink-0" />
-                              🔌 Regional Server Outage
-                            </span>
-                            <span className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
-                              Outage rate spike detected in West-US server node cluster.
-                            </span>
-                            <span className="text-[8px] text-earth-cocoa/50 mt-1 font-mono">4 hours ago</span>
-                          </div>
-                          
-                          <div className="flex flex-col gap-0.5">
-                            <span className="font-bold text-earth-cocoa flex items-center gap-1.5">
-                              <span className="w-1.5 h-1.5 bg-earth-clay rounded-full shrink-0" />
-                              📉 Engagement Drop
-                            </span>
-                            <span className="text-[10px] text-earth-cocoa/75 mt-0.5 leading-normal">
-                              Acme Robotics usage limits fell below 35% threshold limits.
-                            </span>
-                            <span className="text-[8px] text-earth-cocoa/50 mt-1 font-mono">6 hours ago</span>
-                          </div>
+                        <div className="flex flex-col gap-2.5 mt-2 max-h-[300px] overflow-y-auto pr-1">
+                          {(() => {
+                            const attentionList = users.filter((u: any) => u.warningFlags.length > 0 || u.healthScore < 50 || u.churnProbability > 50);
+                            if (attentionList.length === 0) {
+                              return <div className="text-center text-slate-500 py-4">No accounts require immediate attention.</div>;
+                            }
+                            return attentionList.map((u: any) => (
+                              <button
+                                key={u.id}
+                                onClick={() => {
+                                  setSelectedConsoleUser(u);
+                                  setConsoleTab('customers');
+                                  setShowNotifications(false);
+                                  addTelemetry(`Navigated to ${u.name} via warning notification.`);
+                                }}
+                                className="flex flex-col gap-0.5 border-b border-earth-sage/10 pb-2 w-full text-left hover:bg-[#efe9d2]/60 p-1.5 rounded-lg transition-colors cursor-pointer"
+                              >
+                                <span className="font-bold text-earth-cocoa flex items-center gap-1.5 justify-between">
+                                  <span className="flex items-center gap-1.5">
+                                    <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${u.churnProbability > 50 ? 'bg-status-critical' : 'bg-status-risk'}`} />
+                                    {u.name}
+                                  </span>
+                                  <span className="text-[9px] text-earth-cocoa/60 font-normal">{u.location.split(',')[0]}</span>
+                                </span>
+                                <span className="text-[10px] text-black font-normal mt-0.5 leading-normal">
+                                  {u.warningFlags.join(', ') || 'Low engagement warning'} — Churn Risk: {u.churnProbability}%
+                                </span>
+                                <span className="text-[9px] text-[#0064DC] font-bold mt-1">Click to take Action &rarr;</span>
+                              </button>
+                            ));
+                          })()}
                         </div>
                       </div>
                     )}
