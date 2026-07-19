@@ -708,10 +708,10 @@ Is there a specific account or recent system event you would like me to analyze?
                                 
                                 // Check if Yap or Yu Ning is among the selected recipients
                                 const yapRecipient = activeBroadcast.recipients.find((r: any) => 
-                                  selectedRecipientIds.includes(r.id) && r.name.toLowerCase().includes('yap')
+                                  selectedRecipientIds.includes(r.id) && r.name.toLowerCase().replace(/\s+/g, '').includes('yap')
                                 );
                                 const yuningRecipient = activeBroadcast.recipients.find((r: any) => 
-                                  selectedRecipientIds.includes(r.id) && r.name.toLowerCase().includes('yuning')
+                                  selectedRecipientIds.includes(r.id) && r.name.toLowerCase().replace(/\s+/g, '').includes('yuning')
                                 );
                                 
                                 if (activeBroadcast.type === 'whatsapp') {
