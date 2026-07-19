@@ -160,7 +160,7 @@ Is there a specific account or recent system event you would like me to analyze?
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full">
                     <div>
                       <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight">Client Experience Dashboard</h1>
-                      <p className="text-xs text-earth-cocoa/75 mt-1 max-w-xl">
+                      <p className="text-sm text-black mt-1 max-w-xl font-medium">
                         Strategic metrics, health distribution, and experience analytics across your customer base.
                       </p>
                     </div>
@@ -186,10 +186,10 @@ Is there a specific account or recent system event you would like me to analyze?
                           <Users className="w-4 h-4 text-earth-clay" />
                         </div>
                         <div className="flex items-baseline gap-2">
-                          <span className="text-3xl font-black text-earth-cocoa">{dist.total_customers.toLocaleString()}</span>
+                          <span className="text-4xl font-black text-black">{dist.total_customers.toLocaleString()}</span>
                         </div>
                       </div>
-                      <span className="text-[9px] text-earth-cocoa/65 border-t border-earth-sage/20 pt-2 mt-4 block">{dist.critical_count.toLocaleString()} accounts in critical state</span>
+                      <span className="text-xs font-semibold text-black border-t border-earth-sage/20 pt-2 mt-4 block">{dist.critical_count.toLocaleString()} accounts in critical state</span>
                     </div>
 
                     {/* Health distribution block */}
@@ -209,19 +209,19 @@ Is there a specific account or recent system event you would like me to analyze?
 
                         <div className="grid grid-cols-3 gap-4 text-xs font-bold text-earth-cocoa/80">
                           <div className="flex flex-col gap-0.5 border-l-4 border-status-healthy pl-2">
-                            <span className="text-[9px] text-earth-cocoa/50 uppercase">Healthy</span>
-                            <span className="text-xs font-black">{dist.healthy_count.toLocaleString()} users</span>
-                            <span className="text-[9px] text-status-healthy font-extrabold">{dist.healthy_pct}%</span>
+                            <span className="text-xs text-black/75 uppercase font-bold">Healthy</span>
+                            <span className="text-sm font-black text-black">{dist.healthy_count.toLocaleString()} users</span>
+                            <span className="text-xs text-status-healthy font-extrabold">{dist.healthy_pct}%</span>
                           </div>
                           <div className="flex flex-col gap-0.5 border-l-4 border-status-risk pl-2">
-                            <span className="text-[9px] text-earth-cocoa/50 uppercase">Warning</span>
-                            <span className="text-xs font-black">{dist.at_risk_count.toLocaleString()} users</span>
-                            <span className="text-[9px] text-status-risk font-extrabold">{dist.at_risk_pct}%</span>
+                            <span className="text-xs text-black/75 uppercase font-bold">Warning</span>
+                            <span className="text-sm font-black text-black">{dist.at_risk_count.toLocaleString()} users</span>
+                            <span className="text-xs text-status-risk font-extrabold">{dist.at_risk_pct}%</span>
                           </div>
                           <div className="flex flex-col gap-0.5 border-l-4 border-status-critical pl-2">
-                            <span className="text-[9px] text-earth-cocoa/50 uppercase font-bold">Critical</span>
-                            <span className="text-xs font-black">{dist.critical_count.toLocaleString()} users</span>
-                            <span className="text-[9px] text-status-critical font-extrabold">{dist.critical_pct}%</span>
+                            <span className="text-xs text-black/75 uppercase font-bold">Critical</span>
+                            <span className="text-sm font-black text-black">{dist.critical_count.toLocaleString()} users</span>
+                            <span className="text-xs text-status-critical font-extrabold">{dist.critical_pct}%</span>
                           </div>
                         </div>
                       </div>
@@ -246,12 +246,12 @@ Is there a specific account or recent system event you would like me to analyze?
                           <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-baseline text-xs">
                               <div>
-                                <span className="font-bold text-earth-cocoa block">Login Frequency (Engagement)</span>
-                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">A positive delta shows customer check-in methods are working. If negative, refine onboarding engagement plans.</span>
+                                <span className="text-sm font-bold text-black block">Login Frequency (Engagement)</span>
+                                <span className="text-xs text-black font-semibold block mt-1">A positive delta shows customer check-in methods are working. If negative, refine onboarding engagement plans.</span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
-                                <span className="font-extrabold text-earth-cocoa">82%</span>
-                                <span className="text-[9px] text-status-healthy bg-[#276B2B]/10 border border-[#276B2B]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
+                                <span className="text-sm font-black text-black">82%</span>
+                                <span className="text-[10px] text-status-healthy bg-[#276B2B]/10 border border-[#276B2B]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
                                   ▲ +5%
                                 </span>
                               </div>
@@ -265,12 +265,12 @@ Is there a specific account or recent system event you would like me to analyze?
                           <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-baseline text-xs">
                               <div>
-                                <span className="font-bold text-earth-cocoa block">Feature Utilization (Usage)</span>
-                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">An increase confirms new features are successfully adopted. A drop indicates a need to schedule tutorial broadcasts.</span>
+                                <span className="text-sm font-bold text-black block">Feature Utilization (Usage)</span>
+                                <span className="text-xs text-black font-semibold block mt-1">An increase confirms new features are successfully adopted. A drop indicates a need to schedule tutorial broadcasts.</span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
-                                <span className="font-extrabold text-earth-cocoa">64%</span>
-                                <span className="text-[9px] text-[#8C6239] bg-[#8C6239]/10 border border-[#8C6239]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
+                                <span className="text-sm font-black text-black">64%</span>
+                                <span className="text-[10px] text-[#8C6239] bg-[#8C6239]/10 border border-[#8C6239]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
                                   ▲ +8%
                                 </span>
                               </div>
@@ -284,12 +284,12 @@ Is there a specific account or recent system event you would like me to analyze?
                           <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-baseline text-xs">
                               <div>
-                                <span className="font-bold text-earth-cocoa block">Support Ticket Resolution (Response)</span>
-                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">Higher rates validate successful CSM support interventions. A drop highlights resource bottlenecks needing attention.</span>
+                                <span className="text-sm font-bold text-black block">Support Ticket Resolution (Response)</span>
+                                <span className="text-xs text-black font-semibold block mt-1">Higher rates validate successful CSM support interventions. A drop highlights resource bottlenecks needing attention.</span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
-                                <span className="font-extrabold text-earth-cocoa">91%</span>
-                                <span className="text-[9px] text-status-healthy bg-[#276B2B]/10 border border-[#276B2B]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
+                                <span className="text-sm font-black text-black">91%</span>
+                                <span className="text-[10px] text-status-healthy bg-[#276B2B]/10 border border-[#276B2B]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
                                   ▲ +3%
                                 </span>
                               </div>
@@ -303,12 +303,12 @@ Is there a specific account or recent system event you would like me to analyze?
                           <div className="flex flex-col gap-1.5">
                             <div className="flex justify-between items-baseline text-xs">
                               <div>
-                                <span className="font-bold text-earth-cocoa block">Payment & Invoicing (Billing)</span>
-                                <span className="text-[10px] text-earth-cocoa/60 font-normal block mt-0.5">A stable rate shows automated invoicing is reliable. A drop warns of payment failures requiring grace-period playbooks.</span>
+                                <span className="text-sm font-bold text-black block">Payment & Invoicing (Billing)</span>
+                                <span className="text-xs text-black font-semibold block mt-1">A stable rate shows automated invoicing is reliable. A drop warns of payment failures requiring grace-period playbooks.</span>
                               </div>
                               <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
-                                <span className="font-extrabold text-earth-cocoa">94%</span>
-                                <span className="text-[9px] text-status-critical bg-status-critical/10 border border-status-critical/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
+                                <span className="text-sm font-black text-black">94%</span>
+                                <span className="text-[10px] text-status-critical bg-status-critical/10 border border-status-critical/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
                                   ▼ -2%
                                 </span>
                               </div>
@@ -367,9 +367,9 @@ Is there a specific account or recent system event you would like me to analyze?
                               <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
                                 <div className="flex items-center gap-2.5">
                                   <span className="w-3 h-3 rounded-full bg-status-healthy" />
-                                  <span className="font-bold text-earth-cocoa">Healthy (Score 70+)</span>
+                                  <span className="font-bold text-black text-sm">Healthy (Score 70+)</span>
                                 </div>
-                                <span className="text-status-healthy font-black text-sm">
+                                <span className="text-status-healthy font-black text-base">
                                   {users ? users.filter((u: any) => u.healthScore >= 70).length : 0} Accounts
                                 </span>
                               </div>
@@ -378,9 +378,9 @@ Is there a specific account or recent system event you would like me to analyze?
                               <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
                                 <div className="flex items-center gap-2.5">
                                   <span className="w-3 h-3 rounded-full bg-status-risk" />
-                                  <span className="font-bold text-earth-cocoa">Warning (Score 40-69)</span>
+                                  <span className="font-bold text-black text-sm">Warning (Score 40-69)</span>
                                 </div>
-                                <span className="text-status-risk font-black text-sm">
+                                <span className="text-status-risk font-black text-base">
                                   {users ? users.filter((u: any) => u.healthScore < 70 && u.healthScore >= 40).length : 0} Accounts
                                 </span>
                               </div>
@@ -389,9 +389,9 @@ Is there a specific account or recent system event you would like me to analyze?
                               <div className="flex justify-between items-center p-3 bg-earth-bg/25 rounded-lg border border-earth-sage/10">
                                 <div className="flex items-center gap-2.5">
                                   <span className="w-3 h-3 rounded-full bg-status-critical" />
-                                  <span className="font-bold text-earth-cocoa">Critical (Score &lt; 40)</span>
+                                  <span className="font-bold text-black text-sm">Critical (Score &lt; 40)</span>
                                 </div>
-                                <span className="text-status-critical font-black text-sm">
+                                <span className="text-status-critical font-black text-base">
                                   {users ? users.filter((u: any) => u.healthScore < 40).length : 0} Accounts
                                 </span>
                               </div>
@@ -400,7 +400,7 @@ Is there a specific account or recent system event you would like me to analyze?
                             {/* AI Advisor Button */}
                             <button 
                               onClick={() => setShowAiChat(!showAiChat)}
-                              className="w-full mt-2 bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-bold text-xs py-2 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
+                              className="w-full mt-2 bg-[#efe9d2]/85 hover:bg-earth-sage/20 text-black border border-earth-sage/35 font-bold text-xs py-2.5 rounded-xl transition-all shadow-sm flex items-center justify-center gap-1.5 cursor-pointer"
                             >
                               <Cpu className="w-3.5 h-3.5 text-status-healthy animate-pulse" />
                               <span>{showAiChat ? 'Hide AI Advisor' : 'Ask AI Portfolio Advisor'}</span>
@@ -413,20 +413,20 @@ Is there a specific account or recent system event you would like me to analyze?
                                   {chatMessages.map((msg, i) => (
                                     <div 
                                       key={i} 
-                                      className={`flex flex-col max-w-[85%] rounded-2xl p-3 text-[11px] leading-relaxed shadow-sm font-sans ${
+                                      className={`flex flex-col max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed shadow-sm font-sans ${
                                         msg.sender === 'user'
-                                          ? 'self-end bg-earth-clay/10 text-earth-cocoa border border-earth-clay/20'
-                                          : 'self-start bg-earth-cocoa text-earth-bg border border-earth-cocoa/10 whitespace-pre-line'
+                                          ? 'self-end bg-[#efe9d2]/30 text-black border border-earth-sage/20 font-semibold'
+                                          : 'self-start bg-[#efe9d2]/70 text-black border border-earth-sage/35 font-semibold whitespace-pre-line'
                                       }`}
                                     >
                                       {msg.text}
                                     </div>
                                   ))}
                                   {isTyping && (
-                                    <div className="self-start bg-earth-cocoa/5 text-earth-cocoa/60 rounded-2xl px-3 py-2 text-[10px] italic flex items-center gap-1">
-                                      <span className="w-1.5 h-1.5 rounded-full bg-earth-cocoa/60 animate-bounce" style={{ animationDelay: '0ms' }} />
-                                      <span className="w-1.5 h-1.5 rounded-full bg-earth-cocoa/60 animate-bounce" style={{ animationDelay: '150ms' }} />
-                                      <span className="w-1.5 h-1.5 rounded-full bg-earth-cocoa/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+                                    <div className="self-start bg-earth-cocoa/5 text-black font-semibold rounded-2xl px-3 py-2 text-xs italic flex items-center gap-1">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-black/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                                      <span className="w-1.5 h-1.5 rounded-full bg-black/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                                      <span className="w-1.5 h-1.5 rounded-full bg-black/60 animate-bounce" style={{ animationDelay: '300ms' }} />
                                       <span>Advisor is typing...</span>
                                     </div>
                                   )}
@@ -436,13 +436,13 @@ Is there a specific account or recent system event you would like me to analyze?
                                 <div className="flex flex-wrap gap-1.5">
                                   <button 
                                     onClick={() => handleSendMessage("Why did critical users suddenly improve?")}
-                                    className="text-[9px] font-bold text-earth-cocoa hover:text-earth-bg hover:bg-earth-cocoa px-2 py-1 rounded-full border border-earth-cocoa/20 transition-all cursor-pointer bg-earth-bg/30"
+                                    className="text-xs font-bold text-black hover:bg-earth-sage/20 px-2.5 py-1 rounded-full border border-earth-sage/35 transition-all cursor-pointer bg-[#efe9d2]/60"
                                   >
                                     💡 Why did critical improve?
                                   </button>
                                   <button 
                                     onClick={() => handleSendMessage("Which warning accounts need action?")}
-                                    className="text-[9px] font-bold text-earth-cocoa hover:text-earth-bg hover:bg-earth-cocoa px-2 py-1 rounded-full border border-earth-cocoa/20 transition-all cursor-pointer bg-earth-bg/30"
+                                    className="text-xs font-bold text-black hover:bg-earth-sage/20 px-2.5 py-1 rounded-full border border-earth-sage/35 transition-all cursor-pointer bg-[#efe9d2]/60"
                                   >
                                     ⚠️ Which warnings need action?
                                   </button>
@@ -458,11 +458,11 @@ Is there a specific account or recent system event you would like me to analyze?
                                     onKeyDown={(e) => {
                                       if (e.key === 'Enter') handleSendMessage(userInput);
                                     }}
-                                    className="flex-1 bg-earth-bg/35 border border-earth-sage/35 rounded-xl py-2 px-3 text-[11px] outline-none focus:border-earth-clay text-earth-cocoa font-bold placeholder-earth-cocoa/40"
+                                    className="flex-1 bg-white border border-earth-sage/35 rounded-xl py-2 px-3 text-xs outline-none focus:border-earth-clay text-black font-semibold placeholder-black/45"
                                   />
                                   <button 
                                     onClick={() => handleSendMessage(userInput)}
-                                    className="p-2 bg-earth-cocoa hover:bg-earth-clay text-earth-bg rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0 shadow-sm"
+                                    className="p-2 bg-[#efe9d2]/85 hover:bg-earth-sage/20 text-black border border-earth-sage/35 rounded-xl transition-all cursor-pointer flex items-center justify-center shrink-0 shadow-sm"
                                   >
                                     <Send className="w-3.5 h-3.5" />
                                   </button>
@@ -473,21 +473,21 @@ Is there a specific account or recent system event you would like me to analyze?
                         ) : (
                           <div className="flex flex-col gap-4 my-2 font-bold text-xs">
                             {Object.keys(warningGroups).length === 0 ? (
-                              <div className="p-4 bg-earth-bg/25 border border-earth-sage/10 rounded-xl text-center font-bold text-[11px] text-earth-cocoa/60">
+                              <div className="p-4 bg-earth-bg/25 border border-earth-sage/10 rounded-xl text-center font-bold text-xs text-black/60">
                                 🎉 All active accounts are currently stable and in good standing. No group interventions needed.
                               </div>
                             ) : (
                               Object.entries(warningGroups).map(([groupName, groupUsers]) => (
                                 <div key={groupName} className="p-3.5 bg-earth-bg/25 border border-earth-sage/15 rounded-xl flex flex-col gap-2.5">
                                   <div className="flex justify-between items-center">
-                                    <span className="text-earth-cocoa font-extrabold text-[11px]">{groupName}</span>
-                                    <span className="text-[8px] bg-status-critical/15 text-status-critical px-2 py-0.5 border border-status-critical/30 rounded font-black uppercase">
+                                    <span className="text-black font-black text-xs">{groupName}</span>
+                                    <span className="text-[10px] bg-status-critical/15 text-status-critical px-2 py-0.5 border border-status-critical/30 rounded font-black uppercase">
                                       {groupUsers.length} Accounts
                                     </span>
                                   </div>
                                   
-                                  <p className="text-[10px] text-earth-cocoa/75 leading-relaxed font-normal">
-                                    <span className="font-bold text-earth-clay/80 uppercase text-[8px] tracking-wider block mb-0.5">Recipients:</span>
+                                  <p className="text-xs text-black leading-relaxed font-normal">
+                                    <span className="font-bold text-black uppercase text-[10px] tracking-wider block mb-0.5">Recipients:</span>
                                     {groupUsers.map((u: any) => u.name).join(', ')}
                                   </p>
 
@@ -499,7 +499,7 @@ Is there a specific account or recent system event you would like me to analyze?
                                         setBroadcastSuccess(false);
                                         setIsSendingBroadcast(false);
                                       }}
-                                      className="flex-1 bg-earth-bg/60 border border-earth-sage/35 hover:bg-earth-cocoa hover:text-earth-bg text-earth-cocoa font-bold text-[9px] py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer"
+                                      className="flex-1 bg-[#efe9d2]/60 border border-earth-sage/35 hover:bg-earth-sage/30 text-black font-bold text-xs py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer"
                                     >
                                       <Mail className="w-3 h-3 text-earth-clay" />
                                       <span>Email Group</span>
@@ -511,9 +511,9 @@ Is there a specific account or recent system event you would like me to analyze?
                                         setBroadcastSuccess(false);
                                         setIsSendingBroadcast(false);
                                       }}
-                                      className="flex-1 bg-[#25D366]/10 border border-[#25D366]/30 hover:bg-[#25D366] hover:text-white text-[#128C7E] font-bold text-[9px] py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer"
+                                      className="flex-1 bg-[#25D366]/10 border border-[#25D366]/30 hover:bg-[#25D366]/20 text-[#128C7E] font-bold text-xs py-1.5 px-2 rounded-lg transition-all flex items-center justify-center gap-1 cursor-pointer"
                                     >
-                                      <MessageCircle className="w-3 h-3 text-[#128C7E] hover:text-white" />
+                                      <MessageCircle className="w-3 h-3 text-[#128C7E]" />
                                       <span>WhatsApp Group</span>
                                     </button>
                                   </div>
@@ -557,7 +557,7 @@ Is there a specific account or recent system event you would like me to analyze?
                         {/* Recipients list with Search bar */}
                         <div className="text-sm border-y border-earth-sage/20 py-4 flex flex-col gap-3">
                           <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                            <span className="font-extrabold text-xs text-earth-clay uppercase tracking-wider">
+                            <span className="font-extrabold text-xs text-black uppercase tracking-wider">
                               RECIPIENT PORTFOLIOS ({selectedRecipientIds.length}/{activeBroadcast.recipients.length} SELECTED):
                             </span>
                             <input
@@ -565,7 +565,7 @@ Is there a specific account or recent system event you would like me to analyze?
                               placeholder="Search by name or email..."
                               value={recipientSearch}
                               onChange={(e) => setRecipientSearch(e.target.value)}
-                              className="bg-white border border-earth-sage/35 rounded-xl px-3.5 py-1.5 text-xs text-earth-cocoa font-bold outline-none focus:border-earth-clay placeholder-earth-cocoa/50 w-full sm:w-64 shadow-sm"
+                              className="bg-white border border-earth-sage/35 rounded-xl px-3.5 py-1.5 text-xs text-black font-semibold outline-none focus:border-earth-clay placeholder-black/45 w-full sm:w-64 shadow-sm"
                             />
                           </div>
 
@@ -578,7 +578,7 @@ Is there a specific account or recent system event you would like me to analyze?
 
                               if (filtered.length === 0) {
                                 return (
-                                  <span className="text-xs text-earth-cocoa/50 italic py-1">
+                                  <span className="text-xs text-black/50 italic py-1">
                                     No recipients match your search.
                                   </span>
                                 );
@@ -599,14 +599,14 @@ Is there a specific account or recent system event you would like me to analyze?
                                     }}
                                     className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border-2 cursor-pointer disabled:cursor-not-allowed ${
                                       isSelected
-                                        ? 'bg-white text-earth-cocoa border-status-healthy shadow-sm font-extrabold'
-                                        : 'bg-earth-bg/25 text-earth-cocoa/50 border-earth-sage/35 opacity-70 hover:bg-earth-bg/40'
+                                        ? 'bg-white text-black border-status-healthy shadow-sm font-extrabold'
+                                        : 'bg-earth-bg/25 text-black/60 border-earth-sage/35 opacity-70 hover:bg-earth-bg/40'
                                     }`}
                                   >
                                     <span className={`w-4 h-4 rounded border flex items-center justify-center text-[10px] font-black transition-all shrink-0 ${
                                       isSelected 
                                         ? 'bg-status-healthy border-status-healthy text-white' 
-                                        : 'border-earth-cocoa/40 bg-white text-transparent'
+                                        : 'border-black/40 bg-white text-transparent'
                                     }`}>
                                       ✓
                                     </span>
@@ -620,16 +620,16 @@ Is there a specific account or recent system event you would like me to analyze?
 
                         {/* Editor / Template display */}
                         <div className="flex flex-col gap-2">
-                          <span className="font-extrabold text-xs text-earth-clay uppercase tracking-wider">AI BROADCAST MESSAGE TEMPLATE:</span>
+                          <span className="font-extrabold text-xs text-black uppercase tracking-wider">AI BROADCAST MESSAGE TEMPLATE:</span>
                           {activeBroadcast.type === 'email' && (
                             <div className="flex flex-col gap-1 bg-white border border-earth-sage/35 p-3 rounded-2xl text-xs shadow-sm">
-                              <span className="font-bold text-earth-cocoa/60 text-xs uppercase">Subject Line:</span>
+                              <span className="font-bold text-black/75 text-xs uppercase">Subject Line:</span>
                               <input
                                 type="text"
                                 value={activeBroadcast.subject}
                                 disabled={broadcastSuccess || isSendingBroadcast}
                                 onChange={(e) => setActiveBroadcast(prev => prev ? { ...prev, subject: e.target.value } : null)}
-                                className="w-full bg-transparent font-black text-sm text-earth-cocoa outline-none border-b border-transparent focus:border-earth-clay pb-1"
+                                className="w-full bg-transparent font-bold text-sm text-black outline-none border-b border-transparent focus:border-earth-clay pb-1"
                               />
                             </div>
                           )}
@@ -637,7 +637,7 @@ Is there a specific account or recent system event you would like me to analyze?
                             disabled={broadcastSuccess || isSendingBroadcast}
                             value={activeBroadcast.body}
                             onChange={(e) => setActiveBroadcast(prev => prev ? { ...prev, body: e.target.value } : null)}
-                            className="w-full h-56 bg-white border border-earth-sage/35 p-4 rounded-2xl text-sm font-mono text-earth-cocoa leading-relaxed outline-none focus:border-earth-clay shadow-sm"
+                            className="w-full h-56 bg-white border border-earth-sage/35 p-4 rounded-2xl text-sm font-mono text-black leading-relaxed outline-none focus:border-earth-clay shadow-sm"
                           />
                         </div>
 
@@ -653,7 +653,7 @@ Is there a specific account or recent system event you would like me to analyze?
                             <button 
                               disabled={isSendingBroadcast}
                               onClick={() => setActiveBroadcast(null)}
-                              className="px-6 py-3 bg-[#e4ddc3] hover:bg-[#d8cfb3] text-earth-cocoa font-bold text-sm rounded-xl transition-all cursor-pointer border border-earth-sage/20 disabled:opacity-50"
+                              className="px-6 py-3 bg-[#efe9d2]/80 hover:bg-[#efe9d2] text-black font-bold text-sm rounded-xl transition-all cursor-pointer border border-earth-sage/30 disabled:opacity-50"
                             >
                               Cancel
                             </button>
