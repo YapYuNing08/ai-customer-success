@@ -341,7 +341,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               </span>
             </div>
             <p className="text-black font-semibold text-sm mt-1">{user.email}</p>
-            <p className="text-black/85 font-medium text-xs mt-0.5">{user.location} &bull; Onboarded {user.metrics.daysSinceOnboarding} days ago</p>
+            <p className="text-black/85 font-normal text-xs mt-0.5">{user.location} &bull; Onboarded {user.metrics.daysSinceOnboarding} days ago</p>
           </div>
         </div>
 
@@ -749,7 +749,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                 <div className="grid grid-cols-2 gap-4">
                   {/* Churn Risk Change */}
                   <div className="console-card-dark-inner p-3.5 rounded-xl flex flex-col gap-1">
-                    <span className="text-[11px] text-black font-bold block">RISK OF LEAVING</span>
+                    <span className="text-[11px] text-black font-normal block">RISK OF LEAVING</span>
                     <div className="flex items-baseline gap-1 mt-1">
                       <span className="text-lg font-bold text-black/70 line-through">
                         {Math.round(simResult.baseline_churn_probability * 100)}%
@@ -765,7 +765,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
 
                   {/* Health Score Change */}
                   <div className="console-card-dark-inner p-3.5 rounded-xl flex flex-col gap-1">
-                    <span className="text-[11px] text-black font-bold block">HEALTH SCORE</span>
+                    <span className="text-[11px] text-black font-normal block">HEALTH SCORE</span>
                     <div className="flex items-baseline gap-1 mt-1">
                       <span className="text-lg font-bold text-black/70 line-through">
                         {Math.round(simResult.baseline_health_score)}

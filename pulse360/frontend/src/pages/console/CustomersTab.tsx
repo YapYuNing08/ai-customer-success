@@ -93,7 +93,7 @@ export function CustomersTab(props: any) {
                                   <img src={u.avatar} alt={u.name} className="w-10 h-10 rounded-full border border-earth-sage/20 object-cover bg-white shrink-0" />
                                   <div className="text-left">
                                     <h4 className="font-extrabold text-sm leading-tight line-clamp-1 text-black">{u.name}</h4>
-                                    <span className="text-xs text-black font-semibold block mt-0.5">{u.location}</span>
+                                    <span className="text-xs text-black font-normal block mt-0.5">{u.location}</span>
                                   </div>
                                 </div>
                                 <span className="text-[10px] px-2 py-0.5 border border-earth-sage/35 rounded-full font-black uppercase tracking-wider bg-earth-bg">
@@ -104,7 +104,7 @@ export function CustomersTab(props: any) {
                               {/* Health & Risk Stats */}
                               <div className="bg-earth-bg/25 border border-earth-sage/10 p-3 rounded-xl flex justify-between items-center text-xs font-bold mt-1">
                                 <div className="flex flex-col text-left">
-                                  <span className="text-[10px] text-black font-extrabold uppercase">Health Score</span>
+                                  <span className="text-[10px] text-black font-normal uppercase">Health Score</span>
                                   <span className={`text-base font-black ${
                                     u.healthScore > 70 ? 'text-status-healthy' : u.healthScore > 40 ? 'text-status-risk' : 'text-status-critical'
                                   }`}>
@@ -112,7 +112,7 @@ export function CustomersTab(props: any) {
                                   </span>
                                 </div>
                                 <div className="flex flex-col text-right">
-                                  <span className="text-[10px] text-black font-extrabold uppercase">Churn Probability</span>
+                                  <span className="text-[10px] text-black font-normal uppercase">Churn Probability</span>
                                   <span className={`text-base font-black ${
                                     isHighRisk ? 'text-status-critical' : isMedRisk ? 'text-status-risk' : 'text-status-healthy'
                                   }`}>
