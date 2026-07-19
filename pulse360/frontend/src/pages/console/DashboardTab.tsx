@@ -160,7 +160,7 @@ Is there a specific account or recent system event you would like me to analyze?
                   <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full">
                     <div>
                       <h1 className="text-xl md:text-2xl font-extrabold text-earth-cocoa tracking-tight">Client Experience Dashboard</h1>
-                      <p className="text-sm text-black mt-1 max-w-xl font-medium">
+                      <p className="text-sm text-black mt-1 max-w-xl font-normal">
                         Strategic metrics, health distribution, and experience analytics across your customer base.
                       </p>
                     </div>
@@ -210,17 +210,17 @@ Is there a specific account or recent system event you would like me to analyze?
                         <div className="grid grid-cols-3 gap-4 text-xs font-bold text-earth-cocoa/80">
                           <div className="flex flex-col gap-0.5 border-l-4 border-status-healthy pl-2">
                             <span className="text-xs text-black/75 uppercase font-bold">Healthy</span>
-                            <span className="text-sm font-black text-black">{dist.healthy_count.toLocaleString()} users</span>
+                            <span className="text-sm font-normal text-black">{dist.healthy_count.toLocaleString()} users</span>
                             <span className="text-xs text-status-healthy font-extrabold">{dist.healthy_pct}%</span>
                           </div>
                           <div className="flex flex-col gap-0.5 border-l-4 border-status-risk pl-2">
                             <span className="text-xs text-black/75 uppercase font-bold">Warning</span>
-                            <span className="text-sm font-black text-black">{dist.at_risk_count.toLocaleString()} users</span>
+                            <span className="text-sm font-normal text-black">{dist.at_risk_count.toLocaleString()} users</span>
                             <span className="text-xs text-status-risk font-extrabold">{dist.at_risk_pct}%</span>
                           </div>
                           <div className="flex flex-col gap-0.5 border-l-4 border-status-critical pl-2">
                             <span className="text-xs text-black/75 uppercase font-bold">Critical</span>
-                            <span className="text-sm font-black text-black">{dist.critical_count.toLocaleString()} users</span>
+                            <span className="text-sm font-normal text-black">{dist.critical_count.toLocaleString()} users</span>
                             <span className="text-xs text-status-critical font-extrabold">{dist.critical_pct}%</span>
                           </div>
                         </div>
