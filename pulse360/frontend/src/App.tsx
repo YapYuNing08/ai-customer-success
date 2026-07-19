@@ -73,6 +73,9 @@ function App() {
     at_risk_pct: number;
     critical_pct: number;
     avg_health_score: number;
+    silent_churn_count: number;
+    silent_churn_pct: number;
+    silent_churn_mrr: number;
   } | null>(null);
 
   // Fetch live customer summaries from FastAPI backend
@@ -127,7 +130,7 @@ function App() {
       state: 'active',
       healthScore: Math.min(98, updatedUser.healthScore + 20),
       churnProbability: Math.max(5, updatedUser.churnProbability - 30),
-      warningFlags: updatedUser.warningFlags.filter(f => f !== 'Using It Less' && f !== 'Failed Payment')
+      warningFlags: updatedUser.warningFlags.filter(f => f !== 'Using It Less' && f !== 'Failed Payment' && f !== 'Silent Churner')
     };
     setUsers(prev => prev.map(u => u.id === recoveredUser.id ? recoveredUser : u));
     setSelectedUser(recoveredUser);
@@ -292,6 +295,9 @@ function App() {
     at_risk_pct: 20.0,
     critical_pct: 6.2,
     avg_health_score: 92,
+    silent_churn_count: 460,
+    silent_churn_pct: 5.5,
+    silent_churn_mrr: 36800,
   };
   const expScore = Math.round(dist.avg_health_score);
   const expLabel = expScore > 70 ? 'Excellent' : expScore > 40 ? 'Stable' : 'At Risk';

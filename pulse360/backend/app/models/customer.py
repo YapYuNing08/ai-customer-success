@@ -98,6 +98,12 @@ class HealthStats(BaseModel):
     at_risk_pct: float
     critical_pct: float
     avg_health_score: float
+    # Silent churn: low logins + few tickets + not yet critical — the segment
+    # the risk tiers miss because these customers never complain. Defaults keep
+    # older callers of _stats_from_counts from ever failing validation.
+    silent_churn_count: int = 0
+    silent_churn_pct: float = 0.0
+    silent_churn_mrr: float = 0.0  # sum of monthly_charges across the segment
 
 
 class Recommendation(BaseModel):

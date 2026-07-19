@@ -50,6 +50,17 @@ _HEALTH_BANDS = [
     Customer.health_score > 70,                                          # healthy
 ]
 
+# Silent churn: quietly disengaging (low logins), not complaining (few tickets),
+# not yet critical. NEW-* signups are excluded — fresh-account defaults
+# (login 1.0, tickets 0) would otherwise match on day 0. Mirrored in the
+# frontend's mergeBackendCustomer (utils/mockData.ts) — keep thresholds in sync.
+_SILENT_CHURN = (
+    (Customer.login_frequency < 2.5)
+    & (Customer.support_ticket_count <= 2)
+    & (Customer.health_score > 40)
+    & Customer.customer_id.notlike("NEW-%")
+)
+
 
 def list_customers(db: Session, limit: int = 100, offset: int = 0) -> List[dict]:
     """Even mix across the three health bands, interleaved critical/at-risk/healthy.
@@ -89,7 +100,14 @@ def list_customers(db: Session, limit: int = 100, offset: int = 0) -> List[dict]
         return data.list_customers()[offset : offset + limit]
 
 
-def _stats_from_counts(critical: int, at_risk: int, healthy: int, avg_health: float) -> dict:
+def _stats_from_counts(
+    critical: int,
+    at_risk: int,
+    healthy: int,
+    avg_health: float,
+    silent: int = 0,
+    silent_mrr: float = 0.0,
+) -> dict:
     total = critical + at_risk + healthy
     pct = lambda n: round(n / total * 100, 1) if total else 0.0  # noqa: E731
     return {
@@ -101,6 +119,10 @@ def _stats_from_counts(critical: int, at_risk: int, healthy: int, avg_health: fl
         "at_risk_pct": pct(at_risk),
         "critical_pct": pct(critical),
         "avg_health_score": round(avg_health, 1),
+        # Overlapping slice of the same population, not a fourth band.
+        "silent_churn_count": silent,
+        "silent_churn_pct": pct(silent),
+        "silent_churn_mrr": round(float(silent_mrr), 0),
     }
 
 
@@ -114,7 +136,19 @@ def get_stats(db: Session) -> dict:
             for cond in _HEALTH_BANDS
         )
         avg_health = db.execute(select(func.avg(Customer.health_score))).scalar() or 0.0
-        return _stats_from_counts(critical, at_risk, healthy, float(avg_health))
+        silent = (
+            db.execute(select(func.count()).select_from(Customer).where(_SILENT_CHURN)).scalar()
+            or 0
+        )
+        silent_mrr = (
+            db.execute(
+                select(func.coalesce(func.sum(Customer.monthly_charges), 0)).where(_SILENT_CHURN)
+            ).scalar()
+            or 0
+        )
+        return _stats_from_counts(
+            critical, at_risk, healthy, float(avg_health), silent=silent, silent_mrr=float(silent_mrr)
+        )
     except SQLAlchemyError:
         rows = data.list_customers()
         scores = [r.get("health_score") or 0.0 for r in rows]
@@ -122,7 +156,24 @@ def get_stats(db: Session) -> dict:
         at_risk = sum(1 for s in scores if 40 < s <= 70)
         healthy = sum(1 for s in scores if s > 70)
         avg_health = sum(scores) / len(scores) if scores else 0.0
-        return _stats_from_counts(critical, at_risk, healthy, avg_health)
+        # Placeholder rows mostly lack raw-signal keys — missing data fails
+        # closed (99 = "definitely not silent") so only seeded rows count.
+        silent_rows = [
+            r
+            for r in rows
+            if (r.get("login_frequency") if r.get("login_frequency") is not None else 99) < 2.5
+            and (
+                r.get("support_ticket_count")
+                if r.get("support_ticket_count") is not None
+                else 99
+            )
+            <= 2
+            and (r.get("health_score") or 0) > 40
+        ]
+        silent_mrr = sum(r.get("monthly_charges") or 0 for r in silent_rows)
+        return _stats_from_counts(
+            critical, at_risk, healthy, avg_health, silent=len(silent_rows), silent_mrr=silent_mrr
+        )
 
 
 def create_customer(db: Session, values: dict) -> dict:

@@ -109,6 +109,10 @@ _CUSTOMERS: List[dict] = [
         "churn_probability": 0.42,
         "risk_tier": "medium",
         "monthly_usage_pct": 50.0,
+        # Seeded raw signals so the offline silent-churn count is non-zero.
+        "login_frequency": 1.4,
+        "support_ticket_count": 1,
+        "monthly_charges": 800,
         "recommended_action": "Onboarding review requested. Low activity in core logistics logs.",
         "shap_reasons": [
             {"feature": "feature_usage", "contribution": 0.12},
@@ -169,6 +173,9 @@ _CUSTOMERS: List[dict] = [
         "churn_probability": 0.38,
         "risk_tier": "medium",
         "monthly_usage_pct": 58.0,
+        "login_frequency": 2.1,
+        "support_ticket_count": 0,
+        "monthly_charges": 800,
         "recommended_action": "API usage velocity dropping. Recommend sending tutorials.",
         "shap_reasons": [
             {"feature": "login_frequency", "contribution": 0.15},
@@ -267,6 +274,9 @@ _CUSTOMERS: List[dict] = [
         "churn_probability": 0.44,
         "risk_tier": "medium",
         "monthly_usage_pct": 48.0,
+        "login_frequency": 1.1,
+        "support_ticket_count": 0,
+        "monthly_charges": 400,
         "recommended_action": "Decaying telemetry frequency. Send automatic engagement newsletter.",
         "shap_reasons": [
             {"feature": "login_frequency", "contribution": 0.12},

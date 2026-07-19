@@ -17,6 +17,9 @@ export function ConsolePage(props: any) {
   const [customerSearch, setCustomerSearch] = useState<string>('');
   const [filterPlan, setFilterPlan] = useState<string>('all');
   const [filterRisk, setFilterRisk] = useState<string>('all');
+  // True while the Customers tab was reached via the Silent Churn KPI card —
+  // shows a "Back to Dashboard" button that undoes the drill-down.
+  const [silentDrilldown, setSilentDrilldown] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showOutageAlertModal, setShowOutageAlertModal] = useState(false);
 
@@ -72,10 +75,11 @@ export function ConsolePage(props: any) {
                           u.email.toLowerCase().includes(customerSearch.toLowerCase()) ||
                           u.location.toLowerCase().includes(customerSearch.toLowerCase());
     const matchesPlan = filterPlan === 'all' || u.plan.toLowerCase() === filterPlan.toLowerCase();
-    const matchesRisk = filterRisk === 'all' || 
+    const matchesRisk = filterRisk === 'all' ||
                         (filterRisk === 'high' && u.churnProbability > 50) ||
                         (filterRisk === 'medium' && u.churnProbability <= 50 && u.churnProbability > 15) ||
-                        (filterRisk === 'low' && u.churnProbability <= 15);
+                        (filterRisk === 'low' && u.churnProbability <= 15) ||
+                        (filterRisk === 'silent' && u.warningFlags.includes('Silent Churner'));
     return matchesSearch && matchesPlan && matchesRisk;
   });
 
@@ -130,7 +134,7 @@ export function ConsolePage(props: any) {
                 
                 <nav className="flex flex-col gap-2.5 mt-4 text-xs font-bold text-earth-cocoa/75">
                   <button 
-                    onClick={() => { setConsoleTab('dashboard'); setSelectedConsoleUser(null); }}
+                    onClick={() => { setConsoleTab('dashboard'); setSelectedConsoleUser(null); setSilentDrilldown(false); }}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
                       consoleTab === 'dashboard'
                         ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
@@ -141,7 +145,7 @@ export function ConsolePage(props: any) {
                     <span>Dashboard</span>
                   </button>
                   <button 
-                    onClick={() => { setConsoleTab('customers'); setSelectedConsoleUser(null); }}
+                    onClick={() => { setConsoleTab('customers'); setSelectedConsoleUser(null); setSilentDrilldown(false); }}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
                       consoleTab === 'customers'
                         ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
@@ -152,7 +156,7 @@ export function ConsolePage(props: any) {
                     <span>Customers</span>
                   </button>
                   <button 
-                    onClick={() => { setConsoleTab('reports'); setSelectedConsoleUser(null); }}
+                    onClick={() => { setConsoleTab('reports'); setSelectedConsoleUser(null); setSilentDrilldown(false); }}
                     className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
                       consoleTab === 'reports'
                         ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
@@ -238,9 +242,22 @@ export function ConsolePage(props: any) {
                 </div>
               </div>
               {consoleTab === 'dashboard' ? (
-                <DashboardTab dist={dist} expScore={expScore} expLabel={expLabel} users={users} addTelemetry={addTelemetry} />
+                <DashboardTab
+                  dist={dist}
+                  expScore={expScore}
+                  expLabel={expLabel}
+                  users={users}
+                  addTelemetry={addTelemetry}
+                  onViewSilentChurners={() => {
+                    setFilterRisk('silent');
+                    setSelectedConsoleUser(null);
+                    setSilentDrilldown(true);
+                    setConsoleTab('customers');
+                    addTelemetry('Viewing silent churn risk accounts — quietly disengaging customers.');
+                  }}
+                />
               ) : consoleTab === 'customers' ? (
-                <CustomersTab selectedConsoleUser={selectedConsoleUser} setSelectedConsoleUser={setSelectedConsoleUser} users={users} handleUpdateUser={handleUpdateUser} customerSearch={customerSearch} setCustomerSearch={setCustomerSearch} filterPlan={filterPlan} setFilterPlan={setFilterPlan} filterRisk={filterRisk} setFilterRisk={setFilterRisk} filteredConsoleUsers={filteredConsoleUsers} />
+                <CustomersTab selectedConsoleUser={selectedConsoleUser} setSelectedConsoleUser={setSelectedConsoleUser} users={users} handleUpdateUser={handleUpdateUser} customerSearch={customerSearch} setCustomerSearch={setCustomerSearch} filterPlan={filterPlan} setFilterPlan={setFilterPlan} filterRisk={filterRisk} setFilterRisk={setFilterRisk} filteredConsoleUsers={filteredConsoleUsers} silentDrilldown={silentDrilldown} onBackFromSilent={() => { setSilentDrilldown(false); setFilterRisk('all'); setConsoleTab('dashboard'); }} />
               ) : (
                 <ReportsTab reports={reports} users={users} generateReport={generateReport} />
               )}

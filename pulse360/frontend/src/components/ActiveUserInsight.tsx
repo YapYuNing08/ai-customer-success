@@ -120,16 +120,19 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
       .finally(() => setLeversLoaded(true));
   }, [user.id]);
 
-  const runSimulation = () => {
+  // overrideLevers lets one-click presets run immediately without waiting for
+  // the setSimLevers state update to land.
+  const runSimulation = (overrideLevers?: typeof simLevers) => {
+    const src = overrideLevers ?? simLevers;
     setSimLoading(true);
     setSimError(null);
     const levers = {
-      login_frequency: Number(simLevers.login_frequency),
-      feature_usage: Number(simLevers.feature_usage),
-      monthly_usage_pct: Number(simLevers.monthly_usage_pct),
-      support_ticket_count: parseInt(String(simLevers.support_ticket_count)),
-      feedback_score: Number(simLevers.feedback_score),
-      payment_status: simLevers.payment_status
+      login_frequency: Number(src.login_frequency),
+      feature_usage: Number(src.feature_usage),
+      monthly_usage_pct: Number(src.monthly_usage_pct),
+      support_ticket_count: parseInt(String(src.support_ticket_count)),
+      feedback_score: Number(src.feedback_score),
+      payment_status: src.payment_status
     };
     simulate(user.id, levers)
       .then((res) => {
@@ -621,8 +624,28 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             >
               Reset to Today's Values
             </button>
+            {user.warningFlags.includes('Silent Churner') && (
+              <button
+                onClick={() => {
+                  // Preset: bring the quiet account back to healthy engagement
+                  // levels and show the CSM what that rescue would be worth.
+                  const next = {
+                    ...baselineLevers,
+                    login_frequency: Math.max(Number(baselineLevers.login_frequency), 5),
+                    feature_usage: Math.max(Number(baselineLevers.feature_usage), 0.7),
+                  };
+                  setSimLevers(next);
+                  runSimulation(next);
+                }}
+                disabled={simLoading || !leversLoaded}
+                className="bg-status-risk hover:bg-earth-clay text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-200 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
+              >
+                <Zap className="w-3.5 h-3.5" />
+                Simulate Re-engagement
+              </button>
+            )}
             <button
-              onClick={runSimulation}
+              onClick={() => runSimulation()}
               disabled={simLoading || !leversLoaded}
               className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg px-5 py-2.5 rounded-xl text-xs font-bold shadow-md shadow-earth-cocoa/20 transition-all duration-200 cursor-pointer disabled:opacity-50"
             >
