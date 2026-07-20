@@ -520,7 +520,7 @@ export const Globe: React.FC<GlobeProps> = ({ onSelectUser, selectedUser, users 
           <span className="font-medium">Critical Warning (&lt;40)</span>
         </div>
         <div className="mt-1 pt-1.5 border-t border-earth-sage/20 text-earth-cocoa/50">
-          * Drag globe to rotate, Click dot to pin client details
+          * Drag globe to rotate, Click star to pin client details
         </div>
       </div>
     </div>

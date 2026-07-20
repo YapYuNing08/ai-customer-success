@@ -210,8 +210,14 @@ export function ClientDashboardPage(props: any) {
                 className={`bg-white border border-slate-200 p-5 rounded-2xl flex flex-col gap-3 shadow-sm hover:border-[#0064DC]/20 transition-all text-left cursor-pointer ${selectedCard === 'optimization' ? 'demo-card-selected-client' : ''}`}
               >
                 <div>
-                  <span className="text-xs font-extrabold uppercase tracking-wider text-[#0064DC]">AI PLAN OPTIMIZATION</span>
-                  
+                  <div className="flex items-center gap-2.5">
+                    <img src="/falcon-icon.png" alt="Falcon Coach Agent" className="w-8 h-8 object-contain shrink-0" />
+                    <div className="flex flex-col leading-tight">
+                      <h3 className="text-sm font-extrabold text-[#001871]">Falcon Coach Agent</h3>
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#0064DC]">AI Plan Optimization</span>
+                    </div>
+                  </div>
+
                   {((loggedInUser?.metrics.usageVelocity || 0) < 0.35 && loggedInUser?.plan !== 'Starter') || hasFailedPayment ? (
                     <div className="flex flex-col gap-3 mt-3">
                       {/* Case A: Underutilization */}
@@ -497,7 +503,7 @@ export function ClientDashboardPage(props: any) {
                     <X className="w-3.5 h-3.5" />
                   </button>
                   <p className="text-xs text-[#001871] font-semibold leading-relaxed">
-                    👋 Hi! I'm your Falcon360 assistant. Need help with your plan, billing, or roaming add-ons?
+                    👋 Hi! I'm your Falcon Guide Agent. Need help with your plan, billing, or roaming add-ons?
                   </p>
                 </div>
               )}

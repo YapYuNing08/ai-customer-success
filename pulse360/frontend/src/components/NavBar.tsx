@@ -66,7 +66,7 @@ export function NavBar(props: any) {
                   : 'bg-earth-cocoa hover:bg-earth-clay text-earth-bg'
               }`}
             >
-              Dashboard Console
+              CSM Dashboard
             </button>
           )}
 

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { 
   ArrowLeft, TrendingDown, TrendingUp, UserCheck, 
-  Clock, CreditCard, MessageSquare, DollarSign, CheckCircle, 
-  Copy, Zap, BookOpen, HeartHandshake, ShieldAlert, Cpu, Send, MessageCircle
+  CreditCard, MessageSquare, DollarSign, CheckCircle,
+  Copy, Zap, BookOpen, ShieldAlert, Cpu, Send, MessageCircle
 } from 'lucide-react';
 import { type ActiveUser } from '../utils/mockData';
 import Avatar from './Avatar';
@@ -669,10 +669,13 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           onClick={() => setSelectedInsightCard('activity')}
           className={`console-card-dark rounded-2xl p-5 flex flex-col gap-4 shadow-sm cursor-pointer transition-all ${selectedInsightCard === 'activity' ? 'demo-card-selected' : ''}`}
         >
-          <h3 className="text-base font-bold console-text-primary flex items-center gap-2">
-            <Clock className="w-4 h-4 text-earth-clay" />
-            Recent Activity
-          </h3>
+          <div className="flex items-center gap-2.5">
+            <img src="/falcon-icon.png" alt="Falcon Chronicle Agent" className="w-8 h-8 object-contain shrink-0" />
+            <div className="flex flex-col leading-tight">
+              <h3 className="text-base font-bold console-text-primary">Falcon Chronicle Agent</h3>
+              <span className="text-[10px] font-semibold text-black/60 uppercase tracking-wider">Recent Activity</span>
+            </div>
+          </div>
 
           <div className="flex flex-col gap-4 max-h-[300px] overflow-y-auto pr-2">
             {user.activityLogs.map((log, idx) => (
@@ -996,10 +999,13 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           className={`console-card-dark rounded-2xl p-5 flex flex-col gap-4 lg:col-span-2 shadow-sm order-2 cursor-pointer transition-all ${selectedInsightCard === 'assistant' ? 'demo-card-selected' : ''}`}
         >
           <div className="flex justify-between items-center">
-            <h3 className="text-base font-bold console-text-primary flex items-center gap-2">
-              <Zap className="w-4 h-4 text-earth-clay" />
-              Retention Assistant
-            </h3>
+            <div className="flex items-center gap-2.5">
+              <img src="/falcon-icon.png" alt="Falcon Strategist Agent" className="w-8 h-8 object-contain shrink-0" />
+              <div className="flex flex-col leading-tight">
+                <h3 className="text-base font-bold console-text-primary">Falcon Strategist Agent</h3>
+                <span className="text-[10px] font-semibold text-black/60 uppercase tracking-wider">Retention Assistant</span>
+              </div>
+            </div>
             <span className="bg-earth-sage/20 console-text-primary text-[10px] px-2 py-0.5 border console-border rounded font-bold">
               AI Assistant
             </span>
@@ -1152,12 +1158,15 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             return (
               <>
                 <div className="flex flex-col gap-1">
-                  <h3 className="text-base font-bold console-text-primary flex items-center gap-2">
-                    <HeartHandshake className="w-4 h-4 text-earth-clay" />
-                    Quick Actions
-                  </h3>
+                  <div className="flex items-center gap-2.5">
+                    <img src="/falcon-icon.png" alt="Falcon Strategist Agent" className="w-8 h-8 object-contain shrink-0" />
+                    <div className="flex flex-col leading-tight">
+                      <h3 className="text-base font-bold console-text-primary">Falcon Strategist Agent</h3>
+                      <span className="text-[10px] font-semibold text-black/60 uppercase tracking-wider">Quick Actions</span>
+                    </div>
+                  </div>
                   <p className="text-xs text-black font-normal leading-normal mt-1">
-                    Pick an action to help this customer right away. Their risk of leaving updates instantly.
+                    <span className="font-bold text-earth-cocoa">Falcon Strategist</span> recommends the best move for this customer. Pick an action and their risk of leaving updates instantly.
                   </p>
                 </div>
 
