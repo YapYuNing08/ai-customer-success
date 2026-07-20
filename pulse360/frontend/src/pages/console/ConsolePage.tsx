@@ -136,10 +136,10 @@ export function ConsolePage(props: any) {
                 <nav className="flex flex-col gap-2.5 mt-4 text-xs font-bold text-earth-cocoa/75">
                   <button 
                     onClick={() => { setConsoleTab('dashboard'); setSelectedConsoleUser(null); setSilentDrilldown(false); }}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
                       consoleTab === 'dashboard'
-                        ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
-                        : 'hover:bg-earth-sage/10'
+                        ? 'bg-earth-sage/30 text-earth-cocoa font-extrabold shadow-sm'
+                        : 'hover:bg-earth-sage/15'
                     }`}
                   >
                     <LayoutDashboard className="w-4 h-4 text-earth-clay" />
@@ -147,10 +147,10 @@ export function ConsolePage(props: any) {
                   </button>
                   <button 
                     onClick={() => { setConsoleTab('customers'); setSelectedConsoleUser(null); setSilentDrilldown(false); }}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
                       consoleTab === 'customers'
-                        ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
-                        : 'hover:bg-earth-sage/10'
+                        ? 'bg-earth-sage/30 text-earth-cocoa font-extrabold shadow-sm'
+                        : 'hover:bg-earth-sage/15'
                     }`}
                   >
                     <Users className="w-4 h-4 text-earth-clay" />
@@ -158,10 +158,10 @@ export function ConsolePage(props: any) {
                   </button>
                   <button 
                     onClick={() => { setConsoleTab('reports'); setSelectedConsoleUser(null); setSilentDrilldown(false); }}
-                    className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
+                    className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-left cursor-pointer transition-all ${
                       consoleTab === 'reports'
-                        ? 'bg-earth-sage/20 text-earth-cocoa border-l-4 border-earth-sage'
-                        : 'hover:bg-earth-sage/10'
+                        ? 'bg-earth-sage/30 text-earth-cocoa font-extrabold shadow-sm'
+                        : 'hover:bg-earth-sage/15'
                     }`}
                   >
                     <FileText className="w-4 h-4 text-earth-clay" />
