@@ -335,20 +335,41 @@ function App() {
 
   const isDark = currentPage === 'insight';
 
-  // Real population stats when the backend is up; placeholder figures offline.
-  const dist = healthStats ?? {
-    total_customers: 8412,
-    healthy_count: 6210,
-    at_risk_count: 1682,
-    critical_count: 520,
-    healthy_pct: 73.8,
-    at_risk_pct: 20.0,
-    critical_pct: 6.2,
-    avg_health_score: 92,
-    silent_churn_count: 460,
-    silent_churn_pct: 5.5,
-    silent_churn_mrr: 36800,
-  };
+  // Real population stats when the backend is up; calculated figures offline.
+  const dist = healthStats ?? (() => {
+    const total = users.length;
+    const healthy = users.filter(u => u.healthScore >= 70);
+    const atRisk = users.filter(u => u.healthScore < 70 && u.healthScore >= 40);
+    const critical = users.filter(u => u.healthScore < 40);
+    const silent = users.filter(u => u.warningFlags.includes('Silent Churner') || (u.warningFlags.includes('Using It Less') && u.healthScore > 40));
+
+    const healthy_count = healthy.length;
+    const at_risk_count = atRisk.length;
+    const critical_count = critical.length;
+    const silent_churn_count = silent.length;
+
+    const healthy_pct = total > 0 ? Number(((healthy_count / total) * 100).toFixed(1)) : 0;
+    const at_risk_pct = total > 0 ? Number(((at_risk_count / total) * 100).toFixed(1)) : 0;
+    const critical_pct = total > 0 ? Number(((critical_count / total) * 100).toFixed(1)) : 0;
+    const silent_churn_pct = total > 0 ? Number(((silent_churn_count / total) * 100).toFixed(1)) : 0;
+    const silent_churn_mrr = silent.reduce((sum, u) => sum + u.mrr, 0);
+
+    const avg_health_score = total > 0 ? Math.round(users.reduce((sum, u) => sum + u.healthScore, 0) / total) : 70;
+
+    return {
+      total_customers: total,
+      healthy_count,
+      at_risk_count,
+      critical_count,
+      healthy_pct,
+      at_risk_pct,
+      critical_pct,
+      avg_health_score,
+      silent_churn_count,
+      silent_churn_pct,
+      silent_churn_mrr,
+    };
+  })();
   const expScore = Math.round(dist.avg_health_score);
   const expLabel = expScore > 70 ? 'Excellent' : expScore > 40 ? 'Stable' : 'At Risk';
 

@@ -287,107 +287,11 @@ Is there a specific account or recent system event you would like me to analyze?
                       </div>
                     </div>
                   </div>
-
                   {/* Main section grid */}
-                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch">
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-stretch">
                     
-                    {/* Left Column (Span 6) */}
-                    <div className="lg:col-span-6 flex flex-col gap-6 w-full">
-                      
-                      {/* Telemetry Status Breakdown */}
-                      <div
-                        onClick={() => setSelectedCard('status')}
-                        className={`bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left cursor-pointer hover:bg-[#efe9d2]/60 hover:shadow-md transition-all ${selectedCard === 'status' ? 'demo-card-selected' : ''}`}
-                      >
-                        <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
-                          <span className="text-[10px] font-black uppercase text-earth-cocoa/90 tracking-wider">SYSTEM STATUS BREAKDOWN</span>
-                          <span className="text-[10px] font-extrabold text-earth-cocoa/75 uppercase">System checks</span>
-                        </div>
-
-                        <div className="flex flex-col gap-4">
-                          {/* Item 1 */}
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex justify-between items-baseline text-xs">
-                              <div>
-                                <span className="text-sm font-bold text-earth-cocoa block">Login Frequency (Engagement)</span>
-                                <span className="text-xs text-black font-normal block mt-1 leading-normal">A positive delta shows customer check-in methods are working. If negative, refine onboarding engagement plans.</span>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
-                                <span className="text-sm font-black text-black">82%</span>
-                                <span className="text-[10px] text-status-healthy bg-[#276B2B]/10 border border-[#276B2B]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
-                                  ▲ +5%
-                                </span>
-                              </div>
-                            </div>
-                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
-                              <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '82%' }} />
-                            </div>
-                          </div>
-
-                          {/* Item 2 */}
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex justify-between items-baseline text-xs">
-                              <div>
-                                <span className="text-sm font-bold text-earth-cocoa block">Feature Utilization (Usage)</span>
-                                <span className="text-xs text-black font-normal block mt-1 leading-normal">An increase confirms new features are successfully adopted. A drop indicates a need to schedule tutorial broadcasts.</span>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
-                                <span className="text-sm font-black text-black">64%</span>
-                                <span className="text-[10px] text-[#8C6239] bg-[#8C6239]/10 border border-[#8C6239]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
-                                  ▲ +8%
-                                </span>
-                              </div>
-                            </div>
-                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
-                              <div className="h-1.5 rounded-full bg-earth-clay" style={{ width: '64%' }} />
-                            </div>
-                          </div>
-
-                          {/* Item 3 */}
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex justify-between items-baseline text-xs">
-                              <div>
-                                <span className="text-sm font-bold text-earth-cocoa block">Support Ticket Resolution (Response)</span>
-                                <span className="text-xs text-black font-normal block mt-1 leading-normal">Higher rates validate successful CSM support interventions. A drop highlights resource bottlenecks needing attention.</span>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
-                                <span className="text-sm font-black text-black">91%</span>
-                                <span className="text-[10px] text-status-healthy bg-[#276B2B]/10 border border-[#276B2B]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
-                                  ▲ +3%
-                                </span>
-                              </div>
-                            </div>
-                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
-                              <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '91%' }} />
-                            </div>
-                          </div>
-
-                          {/* Item 4 */}
-                          <div className="flex flex-col gap-1.5">
-                            <div className="flex justify-between items-baseline text-xs">
-                              <div>
-                                <span className="text-sm font-bold text-earth-cocoa block">Payment & Invoicing (Billing)</span>
-                                <span className="text-xs text-black font-normal block mt-1 leading-normal">A stable rate shows automated invoicing is reliable. A drop warns of payment failures requiring grace-period playbooks.</span>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
-                                <span className="text-sm font-black text-black">94%</span>
-                                <span className="text-[10px] text-status-critical bg-status-critical/10 border border-status-critical/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
-                                  ▼ -2%
-                                </span>
-                              </div>
-                            </div>
-                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
-                              <div className="h-1.5 rounded-full bg-status-healthy" style={{ width: '94%' }} />
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      
-                    </div>
-
-                    {/* Right Column (Span 6) */}
-                    <div className="lg:col-span-6 flex flex-col gap-6 w-full">
+                    {/* Left Column - Customer's Health */}
+                    <div className="flex flex-col gap-6 w-full">
                       {/* Customer's Health */}
                       <div
                         onClick={() => setSelectedCard('customer-health')}
@@ -589,9 +493,119 @@ Is there a specific account or recent system event you would like me to analyze?
                           </div>
                         )}
                       </div>
-
                     </div>
 
+                    {/* Right Column - Telemetry Status Breakdown */}
+                    <div className="flex flex-col gap-6 w-full">
+                      {/* Telemetry Status Breakdown */}
+                      <div
+                        onClick={() => setSelectedCard('status')}
+                        className={`bg-[#efe9d2]/40 border border-earth-sage/30 rounded-2xl p-5 flex flex-col gap-4 shadow-sm text-left cursor-pointer hover:bg-[#efe9d2]/60 hover:shadow-md transition-all ${selectedCard === 'status' ? 'demo-card-selected' : ''}`}
+                      >
+                        <div className="flex justify-between items-center border-b border-earth-sage/20 pb-2">
+                          <span className="text-[10px] font-black uppercase text-earth-cocoa/90 tracking-wider">SYSTEM STATUS BREAKDOWN</span>
+                          <span className="text-[10px] font-extrabold text-earth-cocoa/75 uppercase">System checks</span>
+                        </div>
+
+                        <div className="flex flex-col gap-4">
+                          {/* Item 1 */}
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <div>
+                                <span className="text-sm font-bold text-earth-cocoa block">Login Frequency (Engagement)</span>
+                                <span className="text-xs text-black font-normal block mt-1 leading-normal">A positive delta shows customer check-in methods are working. If negative, refine onboarding engagement plans.</span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
+                                <span className="text-sm font-black text-black">
+                                  {users && users.length > 0 ? Math.round(users.reduce((acc: number, u: any) => acc + (u.metrics?.usageVelocity || 0.8), 0) / users.length * 100) : 82}%
+                                </span>
+                                <span className="text-[10px] text-status-healthy bg-[#276B2B]/10 border border-[#276B2B]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
+                                  ▲ +5%
+                                </span>
+                              </div>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div 
+                                className="h-1.5 rounded-full bg-status-healthy" 
+                                style={{ width: `${users && users.length > 0 ? Math.round(users.reduce((acc: number, u: any) => acc + (u.metrics?.usageVelocity || 0.8), 0) / users.length * 100) : 82}%` }} 
+                              />
+                            </div>
+                          </div>
+
+                          {/* Item 2 */}
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <div>
+                                <span className="text-sm font-bold text-earth-cocoa block">Feature Utilization (Usage)</span>
+                                <span className="text-xs text-black font-normal block mt-1 leading-normal">An increase confirms new features are successfully adopted. A drop indicates a need to schedule tutorial broadcasts.</span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
+                                <span className="text-sm font-black text-black">
+                                  {users && users.length > 0 ? Math.round(users.reduce((acc: number, u: any) => acc + (u.metrics?.featureAdoption || 0.6), 0) / users.length * 100) : 64}%
+                                </span>
+                                <span className="text-[10px] text-[#8C6239] bg-[#8C6239]/10 border border-[#8C6239]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
+                                  ▲ +8%
+                                </span>
+                              </div>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div 
+                                className="h-1.5 rounded-full bg-earth-clay" 
+                                style={{ width: `${users && users.length > 0 ? Math.round(users.reduce((acc: number, u: any) => acc + (u.metrics?.featureAdoption || 0.6), 0) / users.length * 100) : 64}%` }} 
+                              />
+                            </div>
+                          </div>
+
+                          {/* Item 3 */}
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <div>
+                                <span className="text-sm font-bold text-earth-cocoa block">Support Ticket Resolution (Response)</span>
+                                <span className="text-xs text-black font-normal block mt-1 leading-normal">Higher rates validate successful CSM support interventions. A drop highlights resource bottlenecks needing attention.</span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
+                                <span className="text-sm font-black text-black">
+                                  {users && users.length > 0 ? Math.round((users.filter((u: any) => (u.metrics?.frictionIndex || 0) <= 3).length / users.length) * 100) : 91}%
+                                </span>
+                                <span className="text-[10px] text-status-healthy bg-[#276B2B]/10 border border-[#276B2B]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
+                                  ▲ +3%
+                                </span>
+                              </div>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div 
+                                className="h-1.5 rounded-full bg-status-healthy" 
+                                style={{ width: `${users && users.length > 0 ? Math.round((users.filter((u: any) => (u.metrics?.frictionIndex || 0) <= 3).length / users.length) * 100) : 91}%` }} 
+                              />
+                            </div>
+                          </div>
+
+                          {/* Item 4 */}
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex justify-between items-baseline text-xs">
+                              <div>
+                                <span className="text-sm font-bold text-earth-cocoa block">Payment & Invoicing (Billing)</span>
+                                <span className="text-xs text-black font-normal block mt-1 leading-normal">A stable rate shows automated invoicing is reliable. A drop warns of payment failures requiring grace-period playbooks.</span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0 ml-4 font-sans text-xs">
+                                <span className="text-sm font-black text-black">
+                                  {users && users.length > 0 ? Math.round((users.filter((u: any) => !u.warningFlags.includes('Failed Payment')).length / users.length) * 100) : 94}%
+                                </span>
+                                <span className="text-[10px] text-status-critical bg-status-critical/10 border border-status-critical/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
+                                  ▼ -2%
+                                </span>
+                              </div>
+                            </div>
+                            <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
+                              <div 
+                                className="h-1.5 rounded-full bg-status-healthy" 
+                                style={{ width: `${users && users.length > 0 ? Math.round((users.filter((u: any) => !u.warningFlags.includes('Failed Payment')).length / users.length) * 100) : 94}%` }} 
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {activeBroadcast && (
