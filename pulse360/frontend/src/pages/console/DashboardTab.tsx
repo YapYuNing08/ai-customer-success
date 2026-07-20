@@ -204,7 +204,13 @@ Is there a specific account or recent system event you would like me to analyze?
                     >
                       <div className="flex flex-col gap-2">
                         <div className="flex justify-between items-center">
-                          <span className="text-[10px] font-extrabold text-earth-cocoa/85 uppercase">Silent Churn Risk</span>
+                          <div className="flex items-center gap-2">
+                            <img src="/falcon-icon.png" alt="Falcon Sentinel Agent" className="w-6 h-6 object-contain shrink-0" />
+                            <div className="flex flex-col leading-tight">
+                              <span className="text-[10px] font-extrabold text-earth-cocoa/85 uppercase">Silent Churn Risk</span>
+                              <span className="text-[9px] font-bold text-earth-clay uppercase tracking-wider">Falcon Sentinel Agent</span>
+                            </div>
+                          </div>
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] font-extrabold text-earth-clay uppercase">View accounts →</span>
                             <EyeOff className="w-4 h-4 text-status-risk" />
@@ -746,7 +752,7 @@ Is there a specific account or recent system event you would like me to analyze?
                                     window.open(`https://wa.me/60162897881?text=${encodeURIComponent(text)}`, '_blank');
                                   }
                                   if (yuningRecipient) {
-                                    window.open(`https://wa.me/60122293817?text=${encodeURIComponent(text)}`, '_blank');
+                                    window.open(`https://wa.me/60162897881?text=${encodeURIComponent(text)}`, '_blank');
                                   }
                                 }
 

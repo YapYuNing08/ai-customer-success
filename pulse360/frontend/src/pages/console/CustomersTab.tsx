@@ -29,15 +29,32 @@ export function CustomersTab(props: any) {
                   />
                 ) : (
                   <>
-                    {/* Back to the dashboard after drilling in via the Silent Churn KPI card */}
-                    {silentDrilldown && (
-                      <button
-                        onClick={onBackFromSilent}
-                        className="flex items-center gap-2 text-xs font-bold text-earth-cocoa/80 hover:text-earth-clay transition-colors self-start cursor-pointer animate-fadeIn"
-                      >
-                        <ArrowLeft className="w-4 h-4" />
-                        Back to Dashboard
-                      </button>
+                    {/* Silent-churn drilldown: Falcon Sentinel Agent guides the CSM through the quietly disengaging accounts */}
+                    {(silentDrilldown || filterRisk === 'silent') && (
+                      <div className="flex flex-col gap-3 w-full animate-fadeIn">
+                        {/* Back to the dashboard after drilling in via the Silent Churn KPI card */}
+                        {silentDrilldown && (
+                          <button
+                            onClick={onBackFromSilent}
+                            className="flex items-center gap-2 text-xs font-bold text-earth-cocoa/80 hover:text-earth-clay transition-colors self-start cursor-pointer"
+                          >
+                            <ArrowLeft className="w-4 h-4" />
+                            Back to Dashboard
+                          </button>
+                        )}
+                        <div className="bg-[#efe9d2]/50 border border-earth-sage/40 rounded-2xl p-4 flex items-start gap-3.5 shadow-sm">
+                          <img src="/falcon-icon.png" alt="Falcon Sentinel Agent" className="w-11 h-11 object-contain shrink-0" />
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h3 className="text-sm font-extrabold text-earth-cocoa">Falcon Sentinel Agent</h3>
+                              <span className="text-[9px] font-bold uppercase bg-status-risk/15 text-status-risk px-1.5 py-0.5 rounded border border-status-risk/25 tracking-wider">Silent Churn Watch</span>
+                            </div>
+                            <p className="text-xs text-black font-normal leading-relaxed max-w-3xl">
+                              I've flagged <strong className="text-earth-cocoa">{filteredConsoleUsers.length} account{filteredConsoleUsers.length === 1 ? '' : 's'}</strong> that are quietly disengaging — low logins and no support tickets raised, so they never surface in your usual high-risk list. Reach out before they leave without a word.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
                     )}
                     {/* Customers View */}
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 w-full animate-fadeIn">

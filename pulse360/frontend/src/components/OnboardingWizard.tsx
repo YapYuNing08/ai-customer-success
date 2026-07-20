@@ -3,9 +3,11 @@ import { Bot, Check, Sparkles, X } from 'lucide-react';
 
 // Scripted triggers for the AI interventions — deterministic by design, not
 // behavioral ML. The agent pops up ONLY when one of these fires:
-//   • the same control is clicked REPEAT_CLICK_THRESHOLD times (confusion), or
+//   • the same control is clicked REPEAT_CLICK_THRESHOLD times (confusion) —
+//     fires at most once per step, or
 //   • no mouse/click activity for IDLE_TRIGGER_MS while a choice is pending
-//     (hesitation). Each step's helper fires at most once.
+//     (hesitation) — re-fires every time the customer goes idle again, so a
+//     customer who dismisses the guide and keeps hesitating is helped again.
 const IDLE_TRIGGER_MS = 5 * 1000;
 const REPEAT_CLICK_THRESHOLD = 3;
 
@@ -170,12 +172,22 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
   const clickCounts = useRef<Record<string, number>>({});
   const lastActivity = useRef(Date.now());
 
-  const fireHelper = (topic: HelperState['topic'], trigger: 'idle' | 'clicks', detail: string) => {
-    if (helperShown.current[topic] || helper) return;
+  const fireHelper = (topic: HelperState['topic'], trigger: 'idle' | 'clicks', detail: string, { once = true } = {}) => {
+    // Never stack two popups; the click trigger also respects the once-per-step
+    // gate, but the idle trigger passes once:false so it can re-fire on repeated
+    // hesitation.
+    if (helper || (once && helperShown.current[topic])) return;
     helperShown.current[topic] = true;
     setHelper({ topic, trigger });
     setInterventions(n => n + 1);
-    addTelemetry(`AI Onboarding Agent intervened for ${displayName}: ${detail}`);
+    addTelemetry(`Falcon Guide Agent intervened for ${displayName}: ${detail}`);
+  };
+
+  // Dismissing the guide counts as activity — restart the idle clock so it
+  // takes another full IDLE_TRIGGER_MS of hesitation before it pops again.
+  const dismissHelper = () => {
+    lastActivity.current = Date.now();
+    setHelper(null);
   };
 
   const emailValid = /^\S+@\S+\.\S+$/.test(email.trim());
@@ -206,7 +218,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
     const check = setInterval(() => {
       if (Date.now() - lastActivity.current < IDLE_TRIGGER_MS) return;
       const topic = STEP_TOPICS[step];
-      if (topic) fireHelper(topic, 'idle', `idle ${IDLE_TRIGGER_MS / 1000}s on step ${step}.`);
+      if (topic) fireHelper(topic, 'idle', `idle ${IDLE_TRIGGER_MS / 1000}s on step ${step}.`, { once: false });
     }, 500);
     return () => clearInterval(check);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -220,27 +232,27 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
     setLifestyle(key);
     if (isFirstPick) {
       setInterventions(n => n + 1);
-      addTelemetry(`AI Onboarding Agent auto-configured preferences for ${displayName} ("${LIFESTYLE_CONFIG[key].label}").`);
+      addTelemetry(`Falcon Guide Agent auto-configured preferences for ${displayName} ("${LIFESTYLE_CONFIG[key].label}").`);
     }
   };
 
   const radioClass = (selected: boolean) =>
-    `flex items-start gap-3 p-3.5 rounded-xl border text-left cursor-pointer transition-all w-full ${
+    `flex items-start gap-3 p-4 rounded-xl border text-left cursor-pointer transition-all w-full ${
       selected
         ? 'bg-earth-cocoa text-earth-bg border-earth-cocoa shadow-sm'
         : 'bg-earth-bg/60 text-earth-cocoa border-earth-sage/35 hover:border-earth-clay/50'
     }`;
 
   const pillClass = (selected: boolean) =>
-    `px-3 py-2 rounded-xl border text-[10px] font-bold cursor-pointer transition-all ${
+    `px-4 py-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
       selected
         ? 'bg-earth-cocoa text-earth-bg border-earth-cocoa shadow-sm'
         : 'bg-earth-bg/60 text-earth-cocoa border-earth-sage/35 hover:border-earth-clay/50'
     }`;
 
   const aiBadge = (onDark: boolean) => (
-    <span className={`text-[8px] uppercase tracking-wider font-extrabold px-1.5 py-0.5 rounded-full flex items-center gap-1 ${onDark ? 'bg-earth-bg/20 text-earth-bg' : 'bg-earth-clay/15 text-earth-clay border border-earth-clay/30'}`}>
-      <Sparkles className="w-2.5 h-2.5" /> AI Recommended
+    <span className={`text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 ${onDark ? 'bg-earth-bg/20 text-earth-bg' : 'bg-earth-clay/15 text-earth-clay border border-earth-clay/30'}`}>
+      <Sparkles className="w-3 h-3" /> AI Recommended
     </span>
   );
 
@@ -249,58 +261,62 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
       className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center animate-fadeIn font-sans"
       onMouseMove={() => { lastActivity.current = Date.now(); }}
     >
-      <div className="bg-[#fcfaf2] border-2 border-earth-sage/40 rounded-3xl shadow-2xl max-w-2xl w-full mx-4 text-left flex flex-col animate-scaleUp text-earth-cocoa overflow-hidden relative">
+      <div className="bg-[#fcfaf2] border-2 border-earth-sage/40 rounded-3xl shadow-2xl max-w-3xl w-full mx-4 text-left flex flex-col animate-scaleUp text-earth-cocoa overflow-hidden relative">
 
-        {/* Header with progress */}
-        <div className="flex justify-between items-center px-6 pt-5 pb-3 border-b border-earth-sage/20">
-          <div>
-            <span className="text-[9px] uppercase font-bold text-earth-clay tracking-wider">Guided Setup — Step {step} of {TOTAL_STEPS}</span>
-            <div className="flex gap-1.5 mt-1.5">
-              {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map(n => (
-                <span key={n} className={`h-1.5 rounded-full transition-all duration-300 ${n <= step ? 'bg-earth-clay w-8' : 'bg-earth-sage/30 w-4'}`} />
-              ))}
+        {/* Header with agent identity + progress */}
+        <div className="flex justify-between items-center px-8 pt-6 pb-4 border-b border-earth-sage/20">
+          <div className="flex items-center gap-3.5">
+            <img src="/falcon-icon.png" alt="Falcon Guide Agent" className="w-12 h-12 object-contain shrink-0" />
+            <div className="flex flex-col leading-tight">
+              <h3 className="text-lg font-extrabold text-earth-cocoa">Falcon Guide Agent</h3>
+              <span className="text-[11px] uppercase font-bold text-earth-clay tracking-wider">Guided Setup — Step {step} of {TOTAL_STEPS}</span>
+              <div className="flex gap-1.5 mt-2">
+                {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map(n => (
+                  <span key={n} className={`h-1.5 rounded-full transition-all duration-300 ${n <= step ? 'bg-earth-clay w-9' : 'bg-earth-sage/30 w-4'}`} />
+                ))}
+              </div>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-earth-sage/15 text-earth-cocoa/60 cursor-pointer transition-all">
-            <X className="w-4 h-4" />
+          <button onClick={onClose} className="p-2 rounded-lg hover:bg-earth-sage/15 text-earth-cocoa/60 cursor-pointer transition-all self-start">
+            <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Step body */}
-        <div className="px-8 py-8 flex flex-col gap-4 min-h-[400px]">
+        <div className="px-9 py-9 flex flex-col gap-5 min-h-[460px]">
 
           {step === 1 && (
             <div className="flex flex-col gap-4 items-center text-center my-auto">
-              <span className="text-3xl">📡</span>
-              <h2 className="text-xl font-extrabold font-serif text-earth-cocoa">Welcome to Falcon360 Telecom!</h2>
-              <p className="text-xs text-earth-cocoa/75">Let's get your account ready.</p>
-              <span className="text-[10px] font-bold text-earth-clay bg-earth-clay/10 border border-earth-clay/25 px-3 py-1 rounded-full uppercase tracking-wider">
+              <span className="text-5xl">📡</span>
+              <h2 className="text-2xl font-extrabold font-serif text-earth-cocoa">Welcome to Falcon360 Telecom!</h2>
+              <p className="text-sm text-earth-cocoa/75">Let's get your account ready.</p>
+              <span className="text-xs font-bold text-earth-clay bg-earth-clay/10 border border-earth-clay/25 px-3.5 py-1.5 rounded-full uppercase tracking-wider">
                 Estimated time: 3 minutes
               </span>
               {mode === 'signup' && (
-                <div className="flex flex-col gap-2 w-full max-w-[280px] mt-1">
+                <div className="flex flex-col gap-2.5 w-full max-w-[340px] mt-1">
                   <input
                     type="text"
                     placeholder="Your name"
                     value={name}
                     onChange={(e) => { lastActivity.current = Date.now(); setName(e.target.value); }}
-                    className="w-full bg-earth-bg border border-earth-sage/35 rounded-xl px-3.5 py-2.5 text-xs text-earth-cocoa font-bold outline-none focus:border-earth-clay placeholder-earth-cocoa/45 text-center"
+                    className="w-full bg-earth-bg border border-earth-sage/35 rounded-xl px-4 py-3 text-sm text-earth-cocoa font-bold outline-none focus:border-earth-clay placeholder-earth-cocoa/45 text-center"
                   />
                   <input
                     type="email"
                     placeholder="Email"
                     value={email}
                     onChange={(e) => { lastActivity.current = Date.now(); setEmail(e.target.value); }}
-                    className="w-full bg-earth-bg border border-earth-sage/35 rounded-xl px-3.5 py-2.5 text-xs text-earth-cocoa font-bold outline-none focus:border-earth-clay placeholder-earth-cocoa/45 text-center"
+                    className="w-full bg-earth-bg border border-earth-sage/35 rounded-xl px-4 py-3 text-sm text-earth-cocoa font-bold outline-none focus:border-earth-clay placeholder-earth-cocoa/45 text-center"
                   />
                   <input
                     type="tel"
                     placeholder="Mobile number — +60 12-345 6789"
                     value={phone}
                     onChange={(e) => { lastActivity.current = Date.now(); setPhone(e.target.value); }}
-                    className="w-full bg-earth-bg border border-earth-sage/35 rounded-xl px-3.5 py-2.5 text-xs text-earth-cocoa font-bold outline-none focus:border-earth-clay placeholder-earth-cocoa/45 text-center"
+                    className="w-full bg-earth-bg border border-earth-sage/35 rounded-xl px-4 py-3 text-sm text-earth-cocoa font-bold outline-none focus:border-earth-clay placeholder-earth-cocoa/45 text-center"
                   />
-                  <span className="text-[9px] text-earth-cocoa/55">We'll use your email for e-billing and your number for the SIM activation. Porting an existing number? Just enter it — we'll handle the transfer.</span>
+                  <span className="text-[11px] text-earth-cocoa/55">We'll use your email for e-billing and your number for the SIM activation. Porting an existing number? Just enter it — we'll handle the transfer.</span>
                 </div>
               )}
               {/* Not disabled= so dead-clicks still count toward the confusion
@@ -310,7 +326,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                   registerClick('Start Setup');
                   if (detailsComplete) setStep(2);
                 }}
-                className={`font-extrabold text-xs px-8 py-2.5 rounded-xl transition-all mt-2 ${
+                className={`font-extrabold text-sm px-9 py-3 rounded-xl transition-all mt-2 ${
                   !detailsComplete
                     ? 'bg-earth-sage/20 text-earth-cocoa/40 cursor-not-allowed'
                     : 'bg-earth-cocoa hover:bg-earth-clay text-earth-bg cursor-pointer shadow-sm'
@@ -324,14 +340,14 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
           {step === 2 && (
             <>
               <div>
-                <h2 className="text-base font-extrabold text-earth-cocoa">Tell Us About You</h2>
-                <p className="text-xs text-earth-cocoa/70 mt-1 flex items-center gap-1.5">
-                  <Bot className="w-3.5 h-3.5 text-earth-clay" /> Three quick questions so I can suggest the right plan for you.
+                <h2 className="text-lg font-extrabold text-earth-cocoa">Tell Us About You</h2>
+                <p className="text-sm text-earth-cocoa/70 mt-1 flex items-center gap-1.5">
+                  <Bot className="w-4 h-4 text-earth-clay" /> Three quick questions so I can suggest the right plan for you.
                 </p>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-cocoa/70">What best describes you?</span>
-                <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-earth-cocoa/70">What best describes you?</span>
+                <div className="flex flex-wrap gap-2">
                   {(Object.keys(OCCUPATION_OPTIONS) as OccupationKey[]).map(key => (
                     <button key={key} className={pillClass(occupation === key)} onClick={() => { registerClick(OCCUPATION_OPTIONS[key]); setOccupation(key); }}>
                       {OCCUPATION_OPTIONS[key]}
@@ -339,9 +355,9 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                   ))}
                 </div>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-cocoa/70">How do you usually get online?</span>
-                <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-earth-cocoa/70">How do you usually get online?</span>
+                <div className="flex flex-wrap gap-2">
                   {(Object.keys(DATA_USAGE_OPTIONS) as DataUsageKey[]).map(key => (
                     <button key={key} className={pillClass(dataUsage === key)} onClick={() => { registerClick(DATA_USAGE_OPTIONS[key]); setDataUsage(key); }}>
                       {DATA_USAGE_OPTIONS[key]}
@@ -349,9 +365,9 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                   ))}
                 </div>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-cocoa/70">Where do you usually stay?</span>
-                <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-col gap-2">
+                <span className="text-xs font-extrabold uppercase tracking-wider text-earth-cocoa/70">Where do you usually stay?</span>
+                <div className="flex flex-wrap gap-2">
                   {(Object.keys(LOCATION_OPTIONS) as LocationKey[]).map(key => (
                     <button key={key} className={pillClass(location === key)} onClick={() => { registerClick(LOCATION_OPTIONS[key]); setLocation(key); }}>
                       {LOCATION_OPTIONS[key]}
@@ -366,7 +382,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                   registerClick('Continue');
                   if (profileComplete) setStep(3);
                 }}
-                className={`font-extrabold text-xs px-6 py-2.5 rounded-xl transition-all mt-auto ${
+                className={`font-extrabold text-sm px-7 py-3 rounded-xl transition-all mt-auto ${
                   profileComplete
                     ? 'bg-earth-cocoa hover:bg-earth-clay text-earth-bg cursor-pointer shadow-sm'
                     : 'bg-earth-sage/20 text-earth-cocoa/40 cursor-not-allowed'
@@ -380,45 +396,45 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
           {step === 3 && (
             <>
               <div>
-                <h2 className="text-base font-extrabold text-earth-cocoa">Choose Your Package</h2>
-                <p className="text-xs text-earth-cocoa/70 mt-1 flex items-center gap-1.5">
-                  <Bot className="w-3.5 h-3.5 text-earth-clay" /> Pick a plan — you can change it anytime, no lock-in.
+                <h2 className="text-lg font-extrabold text-earth-cocoa">Choose Your Package</h2>
+                <p className="text-sm text-earth-cocoa/70 mt-1 flex items-center gap-1.5">
+                  <Bot className="w-4 h-4 text-earth-clay" /> Pick a plan — you can change it anytime, no lock-in.
                 </p>
               </div>
               {suggestion && (
-                <div className="bg-earth-clay/8 border border-earth-clay/25 rounded-xl p-3 flex flex-col gap-1.5 animate-fadeIn">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3" /> AI Suggestion: {suggestion.plan} — RM{PLAN_OPTIONS[suggestion.plan].price}/mo
+                <div className="bg-earth-clay/8 border border-earth-clay/25 rounded-xl p-3.5 flex flex-col gap-2 animate-fadeIn">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-earth-clay flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" /> AI Suggestion: {suggestion.plan} — RM{PLAN_OPTIONS[suggestion.plan].price}/mo
                   </span>
-                  <p className="text-[10px] text-earth-cocoa leading-relaxed">{suggestion.reason}</p>
+                  <p className="text-xs text-earth-cocoa leading-relaxed">{suggestion.reason}</p>
                   {plan !== suggestion.plan && (
                     <button
                       onClick={() => {
                         registerClick('Use suggested plan');
                         setPlan(suggestion.plan);
-                        addTelemetry(`AI Onboarding Agent suggested the ${suggestion.plan} plan to ${displayName} (profile-based).`);
+                        addTelemetry(`Falcon Guide Agent suggested the ${suggestion.plan} plan to ${displayName} (profile-based).`);
                       }}
-                      className="self-start bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-[10px] px-3 py-1.5 rounded-lg transition-all cursor-pointer"
+                      className="self-start bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-xs px-3.5 py-2 rounded-lg transition-all cursor-pointer"
                     >
                       Use suggested plan
                     </button>
                   )}
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 {(Object.keys(PLAN_OPTIONS) as PlanKey[]).map(key => (
                   <button
                     key={key}
                     className={radioClass(plan === key)}
                     onClick={() => { registerClick(`${key} plan`); setPlan(key); }}
                   >
-                    <span className="text-[11px] font-bold leading-tight flex flex-col items-start gap-1">
+                    <span className="text-sm font-bold leading-tight flex flex-col items-start gap-1">
                       <span className="flex items-center gap-2">
                         {key}
                         {suggestion?.plan === key && aiBadge(plan === key)}
                       </span>
-                      <span className={`text-[13px] font-extrabold ${plan === key ? 'text-earth-bg' : 'text-earth-clay'}`}>RM{PLAN_OPTIONS[key].price}/mo</span>
-                      <span className={`text-[9px] font-medium leading-snug ${plan === key ? 'text-earth-bg/80' : 'text-earth-cocoa/65'}`}>{PLAN_OPTIONS[key].blurb}</span>
+                      <span className={`text-base font-extrabold ${plan === key ? 'text-earth-bg' : 'text-earth-clay'}`}>RM{PLAN_OPTIONS[key].price}/mo</span>
+                      <span className={`text-[11px] font-medium leading-snug ${plan === key ? 'text-earth-bg/80' : 'text-earth-cocoa/65'}`}>{PLAN_OPTIONS[key].blurb}</span>
                     </span>
                   </button>
                 ))}
@@ -430,7 +446,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                   registerClick('Continue');
                   if (plan) setStep(4);
                 }}
-                className={`font-extrabold text-xs px-6 py-2.5 rounded-xl transition-all mt-auto ${
+                className={`font-extrabold text-sm px-7 py-3 rounded-xl transition-all mt-auto ${
                   plan
                     ? 'bg-earth-cocoa hover:bg-earth-clay text-earth-bg cursor-pointer shadow-sm'
                     : 'bg-earth-sage/20 text-earth-cocoa/40 cursor-not-allowed'
@@ -444,21 +460,21 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
           {step === 4 && (
             <>
               <div>
-                <h2 className="text-base font-extrabold text-earth-cocoa">Activate SIM</h2>
-                <p className="text-xs text-earth-cocoa/70 mt-1">Choose activation</p>
+                <h2 className="text-lg font-extrabold text-earth-cocoa">Activate SIM</h2>
+                <p className="text-sm text-earth-cocoa/70 mt-1">Choose activation</p>
               </div>
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-3">
                 <button className={radioClass(simChoice === 'physical')} onClick={() => { registerClick('Physical SIM'); setSimChoice('physical'); }}>
-                  <span className={`w-4 h-4 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center ${simChoice === 'physical' ? 'border-earth-bg' : 'border-earth-sage'}`}>
-                    {simChoice === 'physical' && <span className="w-2 h-2 rounded-full bg-earth-bg" />}
+                  <span className={`w-5 h-5 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center ${simChoice === 'physical' ? 'border-earth-bg' : 'border-earth-sage'}`}>
+                    {simChoice === 'physical' && <span className="w-2.5 h-2.5 rounded-full bg-earth-bg" />}
                   </span>
-                  <span className="text-xs font-bold">Physical SIM</span>
+                  <span className="text-sm font-bold">Physical SIM</span>
                 </button>
                 <button className={radioClass(simChoice === 'esim')} onClick={() => { registerClick('eSIM'); setSimChoice('esim'); }}>
-                  <span className={`w-4 h-4 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center ${simChoice === 'esim' ? 'border-earth-bg' : 'border-earth-sage'}`}>
-                    {simChoice === 'esim' && <span className="w-2 h-2 rounded-full bg-earth-bg" />}
+                  <span className={`w-5 h-5 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center ${simChoice === 'esim' ? 'border-earth-bg' : 'border-earth-sage'}`}>
+                    {simChoice === 'esim' && <span className="w-2.5 h-2.5 rounded-full bg-earth-bg" />}
                   </span>
-                  <span className="text-xs font-bold flex items-center gap-2">
+                  <span className="text-sm font-bold flex items-center gap-2">
                     eSIM
                     {aiRecommendedSim && aiBadge(simChoice === 'esim')}
                   </span>
@@ -471,7 +487,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                   registerClick('Continue');
                   if (simChoice) setStep(5);
                 }}
-                className={`font-extrabold text-xs px-6 py-2.5 rounded-xl transition-all mt-auto ${
+                className={`font-extrabold text-sm px-7 py-3 rounded-xl transition-all mt-auto ${
                   simChoice
                     ? 'bg-earth-cocoa hover:bg-earth-clay text-earth-bg cursor-pointer shadow-sm'
                     : 'bg-earth-sage/20 text-earth-cocoa/40 cursor-not-allowed'
@@ -485,19 +501,19 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
           {step === 5 && (
             <>
               <div>
-                <h2 className="text-base font-extrabold text-earth-cocoa">Configure Preferences</h2>
-                <p className="text-xs text-earth-cocoa/70 mt-1 flex items-center gap-1.5">
-                  <Bot className="w-3.5 h-3.5 text-earth-clay" /> Where do you usually use your phone?
+                <h2 className="text-lg font-extrabold text-earth-cocoa">Configure Preferences</h2>
+                <p className="text-sm text-earth-cocoa/70 mt-1 flex items-center gap-1.5">
+                  <Bot className="w-4 h-4 text-earth-clay" /> Where do you usually use your phone?
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2.5">
                 {(Object.keys(LIFESTYLE_CONFIG) as LifestyleKey[]).map(key => (
                   <button
                     key={key}
                     className={radioClass(lifestyle === key)}
                     onClick={() => { registerClick(LIFESTYLE_CONFIG[key].label); selectLifestyle(key); }}
                   >
-                    <span className="text-[11px] font-bold leading-tight flex flex-col items-start gap-1">
+                    <span className="text-sm font-bold leading-tight flex flex-col items-start gap-1">
                       {LIFESTYLE_CONFIG[key].label}
                       {aiRecommendedPref === key && aiBadge(lifestyle === key)}
                     </span>
@@ -506,21 +522,21 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
               </div>
 
               {config && (
-                <div className="bg-earth-clay/8 border border-earth-clay/25 rounded-xl p-3.5 flex flex-col gap-2 animate-fadeIn">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-earth-clay flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3" /> AI configured for you
+                <div className="bg-earth-clay/8 border border-earth-clay/25 rounded-xl p-4 flex flex-col gap-2.5 animate-fadeIn">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-earth-clay flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5" /> AI configured for you
                   </span>
                   {[
                     ['Roaming', config.roaming],
                     ['Notifications', config.notifications],
                     ['Data alerts', config.dataAlerts],
                   ].map(([name, value]) => (
-                    <div key={name} className="flex items-start gap-2 text-[10px] text-earth-cocoa leading-relaxed">
-                      <Check className="w-3 h-3 text-[#276B2B] mt-0.5 shrink-0" />
+                    <div key={name} className="flex items-start gap-2 text-xs text-earth-cocoa leading-relaxed">
+                      <Check className="w-3.5 h-3.5 text-[#276B2B] mt-0.5 shrink-0" />
                       <span><strong>{name}:</strong> {value}</span>
                     </div>
                   ))}
-                  <span className="text-[9px] text-earth-cocoa/55">You can change any of these later in Settings.</span>
+                  <span className="text-[11px] text-earth-cocoa/55">You can change any of these later in Settings.</span>
                 </div>
               )}
 
@@ -540,7 +556,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                     });
                   }
                 }}
-                className={`font-extrabold text-xs px-6 py-2.5 rounded-xl transition-all mt-auto ${
+                className={`font-extrabold text-sm px-7 py-3 rounded-xl transition-all mt-auto ${
                   lifestyle
                     ? 'bg-earth-cocoa hover:bg-earth-clay text-earth-bg cursor-pointer shadow-sm'
                     : 'bg-earth-sage/20 text-earth-cocoa/40 cursor-not-allowed'
@@ -553,26 +569,27 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
         </div>
 
         {/* AI monitoring strip — makes the scripted agent visible for the demo */}
-        <div className="px-8 py-2.5 bg-earth-cocoa/5 border-t border-earth-sage/20 flex items-center gap-4 text-[9px] font-bold text-earth-cocoa/60">
-          <span className="flex items-center gap-1.5 text-earth-clay">
-            <Bot className="w-3 h-3" />
-            AI Onboarding Success Agent monitoring
-            <span className="w-1.5 h-1.5 rounded-full bg-[#276B2B] animate-pulse" />
+        <div className="px-9 py-3 bg-earth-cocoa/5 border-t border-earth-sage/20 flex items-center gap-4 text-[11px] font-bold text-earth-cocoa/60">
+          <span className="flex items-center gap-2 text-earth-clay">
+            <img src="/falcon-icon.png" alt="Falcon Guide Agent" className="w-5 h-5 object-contain" />
+            Falcon Guide Agent monitoring
+            <span className="w-2 h-2 rounded-full bg-[#276B2B] animate-pulse" />
           </span>
         </div>
 
         {/* AI intervention popup — appears ONLY when a trigger fires */}
         {helper && (
           <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px] flex items-center justify-center animate-fadeIn rounded-3xl">
-            <div className="bg-[#fcfaf2] border-2 border-earth-clay/50 rounded-2xl p-5 max-w-[320px] w-full mx-4 flex flex-col gap-3 animate-agentPop agent-glow">
+            <div className="bg-[#fcfaf2] border-2 border-earth-clay/50 rounded-2xl p-6 max-w-[380px] w-full mx-4 flex flex-col gap-3.5 animate-agentPop agent-glow">
               <div className="flex items-start gap-3">
-                <div className="p-2.5 rounded-xl shrink-0 bg-earth-clay/10 text-earth-clay border border-earth-clay/25 relative">
-                  <Bot className="w-4 h-4" />
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-[#276B2B] border-2 border-[#fcfaf2] animate-pulse" />
+                <div className="p-1.5 rounded-xl shrink-0 bg-earth-clay/10 border border-earth-clay/25 relative">
+                  <img src="/falcon-icon.png" alt="Falcon Guide Agent" className="w-9 h-9 object-contain" />
+                  <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-[#276B2B] border-2 border-[#fcfaf2] animate-pulse" />
                 </div>
                 <div>
-                  <h3 className="font-extrabold text-sm leading-tight">👋 Hi {firstName}!</h3>
-                  <p className="text-[11px] text-earth-cocoa/75 mt-1">
+                  <span className="text-[11px] font-extrabold uppercase tracking-wider text-earth-clay">Falcon Guide Agent</span>
+                  <h3 className="font-extrabold text-base leading-tight">👋 Hi {firstName}!</h3>
+                  <p className="text-xs text-earth-cocoa/75 mt-1">
                     {helper.trigger === 'clicks'
                       ? "Looks like that button isn't doing what you expected — let me help."
                       : helper.topic === 'details'
@@ -585,24 +602,24 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
               </div>
 
               {helper.topic === 'details' ? (
-                <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-2.5 text-[9px] text-earth-cocoa leading-relaxed">
-                  <span className="font-extrabold text-[10px] block mb-1">Just three things to get you connected</span>
+                <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-3 text-[11px] text-earth-cocoa leading-relaxed">
+                  <span className="font-extrabold text-xs block mb-1">Just three things to get you connected</span>
                   • <strong>Name</strong> — how we'll address you on your account<br />
                   • <strong>Email</strong> — for your e-bill and account recovery<br />
                   • <strong>Mobile number</strong> — the number to activate (or port over from your current provider)<br />
                   <span className="block mt-1 text-earth-cocoa/65">Your details stay private — we only use them to set up your line.</span>
                 </div>
               ) : helper.topic === 'profile' ? (
-                <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-2.5 text-[9px] text-earth-cocoa leading-relaxed">
-                  <span className="font-extrabold text-[10px] block mb-1">Why I'm asking</span>
+                <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-3 text-[11px] text-earth-cocoa leading-relaxed">
+                  <span className="font-extrabold text-xs block mb-1">Why I'm asking</span>
                   • <strong>What you do</strong> — students & retirees usually need lighter plans; businesses need support & SLA<br />
                   • <strong>Wi-Fi vs mobile data</strong> — the biggest driver of how much data you actually need<br />
                   • <strong>Where you stay</strong> — matches you to our 5G or 4G coverage strengths<br />
                   <span className="block mt-1 text-earth-cocoa/65">Answer all three and I'll suggest a plan on the next step — nothing is locked in.</span>
                 </div>
               ) : helper.topic === 'plan' ? (
-                <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-2.5 text-[9px] text-earth-cocoa leading-relaxed">
-                  <span className="font-extrabold text-[10px] block mb-1">Quick guide</span>
+                <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-3 text-[11px] text-earth-cocoa leading-relaxed">
+                  <span className="font-extrabold text-xs block mb-1">Quick guide</span>
                   • <strong>Starter</strong> — light use, mostly Wi-Fi<br />
                   • <strong>Growth</strong> — everyday streaming & social, best value<br />
                   • <strong>Pro</strong> — heavy data, hotspot, 5G priority<br />
@@ -614,22 +631,22 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                   </span>
                 </div>
               ) : helper.topic === 'sim' ? (
-                <div className="grid grid-cols-2 gap-2 text-[9px] text-earth-cocoa leading-relaxed">
-                  <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-2.5">
-                    <span className="font-extrabold text-[10px] block mb-1">Physical SIM</span>
+                <div className="grid grid-cols-2 gap-2.5 text-[11px] text-earth-cocoa leading-relaxed">
+                  <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-3">
+                    <span className="font-extrabold text-xs block mb-1">Physical SIM</span>
                     • Insert into phone<br />
                     • Better for switching devices
                   </div>
-                  <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-2.5">
-                    <span className="font-extrabold text-[10px] block mb-1">eSIM</span>
+                  <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-3">
+                    <span className="font-extrabold text-xs block mb-1">eSIM</span>
                     • No physical card<br />
                     • Activate instantly<br />
                     • Great for newer phones
                   </div>
                 </div>
               ) : (
-                <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-2.5 text-[9px] text-earth-cocoa leading-relaxed">
-                  <span className="font-extrabold text-[10px] block mb-1">Quick guide</span>
+                <div className="bg-earth-bg/60 border border-earth-sage/25 rounded-xl p-3 text-[11px] text-earth-cocoa leading-relaxed">
+                  <span className="font-extrabold text-xs block mb-1">Quick guide</span>
                   • <strong>Mostly in Malaysia</strong> — local use, roaming stays off<br />
                   • <strong>Travel often</strong> — roaming pass ready when you land<br />
                   • <strong>Business travel</strong> — priority 5G + expense summaries<br />
@@ -638,33 +655,33 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                 </div>
               )}
 
-              <div className="flex flex-col gap-1.5">
+              <div className="flex flex-col gap-2">
                 {helper.topic !== 'details' && helper.topic !== 'profile' && (
                 <button
                   onClick={() => {
                     if (helper.topic === 'plan') {
                       const recommended = suggestion?.plan || 'Growth';
                       setPlan(recommended);
-                      addTelemetry(`AI Onboarding Agent recommended the ${recommended} plan to ${displayName}.`);
+                      addTelemetry(`Falcon Guide Agent recommended the ${recommended} plan to ${displayName}.`);
                     } else if (helper.topic === 'sim') {
                       setSimChoice('esim');
                       setAiRecommendedSim(true);
-                      addTelemetry(`AI Onboarding Agent recommended eSIM to ${displayName}.`);
+                      addTelemetry(`Falcon Guide Agent recommended eSIM to ${displayName}.`);
                     } else {
                       setAiRecommendedPref('malaysia');
                       selectLifestyle('malaysia');
-                      addTelemetry(`AI Onboarding Agent recommended "Mostly in Malaysia" defaults to ${displayName}.`);
+                      addTelemetry(`Falcon Guide Agent recommended "Mostly in Malaysia" defaults to ${displayName}.`);
                     }
-                    setHelper(null);
+                    dismissHelper();
                   }}
-                  className="w-full bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-[11px] py-2 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                  className="w-full bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-xs py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  <Sparkles className="w-3 h-3" /> Recommend for me
+                  <Sparkles className="w-3.5 h-3.5" /> Recommend for me
                 </button>
                 )}
                 <button
-                  onClick={() => setHelper(null)}
-                  className="w-full bg-transparent hover:bg-earth-sage/10 text-earth-cocoa/70 font-bold text-[11px] py-1.5 rounded-xl transition-all cursor-pointer border border-earth-sage/30"
+                  onClick={dismissHelper}
+                  className="w-full bg-transparent hover:bg-earth-sage/10 text-earth-cocoa/70 font-bold text-xs py-2 rounded-xl transition-all cursor-pointer border border-earth-sage/30"
                 >
                   {helper.topic === 'details' || helper.topic === 'profile' ? 'Got it, thanks' : 'Continue'}
                 </button>

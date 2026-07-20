@@ -14,6 +14,12 @@ import { useEffect } from 'react';
 // OnboardingWizard.tsx (see CLAUDE.md hard rules).
 const planMrr = { Starter: 50, Growth: 100, Pro: 200, Enterprise: 500 } as const;
 
+// DEMO-ONLY: hardcoded hero customer, "after" state. Yu Ning is the success
+// story — she took Falcon Coach's recommendation to explore the Pro Plan
+// benefits she wasn't using, and it turned the account around: high usage,
+// strong feature adoption, low churn risk. The drill-down demo shows what a
+// healthy, well-guided customer looks like (green SHAP factors, a positive
+// activity timeline, and a simulator with little left to rescue). Not model output.
 const buildYuNingUser = (): ActiveUser => ({
   id: "cus_yuning",
   name: "Yu Ning",
@@ -24,27 +30,48 @@ const buildYuNingUser = (): ActiveUser => ({
   lng: 101.6869,
   plan: 'Pro',
   mrr: planMrr.Pro,
-  healthScore: 45,
-  churnProbability: 55,
-  warningFlags: ['Using It Less'],
+  healthScore: 91,
+  churnProbability: 6,
+  warningFlags: [],
   metrics: {
-    usageVelocity: 0.45,
-    featureAdoption: 0.35,
-    frictionIndex: 5,
+    usageVelocity: 0.88,
+    featureAdoption: 0.86,
+    frictionIndex: 1,
     failedPayments: 0,
-    daysSinceOnboarding: 45,
+    daysSinceOnboarding: 52,
   },
+  // feature keys drive the plain-language explanations in the "Why Is This
+  // Customer At Risk?" panel (explainFactor in ActiveUserInsight). Negative
+  // impact = keeping the customer loyal (green) — all of Yu Ning's factors are
+  // now retention drivers after she adopted the plan's features.
   churnFactors: [
-    { name: 'Low feature usage', impact: 20 },
-    { name: 'Low login frequency', impact: 15 },
-    { name: 'Failed payment warning', impact: 10 },
+    { feature: 'feature_usage', name: 'Features They Use', impact: -34 },
+    { feature: 'login_frequency', name: 'How Often They Log In', impact: -27 },
+    { feature: 'feedback_score', name: 'Feedback Score', impact: -19 },
+    { feature: 'payment_status', name: 'Payment Status', impact: -12 },
+    { feature: 'support_ticket_count', name: 'Support Requests', impact: -8 },
   ],
   activityLogs: [
-    { date: '2026-07-18', type: 'login', details: 'Logged in for 1 minute' },
-    { date: '2026-07-16', type: 'feature_use', details: 'Used basic dashboard' },
+    { date: '2026-07-19', type: 'feature_use', details: 'Explored the personalized Pro Plan tutorial and activated Advanced Analytics, Automation Workflows, and Priority Roaming.' },
+    { date: '2026-07-18', type: 'feature_use', details: 'Built her first automation workflow — weekly reports now run on their own.' },
+    { date: '2026-07-16', type: 'login', details: 'Logged in every day this week — usage up 3x since exploring the plan benefits.' },
+    { date: '2026-07-14', type: 'payment_success', details: 'Updated her card and paid the RM200 invoice — account back in good standing.' },
+    { date: '2026-07-12', type: 'feature_use', details: 'Adopted the Analytics dashboard as a daily habit — feature usage now at 86%.' },
+    { date: '2026-07-10', type: 'support_resolve', details: 'Earlier login issue resolved on first response — rated the experience 9/10.' },
   ],
   pastJourneys: [],
-  state: 'disengaged',
+  state: 'active',
+  // Baseline signals so the What-If simulator runs fully client-side for this
+  // hardcoded customer (no backend row). Values line up with the metrics /
+  // SHAP factors above so an untouched run shows a true zero delta.
+  simSignals: {
+    login_frequency: 6.5,
+    feature_usage: 0.86,
+    monthly_usage_pct: 88,
+    support_ticket_count: 0,
+    feedback_score: 9.1,
+    payment_status: 'active',
+  },
 });
 
 function App() {

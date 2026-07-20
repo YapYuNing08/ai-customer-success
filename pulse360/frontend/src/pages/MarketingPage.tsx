@@ -24,7 +24,7 @@ export function MarketingPage(props: any) {
                 
                 {/* Glowing Badge */}
                 <div className="self-start bg-earth-sage/20 border border-earth-sage/40 text-earth-cocoa text-[10px] px-3 py-1 rounded-full font-extrabold uppercase tracking-widest shadow-sm">
-                  ⚡ Know Who's About to Leave — and Why
+                  ⚡ Know Who's About to Leave and Why
                 </div>
 
                 {/* Hero Heading */}
@@ -43,7 +43,7 @@ export function MarketingPage(props: any) {
                     onClick={scrollToConsole}
                     className="bg-earth-cocoa hover:bg-earth-clay text-earth-bg px-6 py-3.5 rounded-2xl text-sm font-bold shadow-lg shadow-earth-cocoa/25 transition-all duration-200 flex items-center gap-2 group cursor-pointer"
                   >
-                    <span>Launch Admin Console</span>
+                    <span>Launch CSM Dashboard</span>
                     <ChevronRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                   </button>
                   
