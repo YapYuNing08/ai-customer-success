@@ -3,9 +3,11 @@ import { Bot, Check, Sparkles, X } from 'lucide-react';
 
 // Scripted triggers for the AI interventions — deterministic by design, not
 // behavioral ML. The agent pops up ONLY when one of these fires:
-//   • the same control is clicked REPEAT_CLICK_THRESHOLD times (confusion), or
+//   • the same control is clicked REPEAT_CLICK_THRESHOLD times (confusion) —
+//     fires at most once per step, or
 //   • no mouse/click activity for IDLE_TRIGGER_MS while a choice is pending
-//     (hesitation). Each step's helper fires at most once.
+//     (hesitation) — re-fires every time the customer goes idle again, so a
+//     customer who dismisses the guide and keeps hesitating is helped again.
 const IDLE_TRIGGER_MS = 5 * 1000;
 const REPEAT_CLICK_THRESHOLD = 3;
 
@@ -170,12 +172,22 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
   const clickCounts = useRef<Record<string, number>>({});
   const lastActivity = useRef(Date.now());
 
-  const fireHelper = (topic: HelperState['topic'], trigger: 'idle' | 'clicks', detail: string) => {
-    if (helperShown.current[topic] || helper) return;
+  const fireHelper = (topic: HelperState['topic'], trigger: 'idle' | 'clicks', detail: string, { once = true } = {}) => {
+    // Never stack two popups; the click trigger also respects the once-per-step
+    // gate, but the idle trigger passes once:false so it can re-fire on repeated
+    // hesitation.
+    if (helper || (once && helperShown.current[topic])) return;
     helperShown.current[topic] = true;
     setHelper({ topic, trigger });
     setInterventions(n => n + 1);
     addTelemetry(`Falcon Guide Agent intervened for ${displayName}: ${detail}`);
+  };
+
+  // Dismissing the guide counts as activity — restart the idle clock so it
+  // takes another full IDLE_TRIGGER_MS of hesitation before it pops again.
+  const dismissHelper = () => {
+    lastActivity.current = Date.now();
+    setHelper(null);
   };
 
   const emailValid = /^\S+@\S+\.\S+$/.test(email.trim());
@@ -206,7 +218,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
     const check = setInterval(() => {
       if (Date.now() - lastActivity.current < IDLE_TRIGGER_MS) return;
       const topic = STEP_TOPICS[step];
-      if (topic) fireHelper(topic, 'idle', `idle ${IDLE_TRIGGER_MS / 1000}s on step ${step}.`);
+      if (topic) fireHelper(topic, 'idle', `idle ${IDLE_TRIGGER_MS / 1000}s on step ${step}.`, { once: false });
     }, 500);
     return () => clearInterval(check);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -660,7 +672,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                       selectLifestyle('malaysia');
                       addTelemetry(`Falcon Guide Agent recommended "Mostly in Malaysia" defaults to ${displayName}.`);
                     }
-                    setHelper(null);
+                    dismissHelper();
                   }}
                   className="w-full bg-earth-cocoa hover:bg-earth-clay text-earth-bg font-extrabold text-xs py-2.5 rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5"
                 >
@@ -668,7 +680,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                 </button>
                 )}
                 <button
-                  onClick={() => setHelper(null)}
+                  onClick={dismissHelper}
                   className="w-full bg-transparent hover:bg-earth-sage/10 text-earth-cocoa/70 font-bold text-xs py-2 rounded-xl transition-all cursor-pointer border border-earth-sage/30"
                 >
                   {helper.topic === 'details' || helper.topic === 'profile' ? 'Got it, thanks' : 'Continue'}

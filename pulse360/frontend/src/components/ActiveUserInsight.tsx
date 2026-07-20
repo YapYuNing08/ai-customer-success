@@ -14,6 +14,76 @@ interface ActiveUserInsightProps {
   onUpdateUser: (updatedUser: ActiveUser) => void;
 }
 
+// DEMO-ONLY: personalized feature-tutorial video the CSM's "Send Helpful
+// Tutorials" action links to (shown in the generated email/WhatsApp draft and
+// the customer's activity timeline). Kept in sync with the same constant in
+// ClientDashboardPage.tsx (Falcon Guide Agent).
+const FEATURE_TUTORIAL_VIDEO = 'https://www.youtube.com/watch?v=4d966u2XPuQ';
+
+// DEMO-ONLY: client-side What-If simulation for hardcoded local customers
+// (e.g. Yu Ning) that have no backend row, so POST /simulate would 404.
+// Mirrors the FastAPI heuristic fallback (_simulate_heuristic in
+// routers/simulate.py): each lever nudges churn by a fixed signed sensitivity,
+// applied against the customer's OWN baseline levers so an untouched run
+// yields a true zero delta.
+const _LOCAL_SENSITIVITY = {
+  login_frequency: -0.03,
+  feature_usage: -0.25,
+  monthly_usage_pct: -0.004,
+  support_ticket_count: 0.02,
+  feedback_score: -0.03,
+} as const;
+
+const _paymentTerm = (s: string) => (s === 'active' ? -0.15 : 0.15);
+const _clampLocal = (v: number, lo: number, hi: number) => Math.min(hi, Math.max(lo, v));
+
+function computeLocalSimulation(
+  customerId: string,
+  base: Record<string, any>,
+  cur: Record<string, any>,
+  baseChurn: number, // 0..1
+  baseHealth: number, // 0..100
+) {
+  let dc = 0;
+  dc += _LOCAL_SENSITIVITY.login_frequency * (Number(cur.login_frequency) - Number(base.login_frequency));
+  dc += _LOCAL_SENSITIVITY.feature_usage * (Number(cur.feature_usage) - Number(base.feature_usage));
+  dc += _LOCAL_SENSITIVITY.monthly_usage_pct * (Number(cur.monthly_usage_pct) - Number(base.monthly_usage_pct));
+  dc += _LOCAL_SENSITIVITY.support_ticket_count * (Number(cur.support_ticket_count) - Number(base.support_ticket_count));
+  dc += _LOCAL_SENSITIVITY.feedback_score * (Number(cur.feedback_score) - Number(base.feedback_score));
+  dc += _paymentTerm(String(cur.payment_status)) - _paymentTerm(String(base.payment_status));
+
+  const simChurn = _clampLocal(baseChurn + dc, 0, 1);
+  const simHealth = _clampLocal(baseHealth + (baseChurn - simChurn) * 100, 0, 100);
+  return {
+    customer_id: customerId,
+    baseline_churn_probability: Number(baseChurn.toFixed(4)),
+    simulated_churn_probability: Number(simChurn.toFixed(4)),
+    baseline_health_score: Number(baseHealth.toFixed(2)),
+    simulated_health_score: Number(simHealth.toFixed(2)),
+    delta_churn: Number((simChurn - baseChurn).toFixed(4)),
+    delta_health: Number((simHealth - baseHealth).toFixed(2)),
+    changed_fields: cur,
+  };
+}
+
+// Deterministic retention narrative for the local simulation (mirrors the
+// backend fallback text tone). Pronoun-neutral — the customer's pronouns are
+// not stated.
+function localRetentionNarrative(user: ActiveUser, result: any): string {
+  const firstName = (user.name || 'This customer').split(' ')[0];
+  const basePct = Math.round(result.baseline_churn_probability * 100);
+  const simPct = Math.round(result.simulated_churn_probability * 100);
+  const health = Math.round(result.simulated_health_score);
+  const annual = Math.round(-result.delta_churn * user.mrr * 12);
+  if (result.delta_churn < -0.005) {
+    return `If ${firstName} re-engages at these levels, their risk of leaving drops from ${basePct}% to ${simPct}% and their health recovers to ${health}/100 — protecting about RM${annual.toLocaleString()} over the next 12 months. Start with the personalized ${user.plan} Plan feature tutorial to lift adoption, then clear the past-due balance so billing is no longer a churn trigger.`;
+  }
+  if (result.delta_churn > 0.005) {
+    return `These changes push ${firstName}'s risk up from ${basePct}% to ${simPct}%. Pull the engagement levers back up — more frequent logins and deeper feature use are what move them out of the danger zone.`;
+  }
+  return `These are ${firstName}'s current numbers — risk ${basePct}%, health ${Math.round(result.baseline_health_score)}/100. Raise their feature usage and fix the billing status to see how much churn risk you can retire.`;
+}
+
 const getEstimatedLeaveDate = (probability: number) => {
   if (probability <= 15) return 'N/A (Stable)';
   const days = Math.round(100 - probability);
@@ -55,10 +125,30 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [lastClickedAction]);
 
+  // The "Most Recommended" action is pinned once per customer from their
+  // INITIAL signals. Applying an action mutates the customer's metrics (clears
+  // a warning flag, lifts adoption, etc.), which would otherwise make the badge
+  // hop to the next-best action mid-demo — it must stay on the one action.
+  const recommendedActionRef = useRef<{ id: string; action: string } | null>(null);
+  if (recommendedActionRef.current?.id !== user.id) {
+    const initialRecommended = user.warningFlags.includes('Failed Payment')
+      ? 'grace_period'
+      : (user.warningFlags.includes('Using It Less') || user.warningFlags.includes('Not Using Key Features') || user.metrics.featureAdoption < 0.5)
+      ? 'training'
+      : user.metrics.frictionIndex > 4
+      ? 'csm_call'
+      : 'discount';
+    recommendedActionRef.current = { id: user.id, action: initialRecommended };
+  }
+  const pinnedRecommendedAction = recommendedActionRef.current.action;
+
   // Real backend recommendation state
   const [recommendation, setRecommendation] = useState<any>(null);
 
   useEffect(() => {
+    // Hardcoded local customers (Yu Ning) have no backend row — skip the fetch
+    // and fall back to their baked-in SHAP factors (user.churnFactors).
+    if (user.simSignals) return;
     getRecommendation(user.id)
       .then((data) => {
         setRecommendation(data);
@@ -68,16 +158,27 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
       });
   }, [user.id]);
 
-  // What-If Simulator Levers State — estimated defaults until the customer's
-  // real stored values arrive from GET /customers/{id}.
-  const estimatedLevers = {
-    login_frequency: 3.5,
-    feature_usage: 0.5,
-    monthly_usage_pct: Math.round(user.metrics.usageVelocity * 100),
-    support_ticket_count: user.metrics.failedPayments > 0 ? 3 : 1,
-    feedback_score: user.healthScore > 70 ? 8.5 : 5.8,
-    payment_status: user.metrics.failedPayments > 0 ? 'past_due' : 'active'
-  };
+  // What-If Simulator Levers State. For a hardcoded local customer these come
+  // straight from user.simSignals (no backend); otherwise they are estimated
+  // defaults until the customer's real stored values arrive from GET
+  // /customers/{id}.
+  const estimatedLevers = user.simSignals
+    ? {
+        login_frequency: user.simSignals.login_frequency,
+        feature_usage: user.simSignals.feature_usage,
+        monthly_usage_pct: user.simSignals.monthly_usage_pct,
+        support_ticket_count: user.simSignals.support_ticket_count,
+        feedback_score: user.simSignals.feedback_score,
+        payment_status: user.simSignals.payment_status as string,
+      }
+    : {
+        login_frequency: 3.5,
+        feature_usage: 0.5,
+        monthly_usage_pct: Math.round(user.metrics.usageVelocity * 100),
+        support_ticket_count: user.metrics.failedPayments > 0 ? 3 : 1,
+        feedback_score: user.healthScore > 70 ? 8.5 : 5.8,
+        payment_status: user.metrics.failedPayments > 0 ? 'past_due' : 'active',
+      };
   const [simLevers, setSimLevers] = useState(estimatedLevers);
   const [baselineLevers, setBaselineLevers] = useState(estimatedLevers);
   const [leversLoaded, setLeversLoaded] = useState(false);
@@ -104,6 +205,14 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
     setAiSource(null);
     setAiLoading(false);
     narrativeSeq.current += 1;
+    // Hardcoded local customer (Yu Ning): seed sliders from the baked-in
+    // signals and skip the backend fetch — the simulator runs client-side.
+    if (user.simSignals) {
+      setSimLevers(estimatedLevers);
+      setBaselineLevers(estimatedLevers);
+      setLeversLoaded(true);
+      return;
+    }
     getCustomer(user.id)
       .then((c: any) => {
         const real = {
@@ -127,7 +236,6 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
   // the setSimLevers state update to land.
   const runSimulation = (overrideLevers?: typeof simLevers) => {
     const src = overrideLevers ?? simLevers;
-    setSimLoading(true);
     setSimError(null);
     const levers = {
       login_frequency: Number(src.login_frequency),
@@ -137,6 +245,35 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
       feedback_score: Number(src.feedback_score),
       payment_status: src.payment_status
     };
+
+    // Hardcoded local customer (Yu Ning): compute the whole thing client-side,
+    // no backend call. Baseline churn/health come from the customer object;
+    // the deltas come from how far each lever moved off its baseline.
+    if (user.simSignals) {
+      const result = computeLocalSimulation(
+        user.id,
+        baselineLevers,
+        levers,
+        user.churnProbability / 100,
+        user.healthScore,
+      );
+      setSimResult(result);
+      // Mirror the backend-backed UX: numbers land now, the retention plan
+      // "streams in" a beat later.
+      const seq = ++narrativeSeq.current;
+      setAiNarrative(null);
+      setAiSource(null);
+      setAiLoading(true);
+      setTimeout(() => {
+        if (seq !== narrativeSeq.current) return;
+        setAiNarrative(localRetentionNarrative(user, result));
+        setAiSource('fallback');
+        setAiLoading(false);
+      }, 450);
+      return;
+    }
+
+    setSimLoading(true);
     simulate(user.id, levers)
       .then((res) => {
         setSimResult(res);
@@ -195,9 +332,9 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
         updatedUser.activityLogs.unshift({
           date: new Date().toISOString().split('T')[0],
           type: 'feature_use',
-          details: 'Sent the customer video tutorials and how-to guides.'
+          details: `Sent a personalized ${user.plan} Plan feature tutorial highlighting unused benefits (Analytics, Automation, Priority Roaming) — video: ${FEATURE_TUTORIAL_VIDEO}`
         });
-        message = 'Emailed helpful tutorials. The customer is now using more of the product (+30%).';
+        message = 'Emailed a personalized tutorial video. The customer is now using more of the product (+30%).';
         break;
       case 'discount':
         updatedUser.churnProbability = Math.max(0, updatedUser.churnProbability - 20);
@@ -241,8 +378,8 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
       subject = `Action Required: Keeping your Falcon360 account active`;
       body += `We recently encountered a renewal issue with your subscription payment card on file. \n\nTo ensure your service is not interrupted, we've extended a 14-day grace period on your account. You can securely update your card details in your billing console whenever you're ready.\n\nLet me know if we can help you with anything else!`;
     } else if (lastClickedAction === 'training') {
-      subject = `Unlocking the full value of Falcon360`;
-      body += `We want to make sure you're getting the absolute best value out of your active package plan. We noticed you haven't had a chance to explore all our advanced integrations yet.\n\nSent you helpful video tutorials and how-to guides to get started. I'd love to schedule a quick 10-minute walkthrough to help configure these pipelines for you.\n\nWhat is your availability this week?`;
+      subject = `Unlocking the full value of your ${user.plan} Plan`;
+      body += `We want to make sure you're getting the absolute best value out of your ${user.plan} Plan. Looking at your account, there are some powerful benefits you're already paying for but haven't tried yet — Advanced Analytics, Automation Workflows, and Priority Roaming.\n\nI put together a short, personalized tutorial that walks you through exactly these features:\n▶ Watch it here: ${FEATURE_TUTORIAL_VIDEO}\n\nIt only takes about 5 minutes, and I'd love to jump on a quick 10-minute call afterwards to help configure them for you.\n\nWhat is your availability this week?`;
     } else if (lastClickedAction === 'discount') {
       subject = `Loyalty Appreciation: 20% discount on Falcon360`;
       body += `I wanted to reach out and thank you for being a valued customer. As a token of our appreciation, we have applied a 20% loyalty discount to your subscription for the next 3 months.\n\nLet me know if you would be interested in discussing advanced usage strategies!`;
@@ -364,6 +501,16 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           impact: Math.round(r.contribution * 100)
         }))
       : user.churnFactors;
+
+  // Diverging-bar geometry for the "Why Is This Customer At Risk?" panel.
+  // Each factor's magnitude is its share of the total SHAP explanation;
+  // bars are scaled against the strongest factor so the top driver fills its
+  // half of the axis and the rest read relative to it.
+  const factorTotalAbs = activeFactors.reduce((s, f) => s + Math.abs(f.impact), 0);
+  const factorMaxShare = activeFactors.reduce(
+    (m, f) => (factorTotalAbs > 0 ? Math.max(m, Math.abs(f.impact) / factorTotalAbs) : m),
+    0
+  );
 
   return (
     <div className="text-left w-full flex flex-col gap-6 p-4 md:p-6 console-bg-dark min-h-screen relative animate-fadeIn">
@@ -621,38 +768,60 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                 now, their score is a healthy new-account baseline.
               </div>
             ) : (
-              activeFactors.map((factor) => {
-                // SHAP contributions are log-odds, not probabilities — "raises
-                // risk by 140%" is meaningless. Show each factor's share of the
-                // total explanation instead, bucketed into plain-language strength.
-                const totalAbs = activeFactors.reduce((s, f) => s + Math.abs(f.impact), 0);
-                const share = totalAbs > 0 ? Math.round((Math.abs(factor.impact) / totalAbs) * 100) : 0;
-                const isNeutral = factor.impact === 0;
-                const isPositive = factor.impact > 0;
-                const strength = share >= 35 ? 'Major' : share >= 20 ? 'Strong' : share >= 10 ? 'Moderate' : 'Minor';
-                return (
-                  <div key={factor.name} className="flex flex-col gap-1.5">
-                    <div className="flex justify-between text-xs">
-                      <span className="text-black font-extrabold">{factor.name}</span>
-                      <span className={isNeutral ? 'text-black/50 font-bold' : isPositive ? 'text-status-critical font-bold' : 'text-status-healthy font-bold'}>
-                        {isNeutral ? 'Little effect either way' : isPositive ? `${strength} — raising their risk` : `${strength} — keeping them here`}
-                      </span>
+              <>
+                {/* Diverging axis poles: retention pulls left, risk pulls right */}
+                <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider px-0.5 -mb-1">
+                  <span className="text-status-healthy">◄ Keeping them loyal</span>
+                  <span className="text-status-critical">Pushing them to leave ►</span>
+                </div>
+                {activeFactors.map((factor) => {
+                  // SHAP contributions are log-odds, not probabilities — "raises
+                  // risk by 140%" is meaningless. Show each factor's share of the
+                  // total explanation instead, bucketed into plain-language strength.
+                  const shareFrac = factorTotalAbs > 0 ? Math.abs(factor.impact) / factorTotalAbs : 0;
+                  const share = Math.round(shareFrac * 100);
+                  const isNeutral = factor.impact === 0;
+                  const isPositive = factor.impact > 0;
+                  const strength = share >= 35 ? 'Major' : share >= 20 ? 'Strong' : share >= 10 ? 'Moderate' : 'Minor';
+                  // Grow from the center axis, scaled so the strongest factor
+                  // fills its half; direction carries the red/green meaning.
+                  const halfPct = factorMaxShare > 0 ? (shareFrac / factorMaxShare) * 50 : 0;
+                  return (
+                    <div key={factor.name} className="flex flex-col gap-1.5">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-black font-extrabold">{factor.name}</span>
+                        <span className={isNeutral ? 'text-black/50 font-bold' : isPositive ? 'text-status-critical font-bold' : 'text-status-healthy font-bold'}>
+                          {isNeutral ? 'Little effect either way' : isPositive ? `${strength} — raising their risk` : `${strength} — keeping them here`}
+                        </span>
+                      </div>
+                      {/* Diverging bar: grows from the center axis — green left
+                          (retains), red right (raises risk) — so the opposing
+                          forces are visually separated, not stacked one way. */}
+                      <div className="relative w-full h-2.5 rounded-full bg-earth-cocoa/10 overflow-hidden">
+                        <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-earth-cocoa/30 z-10" />
+                        {!isNeutral && (
+                          isPositive ? (
+                            <div
+                              className="absolute left-1/2 top-0 bottom-0 bg-status-critical rounded-r-full transition-all duration-300"
+                              style={{ width: `${halfPct}%` }}
+                            />
+                          ) : (
+                            <div
+                              className="absolute top-0 bottom-0 bg-status-healthy rounded-l-full transition-all duration-300"
+                              style={{ right: '50%', width: `${halfPct}%` }}
+                            />
+                          )
+                        )}
+                      </div>
+                      {!isNeutral && (
+                        <p className="text-[11px] text-black/70 font-normal leading-snug">
+                          {explainFactor(factor.feature, isPositive)}
+                        </p>
+                      )}
                     </div>
-                    {/* Bar = this factor's share of the overall explanation */}
-                    <div className="w-full h-2 bg-earth-cocoa/10 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${isPositive ? 'bg-status-critical' : 'bg-status-healthy'}`}
-                        style={{ width: `${Math.min(100, share)}%` }}
-                      />
-                    </div>
-                    {!isNeutral && (
-                      <p className="text-[11px] text-black/70 font-normal leading-snug">
-                        {explainFactor(factor.feature, isPositive)}
-                      </p>
-                    )}
-                  </div>
-                );
-              })
+                  );
+                })}
+              </>
             )}
           </div>
 
@@ -733,26 +902,6 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             >
               Reset to Today's Values
             </button>
-            {user.warningFlags.includes('Silent Churner') && (
-              <button
-                onClick={() => {
-                  // Preset: bring the quiet account back to healthy engagement
-                  // levels and show the CSM what that rescue would be worth.
-                  const next = {
-                    ...baselineLevers,
-                    login_frequency: Math.max(Number(baselineLevers.login_frequency), 5),
-                    feature_usage: Math.max(Number(baselineLevers.feature_usage), 0.7),
-                  };
-                  setSimLevers(next);
-                  runSimulation(next);
-                }}
-                disabled={simLoading || !leversLoaded}
-                className="bg-status-risk hover:bg-earth-clay text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all duration-200 cursor-pointer disabled:opacity-50 flex items-center gap-1.5"
-              >
-                <Zap className="w-3.5 h-3.5" />
-                Simulate Re-engagement
-              </button>
-            )}
             <button
               onClick={() => runSimulation()}
               disabled={simLoading || !leversLoaded}
@@ -1110,13 +1259,13 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                   <button
                     onClick={() => {
                       const whatsappText = editedBody;
-                      const phone = user.name.toLowerCase().replace(/\s+/g, '').includes('yap') ? '60162897881' : '60122293817';
+                      const phone = user.name.toLowerCase().replace(/\s+/g, '').includes('yap') ? '60162897881' : '60162897881';
                       window.open(`https://wa.me/${phone}?text=${encodeURIComponent(whatsappText)}`, '_blank');
                     }}
                     className="w-full py-2.5 bg-[#25D366] hover:bg-[#128C7E] text-white font-bold text-xs rounded-xl transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-sm mt-2"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />
-                    <span>Send WhatsApp Message ({user.name.toLowerCase().replace(/\s+/g, '').includes('yap') ? '0162897881' : '012-229 3817'})</span>
+                    <span>Send WhatsApp Message ({user.name.toLowerCase().replace(/\s+/g, '').includes('yap') ? '0162897881' : '0162897881'})</span>
                   </button>
                 )}
 
@@ -1128,7 +1277,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               </>
             ) : (
               <div className="console-card-dark-inner rounded-xl p-6 border border-dashed console-border text-center text-xs text-black font-normal">
-                Select one of the Quick Actions on the left to automatically generate a tailored follow-up email draft here.
+                Select one of the Next Best Action on the left to automatically generate a tailored follow-up email draft here.
               </div>
             )}
           </div>
@@ -1140,20 +1289,19 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           className={`console-card-dark rounded-2xl p-5 flex flex-col justify-between gap-4 shadow-sm order-1 cursor-pointer transition-all ${selectedInsightCard === 'actions' ? 'demo-card-selected' : ''}`}
         >
           {(() => {
-            const getMostRecommendedAction = () => {
-              if (user.warningFlags.includes('Failed Payment')) {
-                return 'grace_period';
-              }
-              if (user.warningFlags.includes('Using It Less') || user.warningFlags.includes('Not Using Key Features') || user.metrics.featureAdoption < 0.5) {
-                return 'training';
-              }
-              if (user.metrics.frictionIndex > 4) {
-                return 'csm_call';
-              }
-              return 'discount';
-            };
+            const mostRecommended = pinnedRecommendedAction;
 
-            const mostRecommended = getMostRecommendedAction();
+            const featurePct = Math.round(user.metrics.featureAdoption * 100);
+            const friction = user.metrics.frictionIndex;
+            const days = user.metrics.daysSinceOnboarding;
+            const actionReasons: Record<string, string> = {
+              grace_period: user.warningFlags.includes('Failed Payment')
+                ? 'A payment on this account failed — a short grace period stops an involuntary cancellation while they fix their billing.'
+                : 'No failed payment on file, so this only helps if billing lapses.',
+              training: `Only ${featurePct}% of plan features are in use — guided tutorials lift adoption before low engagement turns into churn.`,
+              csm_call: `Friction index is ${friction}/10 — a personal check-in clears open issues faster than email and rebuilds trust.`,
+              discount: `${days} days in — a loyalty discount reinforces value and removes a price-driven reason to leave.`,
+            };
 
             return (
               <>
@@ -1162,7 +1310,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                     <img src="/falcon-icon.png" alt="Falcon Strategist Agent" className="w-8 h-8 object-contain shrink-0" />
                     <div className="flex flex-col leading-tight">
                       <h3 className="text-base font-bold console-text-primary">Falcon Strategist Agent</h3>
-                      <span className="text-[10px] font-semibold text-black/60 uppercase tracking-wider">Quick Actions</span>
+                      <span className="text-[10px] font-semibold text-black/60 uppercase tracking-wider">Next Best Action</span>
                     </div>
                   </div>
                   <p className="text-xs text-black font-normal leading-normal mt-1">
@@ -1173,76 +1321,78 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
                 <div className="flex flex-col gap-2.5 my-2">
                   <button
                     onClick={() => handleAction('grace_period')}
-                    disabled={!user.warningFlags.includes('Failed Payment')}
-                    className={`w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border transition-all duration-200 ${
-                      user.warningFlags.includes('Failed Payment')
-                        ? 'bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa cursor-pointer'
-                        : 'bg-earth-cocoa/5 console-border text-earth-cocoa/30 cursor-not-allowed'
-                    }`}
+                    className="w-full py-3 px-4 rounded-xl text-xs font-bold flex flex-col gap-1.5 border bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa transition-all duration-200 cursor-pointer"
                   >
-                    <span className="flex items-center gap-2 flex-wrap">
-                      <CreditCard className="w-4 h-4 text-earth-clay" />
-                      Give Extra Time to Pay
-                      {mostRecommended === 'grace_period' && (
-                        <span className="text-status-healthy text-[9px] font-extrabold ml-1 uppercase bg-status-healthy/10 px-1.5 py-0.5 rounded border border-status-healthy/20 tracking-wider">
-                          (Most Recommended)
-                        </span>
-                      )}
+                    <span className="w-full flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-2 flex-wrap">
+                        <CreditCard className="w-4 h-4 text-earth-clay" />
+                        Give Extra Time to Pay
+                        {mostRecommended === 'grace_period' && (
+                          <span className="text-status-healthy text-[9px] font-extrabold ml-1 uppercase bg-status-healthy/10 px-1.5 py-0.5 rounded border border-status-healthy/20 tracking-wider">
+                            (Most Recommended)
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-[10px] text-status-healthy font-extrabold shrink-0">-25% risk</span>
                     </span>
-                    <span className="text-[10px] text-status-healthy font-extrabold shrink-0">-25% risk</span>
+                    <p className="w-full text-[11.5px] font-normal text-earth-cocoa/70 text-left leading-snug">{actionReasons.grace_period}</p>
                   </button>
 
                   <button
                     onClick={() => handleAction('training')}
-                    disabled={user.metrics.featureAdoption > 0.8}
-                    className={`w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border transition-all duration-200 ${
-                      user.metrics.featureAdoption <= 0.8
-                        ? 'bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa cursor-pointer'
-                        : 'bg-earth-cocoa/5 console-border text-earth-cocoa/30 cursor-not-allowed'
-                    }`}
+                    className="w-full py-3 px-4 rounded-xl text-xs font-bold flex flex-col gap-1.5 border bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa transition-all duration-200 cursor-pointer"
                   >
-                    <span className="flex items-center gap-2 flex-wrap">
-                      <BookOpen className="w-4 h-4 text-earth-clay" />
-                      Send Helpful Tutorials
-                      {mostRecommended === 'training' && (
-                        <span className="text-status-healthy text-[9px] font-extrabold ml-1 uppercase bg-status-healthy/10 px-1.5 py-0.5 rounded border border-status-healthy/20 tracking-wider">
-                          (Most Recommended)
-                        </span>
-                      )}
+                    <span className="w-full flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-2 flex-wrap">
+                        <BookOpen className="w-4 h-4 text-earth-clay" />
+                        Send Helpful Tutorials
+                        {mostRecommended === 'training' && (
+                          <span className="text-status-healthy text-[9px] font-extrabold ml-1 uppercase bg-status-healthy/10 px-1.5 py-0.5 rounded border border-status-healthy/20 tracking-wider">
+                            (Most Recommended)
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-[10px] text-status-healthy font-extrabold shrink-0">-15% risk</span>
                     </span>
-                    <span className="text-[10px] text-status-healthy font-extrabold shrink-0">-15% risk</span>
+                    <p className="w-full text-[11.5px] font-normal text-earth-cocoa/70 text-left leading-snug">{actionReasons.training}</p>
                   </button>
 
                   <button
                     onClick={() => handleAction('csm_call')}
-                    className="w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa transition-all duration-200 cursor-pointer"
+                    className="w-full py-3 px-4 rounded-xl text-xs font-bold flex flex-col gap-1.5 border bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa transition-all duration-200 cursor-pointer"
                   >
-                    <span className="flex items-center gap-2 flex-wrap">
-                      <MessageSquare className="w-4 h-4 text-earth-clay" />
-                      Schedule a Check-In Call
-                      {mostRecommended === 'csm_call' && (
-                        <span className="text-status-healthy text-[9px] font-extrabold ml-1 uppercase bg-status-healthy/10 px-1.5 py-0.5 rounded border border-status-healthy/20 tracking-wider">
-                          (Most Recommended)
-                        </span>
-                      )}
+                    <span className="w-full flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-2 flex-wrap">
+                        <MessageSquare className="w-4 h-4 text-earth-clay" />
+                        Schedule a Check-In Call
+                        {mostRecommended === 'csm_call' && (
+                          <span className="text-status-healthy text-[9px] font-extrabold ml-1 uppercase bg-status-healthy/10 px-1.5 py-0.5 rounded border border-status-healthy/20 tracking-wider">
+                            (Most Recommended)
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-[10px] text-status-healthy font-extrabold shrink-0">-18% risk</span>
                     </span>
-                    <span className="text-[10px] text-status-healthy font-extrabold shrink-0">-18% risk</span>
+                    <p className="w-full text-[11.5px] font-normal text-earth-cocoa/70 text-left leading-snug">{actionReasons.csm_call}</p>
                   </button>
 
                   <button
                     onClick={() => handleAction('discount')}
-                    className="w-full py-3 px-4 rounded-xl text-xs font-bold flex items-center justify-between border bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa transition-all duration-200 cursor-pointer"
+                    className="w-full py-3 px-4 rounded-xl text-xs font-bold flex flex-col gap-1.5 border bg-earth-cocoa/10 hover:bg-earth-cocoa/20 console-border text-earth-cocoa transition-all duration-200 cursor-pointer"
                   >
-                    <span className="flex items-center gap-2 flex-wrap">
-                      <DollarSign className="w-4 h-4 text-earth-clay" />
-                      Offer 20% Loyalty Discount
-                      {mostRecommended === 'discount' && (
-                        <span className="text-status-healthy text-[9px] font-extrabold ml-1 uppercase bg-status-healthy/10 px-1.5 py-0.5 rounded border border-status-healthy/20 tracking-wider">
-                          (Most Recommended)
-                        </span>
-                      )}
+                    <span className="w-full flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-2 flex-wrap">
+                        <DollarSign className="w-4 h-4 text-earth-clay" />
+                        Offer 20% Loyalty Discount
+                        {mostRecommended === 'discount' && (
+                          <span className="text-status-healthy text-[9px] font-extrabold ml-1 uppercase bg-status-healthy/10 px-1.5 py-0.5 rounded border border-status-healthy/20 tracking-wider">
+                            (Most Recommended)
+                          </span>
+                        )}
+                      </span>
+                      <span className="text-[10px] text-status-healthy font-extrabold shrink-0">-20% risk</span>
                     </span>
-                    <span className="text-[10px] text-status-healthy font-extrabold shrink-0">-20% risk</span>
+                    <p className="w-full text-[11.5px] font-normal text-earth-cocoa/70 text-left leading-snug">{actionReasons.discount}</p>
                   </button>
                 </div>
               </>

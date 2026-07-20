@@ -752,7 +752,7 @@ Is there a specific account or recent system event you would like me to analyze?
                                     window.open(`https://wa.me/60162897881?text=${encodeURIComponent(text)}`, '_blank');
                                   }
                                   if (yuningRecipient) {
-                                    window.open(`https://wa.me/60122293817?text=${encodeURIComponent(text)}`, '_blank');
+                                    window.open(`https://wa.me/60162897881?text=${encodeURIComponent(text)}`, '_blank');
                                   }
                                 }
 

@@ -1,14 +1,19 @@
 import { useState, useEffect } from 'react';
-import { ArrowLeft, X } from 'lucide-react';
+import { ArrowLeft, X, Sparkles, PlayCircle } from 'lucide-react';
 import { downgradeSavings, suggestPlanChange } from '../utils/mockData';
 import { PortalNotificationModal } from '../components/modals/PortalNotificationModal';
 import { OnboardingWizard, LIFESTYLE_CONFIG, PLAN_OPTIONS, type PlanKey, type WizardResult } from '../components/OnboardingWizard';
 import Avatar from '../components/Avatar';
 
+// DEMO-ONLY: personalized feature-tutorial video the Falcon Guide Agent sends
+// to Yu Ning (Pro Plan + unused benefits). Kept in sync with the same constant
+// in ActiveUserInsight.tsx (CSM "Send Helpful Tutorials").
+const FEATURE_TUTORIAL_VIDEO = 'https://www.youtube.com/watch?v=4d966u2XPuQ';
+
 export function ClientDashboardPage(props: any) {
   const { users, clientUserId, setClientUserId, handleClientAction, addTelemetry, setCurrentPage, signupCompleted, onSignup, onSignupSkip } = props;
-  const [chatbotMessages, setChatbotMessages] = useState<{ sender: 'user' | 'bot'; text: string }[]>([
-    { sender: 'bot', text: "Hello! I'm your Falcon360 assistant. Ask me anything about your mobile plan, billing renewal, data usage, or roaming add-ons!" }
+  const [chatbotMessages, setChatbotMessages] = useState<{ sender: 'user' | 'bot'; text: string; link?: string }[]>([
+    { sender: 'bot', text: "Hello! I'm your Falcon Guide Agent. Ask me anything about your mobile plan, billing renewal, data usage, or roaming add-ons!" }
   ]);
   const [chatInput, setChatInput] = useState('');
   const [portalNotification, setPortalNotification] = useState<{ title: string; message: string; type: 'success' | 'info' | 'warning' } | null>(null);
@@ -22,6 +27,10 @@ export function ClientDashboardPage(props: any) {
 
   const loggedInUser = users.find((u: any) => u.id === clientUserId) || users[0];
   const hasFailedPayment = loggedInUser?.warningFlags?.includes('Failed Payment');
+  // DEMO-ONLY: Yu Ning is the hardcoded high-risk hero customer — the Falcon
+  // Guide Agent proactively pushes her a personalized Pro Plan feature tutorial.
+  const isYuNing = loggedInUser?.id === 'cus_yuning'
+    || (loggedInUser?.name || '').toLowerCase().replace(/\s+/g, '').includes('yuning');
   // Threshold-rule suggestion (same rule the 1-click actions use) so the plan
   // picker can flag the AI's pick alongside the customer's free choice.
   const planSuggestion = loggedInUser
@@ -51,6 +60,31 @@ export function ClientDashboardPage(props: any) {
     const t = setTimeout(() => setShowChatTeaser(true), 1400);
     return () => clearTimeout(t);
   }, []);
+
+  // DEMO-ONLY: rebuild the Falcon Guide Agent thread when the active customer
+  // changes. For Yu Ning (high-risk hero), the agent proactively sends a
+  // personalized feature tutorial highlighting her Pro Plan and the benefits
+  // she's paying for but not using, with the walkthrough video link.
+  useEffect(() => {
+    const greeting = {
+      sender: 'bot' as const,
+      text: "Hello! I'm your Falcon Guide Agent. Ask me anything about your mobile plan, billing renewal, data usage, or roaming add-ons!",
+    };
+    if (isYuNing) {
+      const firstName = (loggedInUser?.name || 'there').split(' ')[0];
+      setChatbotMessages([
+        greeting,
+        {
+          sender: 'bot' as const,
+          text: `Hi ${firstName}! Great to see you're getting the full value of your ${loggedInUser?.plan || 'Pro'} Plan — Advanced Analytics, Automation Workflows, and Priority Roaming are all active now, and your usage is up 3x this month. Here's a quick refresher if you'd like to go even deeper:`,
+          link: FEATURE_TUTORIAL_VIDEO,
+        },
+      ]);
+    } else {
+      setChatbotMessages([greeting]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [clientUserId]);
 
   const handleWizardComplete = (result: WizardResult) => {
     setShowWizard(false);
@@ -220,26 +254,61 @@ export function ClientDashboardPage(props: any) {
 
                   {((loggedInUser?.metrics.usageVelocity || 0) < 0.35 && loggedInUser?.plan !== 'Starter') || hasFailedPayment ? (
                     <div className="flex flex-col gap-3 mt-3">
-                      {/* Case A: Underutilization */}
+                      {/* Case A: Underutilization — explore-first, downgrade optional.
+                          Falcon Coach leads with personalized feature guidance
+                          (unlock what you're already paying for); the downgrade
+                          becomes a secondary "or save instead" option so the
+                          customer explores the plan before deciding to change it. */}
                       {(loggedInUser?.metrics.usageVelocity || 0) < 0.35 && loggedInUser?.plan !== 'Starter' && (
-                        <div className="bg-[#FFD400]/10 border border-[#FFD400]/45 p-3.5 rounded-xl flex flex-col gap-2">
-                          <span className="text-xs font-extrabold text-[#001871] uppercase">Saving Opportunity</span>
-                          <p className="text-xs text-[#001871] leading-relaxed">
-                            Usage is at {Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}%. Downgrade to **Starter Plan** to save **RM{downgradeSavings(loggedInUser?.mrr || 0).toLocaleString()}/mo**.
-                          </p>
-                          <button 
-                            onClick={() => {
-                              handleClientAction(clientUserId, 'downgrade');
-                              setPortalNotification({
-                                title: 'Plan Downgrade Applied',
-                                message: '📉 1-Click Downgrade applied successfully! Plan set to Starter.',
-                                type: 'success'
-                              });
-                            }}
-                            className="bg-[#FFD400] hover:bg-[#e6be00] text-slate-900 font-extrabold text-xs py-1.5 rounded-lg transition-all w-full cursor-pointer text-center shadow-sm"
-                          >
-                            Downgrade plan to save
-                          </button>
+                        <div className="flex flex-col gap-3">
+                          {/* Primary recommendation: explore unused benefits */}
+                          <div className="bg-[#0064DC]/5 border border-[#0064DC]/25 p-3.5 rounded-xl flex flex-col gap-2">
+                            <span className="flex items-center gap-1.5 text-xs font-extrabold text-[#0064DC] uppercase tracking-wider">
+                              <Sparkles className="w-3.5 h-3.5" />
+                              Recommended for You
+                            </span>
+                            <p className="text-xs text-[#001871] leading-relaxed">
+                              You're on the <span className="font-extrabold">{loggedInUser?.plan} Plan</span> but only using {Math.round((loggedInUser?.metrics.usageVelocity || 0) * 100)}% of it. Falcon Coach found <span className="font-extrabold">3 benefits you're already paying for</span> but haven't tried yet — <span className="font-extrabold">Advanced Analytics</span>, <span className="font-extrabold">Automation Workflows</span>, and <span className="font-extrabold">Priority Roaming</span>. Explore these first to get the full value of your plan.
+                            </p>
+                            <a
+                              href={FEATURE_TUTORIAL_VIDEO}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                loggedInUser.activityLogs = [
+                                  { date: new Date().toLocaleDateString(), type: 'feature_use' as const, details: `Opened personalized ${loggedInUser.plan} Plan benefits tutorial (Analytics, Automation, Priority Roaming).` },
+                                  ...(loggedInUser.activityLogs || [])
+                                ];
+                                addTelemetry(`Customer ${loggedInUser.name} started exploring unused ${loggedInUser.plan} Plan benefits.`);
+                              }}
+                              className="flex items-center justify-center gap-1.5 bg-[#001871] hover:bg-[#0064DC] text-white font-extrabold text-xs py-2 rounded-lg transition-all w-full cursor-pointer text-center shadow-sm"
+                            >
+                              <PlayCircle className="w-4 h-4" />
+                              Explore My Plan Benefits
+                            </a>
+                          </div>
+
+                          {/* Secondary option: right-size / downgrade after exploring */}
+                          <div className="bg-[#FFD400]/10 border border-[#FFD400]/45 p-3.5 rounded-xl flex flex-col gap-2">
+                            <span className="text-xs font-extrabold text-[#001871] uppercase">Or, Prefer to Save?</span>
+                            <p className="text-xs text-[#001871] leading-relaxed">
+                              If you'd rather not use the full plan, you can downgrade to **Starter Plan** and save **RM{downgradeSavings(loggedInUser?.mrr || 0).toLocaleString()}/mo**. No rush — try the benefits above first.
+                            </p>
+                            <button
+                              onClick={() => {
+                                handleClientAction(clientUserId, 'downgrade');
+                                setPortalNotification({
+                                  title: 'Plan Downgrade Applied',
+                                  message: '📉 1-Click Downgrade applied successfully! Plan set to Starter.',
+                                  type: 'success'
+                                });
+                              }}
+                              className="bg-[#FFD400] hover:bg-[#e6be00] text-slate-900 font-extrabold text-xs py-1.5 rounded-lg transition-all w-full cursor-pointer text-center shadow-sm"
+                            >
+                              Downgrade plan to save
+                            </button>
+                          </div>
                         </div>
                       )}
 
@@ -418,7 +487,7 @@ export function ClientDashboardPage(props: any) {
                 <div className="flex justify-between items-center border-b border-slate-200 px-4 py-3 bg-[#001871]">
                   <div className="flex items-center gap-2">
                     <img src="/falcon-icon.png" alt="" className="w-6 h-6 object-contain" />
-                    <span className="text-xs font-extrabold uppercase tracking-wider text-white">Falcon360 AI Assistant</span>
+                    <span className="text-xs font-extrabold uppercase tracking-wider text-white">Falcon Guide Agent</span>
                     <span className="w-2 h-2 rounded-full bg-[#FFD400] animate-pulse" />
                   </div>
                   <button
@@ -433,15 +502,25 @@ export function ClientDashboardPage(props: any) {
 
                 <div className="flex-1 overflow-y-auto flex flex-col gap-2.5 p-4 font-sans text-xs bg-slate-50/60">
                   {chatbotMessages.map((msg, idx) => (
-                    <div 
-                      key={idx} 
+                    <div
+                      key={idx}
                       className={`p-2.5 rounded-2xl max-w-[85%] leading-relaxed ${
-                        msg.sender === 'user' 
-                          ? 'bg-[#0064DC] text-white ml-auto rounded-tr-none shadow-sm' 
+                        msg.sender === 'user'
+                          ? 'bg-[#0064DC] text-white ml-auto rounded-tr-none shadow-sm'
                           : 'bg-white text-[#001871] mr-auto rounded-tl-none border border-slate-200/80 shadow-sm'
                       }`}
                     >
                       {msg.text}
+                      {msg.link && (
+                        <a
+                          href={msg.link}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-2 flex items-center justify-center gap-1.5 bg-[#001871] hover:bg-[#0064DC] text-white font-extrabold text-[11px] px-3 py-2 rounded-xl transition-all shadow-sm"
+                        >
+                          ▶ Watch Your Personalized Tutorial
+                        </a>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -456,20 +535,41 @@ export function ClientDashboardPage(props: any) {
 
                     // Compute AI Response
                     setTimeout(() => {
-                      let botReply = "I can help you audit your billing invoices, change subscription plans, activate eSIM roaming passes, or resolve credit card issues. What would you like to do?";
                       const lower = userMsg.toLowerCase();
-                      if (lower.includes("bill") || lower.includes("invoice") || lower.includes("charge") || lower.includes("pay")) {
-                        botReply = hasFailedPayment 
-                          ? `⚠️ ALERT: Your last credit card renewal declined. Please request a Grace Extension or update payment details.`
-                          : `Your account is healthy! Current subscription costs RM${loggedInUser.mrr}/mo and auto-renews via credit card.`;
+                      let botMsg: { sender: 'bot'; text: string; link?: string } = {
+                        sender: 'bot',
+                        text: "I can help you audit your billing invoices, change subscription plans, activate eSIM roaming passes, or resolve credit card issues. What would you like to do?",
+                      };
+                      if (lower.includes("tutorial") || lower.includes("feature") || lower.includes("benefit") || lower.includes("learn") || lower.includes("video") || lower.includes("guide") || lower.includes("how")) {
+                        botMsg = {
+                          sender: 'bot',
+                          text: `Here's a quick personalized tutorial for your ${loggedInUser.plan} Plan — it covers getting even more out of Advanced Analytics, Automation Workflows, and Priority Roaming.`,
+                          link: FEATURE_TUTORIAL_VIDEO,
+                        };
+                      } else if (lower.includes("bill") || lower.includes("invoice") || lower.includes("charge") || lower.includes("pay")) {
+                        botMsg = {
+                          sender: 'bot',
+                          text: hasFailedPayment
+                            ? `⚠️ ALERT: Your last credit card renewal declined. Please request a Grace Extension or update payment details.`
+                            : `Your account is healthy! Current subscription costs RM${loggedInUser.mrr}/mo and auto-renews via credit card.`,
+                        };
                       } else if (lower.includes("limit") || lower.includes("data") || lower.includes("usage") || lower.includes("quota")) {
-                        botReply = `You are currently utilizing ${Math.round((loggedInUser.metrics.usageVelocity || 0) * 100)}% of your plan thresholds. Recommend buying 5G Extra Data (+10 GB) for RM10 to prevent speed drops.`;
+                        botMsg = {
+                          sender: 'bot',
+                          text: `You are currently utilizing ${Math.round((loggedInUser.metrics.usageVelocity || 0) * 100)}% of your plan thresholds. Recommend buying 5G Extra Data (+10 GB) for RM10 to prevent speed drops.`,
+                        };
                       } else if (lower.includes("roaming") || lower.includes("travel") || lower.includes("abroad")) {
-                        botReply = "Planning a trip? Buy our APAC & Europe Roaming Pass add-on for RM50/mo to get high-speed connection abroad!";
+                        botMsg = {
+                          sender: 'bot',
+                          text: "Planning a trip? Buy our APAC & Europe Roaming Pass add-on for RM50/mo to get high-speed connection abroad!",
+                        };
                       } else if (lower.includes("upgrade") || lower.includes("downgrade") || lower.includes("plan")) {
-                        botReply = `You are on the ${loggedInUser.plan} subscription plan. You can switch to any plan yourself with the "Change Plan" button in the AI Plan Optimization panel — the AI will flag its suggested tier for you.`;
+                        botMsg = {
+                          sender: 'bot',
+                          text: `You are on the ${loggedInUser.plan} subscription plan. You can switch to any plan yourself with the "Change Plan" button in the AI Plan Optimization panel — the AI will flag its suggested tier for you.`,
+                        };
                       }
-                      setChatbotMessages(prev => [...prev, { sender: 'bot', text: botReply }]);
+                      setChatbotMessages(prev => [...prev, botMsg]);
                     }, 500);
                   }}
                   className="flex gap-2 border-t border-slate-200 p-3 bg-white"
@@ -503,7 +603,9 @@ export function ClientDashboardPage(props: any) {
                     <X className="w-3.5 h-3.5" />
                   </button>
                   <p className="text-xs text-[#001871] font-semibold leading-relaxed">
-                    👋 Hi! I'm your Falcon Guide Agent. Need help with your plan, billing, or roaming add-ons?
+                    {isYuNing
+                      ? `🎉 You're getting great value from your ${loggedInUser?.plan || 'Pro'} Plan — all your premium benefits are active. Tap if you'd like tips to go even further.`
+                      : "👋 Hi! I'm your Falcon Guide Agent. Need help with your plan, billing, or roaming add-ons?"}
                   </p>
                 </div>
               )}

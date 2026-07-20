@@ -43,6 +43,18 @@ export interface ActiveUser {
   activityLogs: UserActivityLog[];
   pastJourneys: PastJourney[];
   state: 'active' | 'frustrated' | 'disengaged' | 'churned';
+  // DEMO-ONLY: baked-in raw signal values for hardcoded local customers (e.g.
+  // Yu Ning) that have no backend row. When present, the What-If simulator
+  // seeds its sliders from these and runs entirely client-side instead of
+  // calling GET/POST /customers/{id} (which would 404 for a local-only id).
+  simSignals?: {
+    login_frequency: number;
+    feature_usage: number;
+    monthly_usage_pct: number;
+    support_ticket_count: number;
+    feedback_score: number;
+    payment_status: 'active' | 'past_due';
+  };
 }
 
 export interface CoordinateMap {
