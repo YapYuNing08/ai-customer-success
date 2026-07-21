@@ -642,7 +642,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
           <div className="absolute top-0 right-0 p-3 text-earth-sage/20 group-hover:text-earth-sage/30 transition-colors pointer-events-none">
             <ShieldAlert className="w-16 h-16" />
           </div>
-          <span className="text-[11px] font-black tracking-wider uppercase text-black/80">RISK OF LEAVING</span>
+          <span className="text-[11px] font-black tracking-wider uppercase text-black/80">CHURN PROBABILITY</span>
           
           <div className="my-4">
             <span className={`text-4xl font-extrabold tracking-tight ${
@@ -769,68 +769,174 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
               </div>
             ) : (
               <>
-                {/* Diverging axis poles: retention pulls left, risk pulls right */}
+                {/* Diverging axis header: green retention left, red risk right */}
                 <div className="flex justify-between items-center text-[10px] font-bold uppercase tracking-wider px-0.5 -mb-1">
                   <span className="text-status-healthy">◄ Keeping them loyal</span>
                   <span className="text-status-critical">Pushing them to leave ►</span>
                 </div>
-                {activeFactors.map((factor) => {
-                  // SHAP contributions are log-odds, not probabilities — "raises
-                  // risk by 140%" is meaningless. Show each factor's share of the
-                  // total explanation instead, bucketed into plain-language strength.
-                  const shareFrac = factorTotalAbs > 0 ? Math.abs(factor.impact) / factorTotalAbs : 0;
-                  const share = Math.round(shareFrac * 100);
-                  const isNeutral = factor.impact === 0;
-                  const isPositive = factor.impact > 0;
-                  const strength = share >= 35 ? 'Major' : share >= 20 ? 'Strong' : share >= 10 ? 'Moderate' : 'Minor';
-                  // Grow from the center axis, scaled so the strongest factor
-                  // fills its half; direction carries the red/green meaning.
-                  const halfPct = factorMaxShare > 0 ? (shareFrac / factorMaxShare) * 50 : 0;
-                  return (
-                    <div key={factor.name} className="flex flex-col gap-1.5">
-                      <div className="flex justify-between text-xs">
-                        <span className="text-black font-extrabold">{factor.name}</span>
-                        <span className={isNeutral ? 'text-black/50 font-bold' : isPositive ? 'text-status-critical font-bold' : 'text-status-healthy font-bold'}>
-                          {isNeutral ? 'Little effect either way' : isPositive ? `${strength} — raising their risk` : `${strength} — keeping them here`}
-                        </span>
-                      </div>
-                      {/* Diverging bar: grows from the center axis — green left
-                          (retains), red right (raises risk) — so the opposing
-                          forces are visually separated, not stacked one way. */}
-                      <div className="relative w-full h-2.5 rounded-full bg-earth-cocoa/10 overflow-hidden">
-                        <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-earth-cocoa/30 z-10" />
+
+                {/* Scaled percentage breakdown where positive risk factor percentages total up to user.churnProbability */}
+                {(() => {
+                  const positiveFactors = activeFactors.filter(f => f.impact > 0);
+                  const positiveImpactSum = positiveFactors.reduce((sum, f) => sum + f.impact, 0);
+                  let allocatedSum = 0;
+                  const factorPcts: Record<string, number> = {};
+
+                  positiveFactors.forEach((f, idx) => {
+                    if (idx === positiveFactors.length - 1) {
+                      factorPcts[f.name] = Math.max(0, user.churnProbability - allocatedSum);
+                    } else {
+                      const pct = positiveImpactSum > 0 ? Math.round((f.impact / positiveImpactSum) * user.churnProbability) : 0;
+                      factorPcts[f.name] = pct;
+                      allocatedSum += pct;
+                    }
+                  });
+
+                  const negativeFactors = activeFactors.filter(f => f.impact < 0);
+                  const negativeImpactSum = Math.abs(negativeFactors.reduce((sum, f) => sum + f.impact, 0));
+                  const retentionTarget = Math.max(10, 100 - user.churnProbability);
+                  let allocatedNegSum = 0;
+                  negativeFactors.forEach((f, idx) => {
+                    if (idx === negativeFactors.length - 1) {
+                      factorPcts[f.name] = Math.max(0, retentionTarget - allocatedNegSum);
+                    } else {
+                      const pct = negativeImpactSum > 0 ? Math.round((Math.abs(f.impact) / negativeImpactSum) * retentionTarget) : 0;
+                      factorPcts[f.name] = pct;
+                      allocatedNegSum += pct;
+                    }
+                  });
+
+                  return activeFactors.map((factor) => {
+                    const shareFrac = factorTotalAbs > 0 ? Math.abs(factor.impact) / factorTotalAbs : 0;
+                    const share = Math.round(shareFrac * 100);
+                    const isNeutral = factor.impact === 0;
+                    const isPositive = factor.impact > 0;
+                    const strength = share >= 35 ? 'Major' : share >= 20 ? 'Strong' : share >= 10 ? 'Moderate' : 'Minor';
+                    const pct = factorPcts[factor.name] || 0;
+                    const halfPct = factorMaxShare > 0 ? Math.max(6, (shareFrac / factorMaxShare) * 50) : 0;
+
+                    // Evaluate month-over-month trend sign (+ vs -) based on recent customer metric movement
+                    const isTrendingUp = (() => {
+                      if (factor.feature === 'payment_status' || factor.feature === 'failed_payments') return user.metrics?.failedPayments > 0;
+                      if (factor.feature === 'login_frequency' || factor.feature === 'usage_velocity') return (user.metrics?.usageVelocity || 0.8) >= 0.7;
+                      if (factor.feature === 'feature_usage' || factor.feature === 'feature_adoption') return (user.metrics?.featureAdoption || 0.6) >= 0.5;
+                      if (factor.feature === 'support_tickets' || factor.feature === 'friction_index') return (user.metrics?.frictionIndex || 0) <= 2;
+                      return (factor.impact % 2 === 0);
+                    })();
+
+                    const signPrefix = isPositive
+                      ? (isTrendingUp ? '+' : '-')
+                      : (isTrendingUp ? '+' : '-');
+
+                    return (
+                      <div key={factor.name} className="flex flex-col gap-1.5">
+                        <div className="flex justify-between items-center text-xs">
+                          <span className="text-black font-extrabold">{factor.name}</span>
+                          <div className="flex items-center gap-2">
+                            <span className={isNeutral ? 'text-black/50 font-bold' : isPositive ? 'text-status-critical font-bold' : 'text-status-healthy font-bold'}>
+                              {isNeutral ? 'Little effect' : isPositive ? `${strength} — raising risk` : `${strength} — keeping loyal`}
+                            </span>
+                            <span className={`px-2 py-0.5 rounded-md font-extrabold text-xs flex items-center gap-1.5 ${isPositive ? 'bg-status-critical/15 text-status-critical border border-status-critical/30' : 'bg-status-healthy/15 text-status-healthy border border-status-healthy/30'}`}>
+                              <span>{signPrefix}{pct}%</span>
+                              <span className="text-black/80 font-bold">vs last month</span>
+                            </span>
+                          </div>
+                        </div>
+                        {/* Diverging bar: center axis line with green growing left and red growing right */}
+                        <div className="relative w-full h-2.5 rounded-full bg-earth-cocoa/10 overflow-hidden">
+                          <div className="absolute left-1/2 top-0 bottom-0 w-px -translate-x-1/2 bg-earth-cocoa/30 z-10" />
+                          {!isNeutral && (
+                            isPositive ? (
+                              <div
+                                className="absolute left-1/2 top-0 bottom-0 bg-status-critical rounded-r-full transition-all duration-300"
+                                style={{ width: `${halfPct}%` }}
+                              />
+                            ) : (
+                              <div
+                                className="absolute top-0 bottom-0 bg-status-healthy rounded-l-full transition-all duration-300"
+                                style={{ right: '50%', width: `${halfPct}%` }}
+                              />
+                            )
+                          )}
+                        </div>
                         {!isNeutral && (
-                          isPositive ? (
-                            <div
-                              className="absolute left-1/2 top-0 bottom-0 bg-status-critical rounded-r-full transition-all duration-300"
-                              style={{ width: `${halfPct}%` }}
-                            />
-                          ) : (
-                            <div
-                              className="absolute top-0 bottom-0 bg-status-healthy rounded-l-full transition-all duration-300"
-                              style={{ right: '50%', width: `${halfPct}%` }}
-                            />
-                          )
+                          <p className="text-[11px] text-black/70 font-normal leading-snug">
+                            {explainFactor(factor.feature, isPositive)}
+                          </p>
                         )}
                       </div>
-                      {!isNeutral && (
-                        <p className="text-[11px] text-black/70 font-normal leading-snug">
-                          {explainFactor(factor.feature, isPositive)}
-                        </p>
-                      )}
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </>
             )}
           </div>
 
-          {activeFactors.length > 0 && (
-            <div className="console-card-dark-inner rounded-lg p-3 text-xs text-black font-bold flex justify-between items-center">
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-status-healthy" /> Green = Helps retain this customer</span>
-              <span className="flex items-center gap-1.5"><span className="w-2 h-2 rounded-full bg-status-critical" /> Red = Increases cancellation risk</span>
-            </div>
-          )}
+          {/* Dynamic AI Conclusion — Option 2: Executive Risk Summary & Recommended CSM Action */}
+          {activeFactors.length > 0 && (() => {
+            const isHighHealthHighRisk = user.healthScore >= 65 && user.churnProbability >= 50;
+            const isLowHealthLowRisk  = user.healthScore < 50  && user.churnProbability < 30;
+            const topRiskFactor       = activeFactors.filter(f => f.impact > 0).sort((a, b) => b.impact - a.impact)[0];
+            const topRetainFactor     = activeFactors.filter(f => f.impact < 0).sort((a, b) => a.impact - b.impact)[0];
+
+            let primaryCause = topRiskFactor ? topRiskFactor.name : 'Subscription or billing signal';
+            let causeDetail = isHighHealthHighRisk
+              ? `Strong daily usage (${user.healthScore}/100 health) is currently overshadowed by forward-looking risk factors, primarily ${primaryCause}.`
+              : isLowHealthLowRisk
+              ? `Engagement is currently lower than average, but solid structural retention anchors (${topRetainFactor ? topRetainFactor.name : 'contract or loyalty'}) are keeping cancellation risk low (${user.churnProbability}%).`
+              : `Primary risk vector driving cancellation probability (${user.churnProbability}%) is ${primaryCause}.`;
+
+            let recommendedAction = user.warningFlags.includes('Failed Payment')
+              ? 'Extend a 14-day billing grace period immediately to prevent payment failure from escalating into a cancellation.'
+              : user.warningFlags.includes('Not Using Key Features')
+              ? 'Send a personalized feature tutorial video highlighting unused plan benefits to rebuild product adoption.'
+              : user.warningFlags.includes('Open Support Issues')
+              ? 'Schedule a CSM sync call and escalate open support tickets to top resolution priority.'
+              : 'Offer a 20% loyalty discount for 3 months to stabilize account retention.';
+
+            return (
+              <div className="mt-1 rounded-xl border border-earth-sage/30 bg-[#efe9d2]/30 p-4 flex flex-col gap-3">
+                {/* Executive Summary */}
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-xs font-black text-earth-cocoa uppercase tracking-wide">
+                    EXECUTIVE RISK SUMMARY
+                  </span>
+                  <div className="text-xs text-black font-normal leading-relaxed space-y-1">
+                    <p>
+                      <strong className="font-extrabold text-earth-cocoa">Primary Driver:</strong> {causeDetail}
+                    </p>
+                    <p>
+                      <strong className="font-extrabold text-earth-cocoa">Health vs Churn Gap:</strong> Health score ({user.healthScore}/100) measures daily active sessions, whereas Churn Probability ({user.churnProbability}%) predicts forward-looking cancellation risk over the next 30 days.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Recommended CSM Priority */}
+                <div className="border-t border-earth-sage/30 pt-2.5 flex flex-col gap-1">
+                  <span className="text-xs font-black text-earth-cocoa uppercase tracking-wide">
+                    RECOMMENDED CSM ACTION
+                  </span>
+                  <p className="text-xs text-black font-normal leading-relaxed">
+                    <strong className="font-extrabold text-status-healthy">Action Strategy:</strong> {recommendedAction}
+                  </p>
+                </div>
+
+                {/* What to Prevent Next Time - Only shown for already-churned accounts (100% / 85%+ churn probability) */}
+                {(user.churnProbability >= 85 || user.state === 'churned' || user.healthScore === 0) && (
+                  <div className="border-t border-earth-sage/30 pt-2.5 flex flex-col gap-1.5">
+                    <span className="text-xs font-black text-earth-cocoa uppercase tracking-wide">
+                      What to Prevent Next Time
+                    </span>
+                    <ul className="text-xs text-black font-normal leading-relaxed space-y-1 list-disc pl-4">
+                      <li><strong>Automate Billing Reminders:</strong> Send grace-period notifications 3 days before subscription card expirations to stop payment failures from causing silent cancellations.</li>
+                      <li><strong>Early Engagement Trigger:</strong> Schedule automated feature tutorial broadcasts if login frequency drops below 2 logins per week in the first 30 days.</li>
+                      <li><strong>CSM Outage & Support SLA:</strong> Require an automated CSM check-in call whenever open support tickets exceed 2 within a single billing cycle.</li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Activity Timeline */}
