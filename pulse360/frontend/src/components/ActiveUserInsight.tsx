@@ -1028,7 +1028,7 @@ export const ActiveUserInsight: React.FC<ActiveUserInsightProps> = ({ user, onBa
             <div className="flex flex-col gap-2 console-card-dark-inner p-3.5 rounded-xl">
               <div className="flex justify-between text-xs">
                 <span className="text-black font-extrabold">Login Frequency</span>
-                <span className="font-bold text-earth-clay">{simLevers.login_frequency} / day</span>
+                <span className="font-bold text-earth-clay">{simLevers.login_frequency} / week</span>
               </div>
               <input 
                 type="range" 
