@@ -519,8 +519,9 @@ Is there a specific account or recent system event you would like me to analyze?
                                 <span className="text-sm font-black text-black">
                                   {users && users.length > 0 ? Math.round(users.reduce((acc: number, u: any) => acc + (u.metrics?.usageVelocity || 0.8), 0) / users.length * 100) : 82}%
                                 </span>
-                                <span className="text-[10px] text-status-healthy bg-[#276B2B]/10 border border-[#276B2B]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
-                                  ▲ +5%
+                                <span className="text-xs text-status-healthy bg-[#276B2B]/15 border border-[#276B2B]/30 px-2 py-0.5 rounded-md font-extrabold flex items-center gap-1.5">
+                                  <span>▲ +5%</span>
+                                  <span className="text-black/80 font-bold">vs last month</span>
                                 </span>
                               </div>
                             </div>
@@ -543,14 +544,15 @@ Is there a specific account or recent system event you would like me to analyze?
                                 <span className="text-sm font-black text-black">
                                   {users && users.length > 0 ? Math.round(users.reduce((acc: number, u: any) => acc + (u.metrics?.featureAdoption || 0.6), 0) / users.length * 100) : 64}%
                                 </span>
-                                <span className="text-[10px] text-[#8C6239] bg-[#8C6239]/10 border border-[#8C6239]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
-                                  ▲ +8%
+                                <span className="text-xs text-status-healthy bg-[#276B2B]/15 border border-[#276B2B]/30 px-2 py-0.5 rounded-md font-extrabold flex items-center gap-1.5">
+                                  <span>▲ +8%</span>
+                                  <span className="text-black/80 font-bold">vs last month</span>
                                 </span>
                               </div>
                             </div>
                             <div className="w-full bg-earth-cocoa/10 rounded-full h-1.5">
                               <div 
-                                className="h-1.5 rounded-full bg-earth-clay" 
+                                className="h-1.5 rounded-full bg-status-healthy" 
                                 style={{ width: `${users && users.length > 0 ? Math.round(users.reduce((acc: number, u: any) => acc + (u.metrics?.featureAdoption || 0.6), 0) / users.length * 100) : 64}%` }} 
                               />
                             </div>
@@ -567,8 +569,9 @@ Is there a specific account or recent system event you would like me to analyze?
                                 <span className="text-sm font-black text-black">
                                   {users && users.length > 0 ? Math.round((users.filter((u: any) => (u.metrics?.frictionIndex || 0) <= 3).length / users.length) * 100) : 91}%
                                 </span>
-                                <span className="text-[10px] text-status-healthy bg-[#276B2B]/10 border border-[#276B2B]/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
-                                  ▲ +3%
+                                <span className="text-xs text-status-healthy bg-[#276B2B]/15 border border-[#276B2B]/30 px-2 py-0.5 rounded-md font-extrabold flex items-center gap-1.5">
+                                  <span>▲ +3%</span>
+                                  <span className="text-black/80 font-bold">vs last month</span>
                                 </span>
                               </div>
                             </div>
@@ -591,8 +594,9 @@ Is there a specific account or recent system event you would like me to analyze?
                                 <span className="text-sm font-black text-black">
                                   {users && users.length > 0 ? Math.round((users.filter((u: any) => !u.warningFlags.includes('Failed Payment')).length / users.length) * 100) : 94}%
                                 </span>
-                                <span className="text-[10px] text-status-critical bg-status-critical/10 border border-status-critical/20 px-1.5 py-0.5 rounded font-black flex items-center gap-0.5">
-                                  ▼ -2%
+                                <span className="text-xs text-status-critical bg-status-critical/15 border border-status-critical/30 px-2 py-0.5 rounded-md font-extrabold flex items-center gap-1.5">
+                                  <span>▼ -2%</span>
+                                  <span className="text-black/80 font-bold">vs last month</span>
                                 </span>
                               </div>
                             </div>
