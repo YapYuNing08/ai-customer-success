@@ -19,6 +19,8 @@
 ![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
 ![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)
 
+**🔗 Live Demo: [ai-customer-success.vercel.app](https://ai-customer-success.vercel.app/)**
+
 Case Study 2 — *Smart Subscription & Customer Experience Optimization.*
 
 Falcon360 turns a subscription business's raw customer data into a live, explainable
