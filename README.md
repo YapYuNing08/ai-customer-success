@@ -16,6 +16,8 @@
 ![NumPy](https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white)
 ![SHAP](https://img.shields.io/badge/SHAP-000000?style=for-the-badge&logoColor=white)
 ![Gemini](https://img.shields.io/badge/Gemini_API-8E75B2?style=for-the-badge&logo=googlegemini&logoColor=white)
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)
+![Render](https://img.shields.io/badge/Render-46E3B7?style=for-the-badge&logo=render&logoColor=white)
 
 Case Study 2 — *Smart Subscription & Customer Experience Optimization.*
 
@@ -167,6 +169,7 @@ on a live external call.
 | Database   | Supabase (PostgreSQL)                                   |
 | ML         | pandas · numpy · scikit-learn · XGBoost · SHAP          |
 | GenAI      | Gemini API (narratives & copilot)                       |
+| Deployment | Vercel (frontend) · Render (backend)                    |
 
 **Data:** Kaggle Telco Customer Churn (7,043 real customers with churn labels, tenure,
 contract, and payment fields), enriched with engagement signals correlated to real churn
