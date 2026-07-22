@@ -98,6 +98,7 @@ export function CustomersTab(props: any) {
                       >
                         <option value="all">All Plans</option>
                         <option value="enterprise">Enterprise</option>
+                        <option value="pro">Pro</option>
                         <option value="growth">Growth</option>
                         <option value="starter">Starter</option>
                       </select>

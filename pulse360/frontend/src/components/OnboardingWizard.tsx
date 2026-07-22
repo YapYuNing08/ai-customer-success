@@ -251,8 +251,8 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
     }`;
 
   const aiBadge = (onDark: boolean) => (
-    <span className={`text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 ${onDark ? 'bg-earth-bg/20 text-earth-bg' : 'bg-earth-clay/15 text-earth-clay border border-earth-clay/30'}`}>
-      <Sparkles className="w-3 h-3" /> AI Recommended
+    <span className={`text-[10px] uppercase tracking-wider font-extrabold px-2 py-0.5 rounded-full flex items-center gap-1 shrink-0 whitespace-nowrap ${onDark ? 'bg-earth-bg/20 text-earth-bg' : 'bg-earth-clay/15 text-earth-clay border border-earth-clay/30'}`}>
+      <Sparkles className="w-3 h-3 shrink-0" /> AI Recommended
     </span>
   );
 
@@ -261,10 +261,10 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
       className="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center animate-fadeIn font-sans"
       onMouseMove={() => { lastActivity.current = Date.now(); }}
     >
-      <div className="bg-[#fcfaf2] border-2 border-earth-sage/40 rounded-3xl shadow-2xl max-w-3xl w-full mx-4 text-left flex flex-col animate-scaleUp text-earth-cocoa overflow-hidden relative">
+      <div className="bg-[#fcfaf2] border-2 border-earth-sage/40 rounded-3xl shadow-2xl max-w-3xl w-full mx-4 my-4 text-left flex flex-col animate-scaleUp text-earth-cocoa overflow-hidden relative max-h-[92vh]">
 
         {/* Header with agent identity + progress */}
-        <div className="flex justify-between items-center px-8 pt-6 pb-4 border-b border-earth-sage/20">
+        <div className="flex justify-between items-center px-5 sm:px-8 pt-6 pb-4 border-b border-earth-sage/20 shrink-0">
           <div className="flex items-center gap-3.5">
             <img src="/falcon-icon.png" alt="Falcon Guide Agent" className="w-12 h-12 object-contain shrink-0" />
             <div className="flex flex-col leading-tight">
@@ -283,7 +283,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
         </div>
 
         {/* Step body */}
-        <div className="px-9 py-9 flex flex-col gap-5 min-h-[460px]">
+        <div className="px-5 py-6 sm:px-9 sm:py-9 flex flex-col gap-5 flex-1 overflow-y-auto min-h-0 sm:min-h-[460px]">
 
           {step === 1 && (
             <div className="flex flex-col gap-4 items-center text-center my-auto">
@@ -421,15 +421,15 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                   )}
                 </div>
               )}
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {(Object.keys(PLAN_OPTIONS) as PlanKey[]).map(key => (
                   <button
                     key={key}
                     className={radioClass(plan === key)}
                     onClick={() => { registerClick(`${key} plan`); setPlan(key); }}
                   >
-                    <span className="text-sm font-bold leading-tight flex flex-col items-start gap-1">
-                      <span className="flex items-center gap-2">
+                    <span className="text-sm font-bold leading-tight flex flex-col items-start gap-1 min-w-0 w-full">
+                      <span className="flex flex-wrap items-center gap-x-2 gap-y-1 w-full">
                         {key}
                         {suggestion?.plan === key && aiBadge(plan === key)}
                       </span>
@@ -506,14 +506,14 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
                   <Bot className="w-4 h-4 text-earth-clay" /> Where do you usually use your phone?
                 </p>
               </div>
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                 {(Object.keys(LIFESTYLE_CONFIG) as LifestyleKey[]).map(key => (
                   <button
                     key={key}
                     className={radioClass(lifestyle === key)}
                     onClick={() => { registerClick(LIFESTYLE_CONFIG[key].label); selectLifestyle(key); }}
                   >
-                    <span className="text-sm font-bold leading-tight flex flex-col items-start gap-1">
+                    <span className="text-sm font-bold leading-tight flex flex-wrap items-center gap-x-2 gap-y-1 w-full min-w-0">
                       {LIFESTYLE_CONFIG[key].label}
                       {aiRecommendedPref === key && aiBadge(lifestyle === key)}
                     </span>
@@ -569,7 +569,7 @@ export function OnboardingWizard({ customerName, mode = 'assist', onComplete, on
         </div>
 
         {/* AI monitoring strip — makes the scripted agent visible for the demo */}
-        <div className="px-9 py-3 bg-earth-cocoa/5 border-t border-earth-sage/20 flex items-center gap-4 text-[11px] font-bold text-earth-cocoa/60">
+        <div className="px-5 sm:px-9 py-3 bg-earth-cocoa/5 border-t border-earth-sage/20 flex items-center gap-4 text-[11px] font-bold text-earth-cocoa/60 shrink-0">
           <span className="flex items-center gap-2 text-earth-clay">
             <img src="/falcon-icon.png" alt="Falcon Guide Agent" className="w-5 h-5 object-contain" />
             Falcon Guide Agent monitoring
