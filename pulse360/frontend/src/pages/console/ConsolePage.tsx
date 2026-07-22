@@ -197,7 +197,7 @@ export function ConsolePage(props: any) {
                     </button>
                     
                     {showNotifications && (
-                      <div className="absolute right-0 mt-2 w-80 bg-[#efe9d2] border border-earth-sage rounded-2xl shadow-xl z-50 p-4 animate-fadeIn text-left text-xs">
+                      <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-[#efe9d2] border border-earth-sage rounded-2xl shadow-xl z-50 p-4 animate-fadeIn text-left text-xs">
                         <div className="font-bold text-earth-cocoa border-b border-earth-sage/20 pb-2 mb-2 flex justify-between items-center">
                           <span>Accounts Requiring Attention</span>
                           <span className="text-[9px] bg-status-critical/15 text-status-critical px-2 py-0.5 rounded font-extrabold uppercase">
@@ -242,6 +242,30 @@ export function ConsolePage(props: any) {
                   <Avatar name={users[0]?.name} className="w-6 h-6 text-[10px] rounded-full border border-earth-sage/40" />
                 </div>
               </div>
+
+              {/* Mobile / tablet tab switcher — the sidebar is hidden below lg,
+                  so this segmented control is the only way to change tabs there. */}
+              <div className="lg:hidden flex bg-[#F5ECE3]/75 border border-earth-sage/30 p-1 rounded-xl gap-1 text-xs font-bold w-full">
+                {([
+                  { id: 'dashboard', label: 'Dashboard', Icon: LayoutDashboard },
+                  { id: 'customers', label: 'Customers', Icon: Users },
+                  { id: 'reports', label: 'Reports', Icon: FileText },
+                ] as const).map(({ id, label, Icon }) => (
+                  <button
+                    key={id}
+                    onClick={() => { setConsoleTab(id); setSelectedConsoleUser(null); setSilentDrilldown(false); }}
+                    className={`flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg transition-all cursor-pointer ${
+                      consoleTab === id
+                        ? 'bg-earth-sage/30 text-earth-cocoa font-extrabold shadow-sm'
+                        : 'text-earth-cocoa/70 hover:bg-earth-sage/15'
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 text-earth-clay" />
+                    <span>{label}</span>
+                  </button>
+                ))}
+              </div>
+
               {consoleTab === 'dashboard' ? (
                 <DashboardTab
                   dist={dist}

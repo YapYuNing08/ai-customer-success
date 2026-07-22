@@ -99,7 +99,7 @@ export function MarketingPage(props: any) {
               </div>
 
               {/* Scroll down indicator */}
-              <div className="col-span-12 flex justify-center mt-4">
+              <div className="lg:col-span-12 flex justify-center mt-4">
                 <button 
                   onClick={scrollToConsole}
                   className="flex flex-col items-center gap-1.5 text-xs text-earth-cocoa/50 hover:text-earth-cocoa transition-colors cursor-pointer animate-bounce"
@@ -199,14 +199,14 @@ export function MarketingPage(props: any) {
               className="w-full max-w-7xl mx-auto px-6 py-12 flex flex-col gap-8 scroll-mt-20 text-left"
             >
               
-              <div className="flex justify-between items-center border-b pb-4 border-earth-sage/35">
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 border-b pb-4 border-earth-sage/35">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-earth-clay tracking-wider">Falcon360 Workspace</span>
                   <h2 className="text-xl font-extrabold mt-0.5 text-earth-cocoa">Customer Directory Panel</h2>
                 </div>
-                <button 
+                <button
                   onClick={() => setShowModelModal(true)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all duration-200 cursor-pointer bg-earth-cocoa border-earth-cocoa/20 text-earth-bg hover:bg-earth-clay"
+                  className="self-start sm:self-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all duration-200 cursor-pointer bg-earth-cocoa border-earth-cocoa/20 text-earth-bg hover:bg-earth-clay"
                 >
                   <Cpu className="w-3.5 h-3.5 text-earth-clay animate-pulse" />
                   <span>How Predictions Work</span>

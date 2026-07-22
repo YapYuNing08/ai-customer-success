@@ -95,13 +95,13 @@ export function ClientDashboardPage(props: any) {
     <>
       <div className="w-full px-6 sm:px-10 lg:px-16 py-12 text-left flex flex-col gap-8 animate-fadeIn bg-white min-h-[calc(100vh-80px)] font-sans">
         {/* Header section */}
-        <div className="flex justify-between items-center border-b pb-4 border-slate-200">
+        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 border-b pb-4 border-slate-200">
           <div>
-            <h2 className="text-3xl font-extrabold mt-1 text-[#001871] font-serif">Telco Customer Portal</h2>
+            <h2 className="text-2xl sm:text-3xl font-extrabold mt-1 text-[#001871] font-serif">Telco Customer Portal</h2>
           </div>
-          <button 
+          <button
             onClick={() => setCurrentPage('marketing')}
-            className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 cursor-pointer bg-[#001871] text-white hover:bg-[#0064DC] shadow-sm"
+            className="self-start sm:self-auto shrink-0 flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-bold border border-transparent transition-all duration-200 cursor-pointer bg-[#001871] text-white hover:bg-[#0064DC] shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Overview</span>
