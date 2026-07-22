@@ -1,0 +1,20 @@
+# Render Blueprint for the Pulse360 backend.
+# Deploy: Render dashboard → New → Blueprint → pick this repo.
+# Set the three env vars below in the dashboard (they are marked sync:false
+# so they are NOT read from this committed file — secrets stay out of git).
+services:
+  - type: web
+    name: pulse360-api
+    runtime: python
+    rootDir: pulse360/backend
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL      # Supabase connection string (prefer the pooled :6543 URL)
+        sync: false
+      - key: GEMINI_API_KEY    # Gemini API key for the copilot / narrator
+        sync: false
+      - key: FRONTEND_ORIGIN   # deployed frontend URL, e.g. https://pulse360.vercel.app
+        sync: false
