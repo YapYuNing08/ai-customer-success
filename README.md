@@ -1,4 +1,4 @@
-# Pulse360
+# Falcon360
 
 **AI-powered Customer Success & Subscription Optimization platform.**
 
@@ -19,7 +19,7 @@
 
 Case Study 2 — *Smart Subscription & Customer Experience Optimization.*
 
-Pulse360 turns a subscription business's raw customer data into a live, explainable
+Falcon360 turns a subscription business's raw customer data into a live, explainable
 control room: it predicts *who* is about to churn, explains *why*, tells the team
 *what to do next*, and lets them *simulate the outcome before they act* — all driven
 by a team of five specialised AI agents working together.
@@ -50,10 +50,10 @@ avoidable cancellation is money left on the table.
 
 ## Our Solution
 
-Pulse360 is a single CSM command center backed by **five AI agents**. Instead of one
-monolithic model, each agent owns one job in the customer lifecycle — predicting,
-explaining, recommending, simulating, and onboarding — and they hand off to each other
-to turn data into decisions.
+Falcon360 is a single CSM command center backed by **5 AI agents**. Instead of one
+monolithic model, each agent owns one job in the customer lifecycle — onboarding, predicting,
+detecting silent churn, replaying the journey, coaching, and strategizing — and they
+hand off to each other to turn data into decisions.
 
 The result: a CSM opens the dashboard and immediately sees who's at risk, *why*, the
 exact next action to take, and the revenue impact of taking it — in seconds, live,
@@ -63,28 +63,19 @@ during a conversation with the customer.
 
 ## The 5 AI Agents
 
-### 1. Health & Churn Intelligence Agent
-The core brain. An **XGBoost** classifier scores every customer on a **0–100 health
-score** and a **churn probability**, sorting them into risk tiers.
+### 1. Falcon Guide — AI Onboarding Success Agent
+Proactively assists customers who appear **hesitant, confused, or inactive** during
+onboarding, reducing early-stage churn. It guides brand-new signups through a guided
+flow (welcome → package → SIM → preferences), stepping in with contextual help the
+moment a customer stalls or repeats an action — so new customers reach value fast and
+start their lifecycle healthy instead of at-risk.
 
-- Health score is a transparent composite: **usage 30%, feature adoption 20%, payment
-  behavior 20%, feedback 15%, support history 15%**.
-- Churn model achieves **0.921 AUC** on a 7,043-customer holdout.
-- Every score is paired with **Explainable AI (SHAP)** — the top reasons *why* this
-  customer is at risk, ranked by contribution. No black boxes: the CSM sees exactly
-  which signals are dragging a customer down.
-
-### 2. Next Best Action Agent
-A risk score isn't an action. This agent reads each customer's health band **and** their
-top churn driver, then recommends the single most effective retention play — the
-concrete step a CSM should take *right now*. It turns "this customer is at risk" into
-"call them about their billing issue today."
-
-### 3. Silent Churn Detection Agent
-The differentiator. Most tools only flag customers who are already loud — high tickets,
-low scores. This agent hunts the **opposite** profile: customers who are **quietly
-disengaging** (low login frequency, few tickets, still-decent health) and will leave
-*without ever complaining*.
+### 2. Falcon Sentinel Agent — Silent Customer Detector
+The differentiator. Identifies customers with **declining engagement even if they have
+never submitted a complaint or support ticket**. Most tools only flag customers who are
+already loud — high tickets, low scores. Sentinel hunts the **opposite** profile:
+customers who are **quietly disengaging** (low login frequency, few tickets,
+still-decent health) and will leave *without ever complaining*.
 
 - Surfaces a segment of accounts and the **monthly recurring revenue** sitting silently
   at risk.
@@ -92,23 +83,41 @@ disengaging** (low login frequency, few tickets, still-decent health) and will l
   completely invisible to any standard churn dashboard. This is the "customers who leave
   without complaining" the rest of the market never catches.
 
-### 4. Retention Simulator Agent (What-If)
-Before a CSM commits to an action, they can **simulate it**. Sliders let them model
-changes to the real levers — usage, engagement, support experience — and the agent
-re-runs the live model to project the new churn probability and health score, plus the
-**revenue saved**:
+### 3. Falcon Chronicle Agent — AI Journey Replay
+Automatically summarizes a customer's **activity history into an easy-to-understand
+timeline**, helping Customer Success Managers quickly understand the *root causes* of
+churn risk. Instead of scanning raw signals, a CSM reads a plain-language replay of the
+account's journey — when engagement dipped, when tickets spiked, when usage fell off —
+so the "why behind the number" is obvious at a glance.
 
-> `(baseline churn − simulated churn) × monthly charges × 12`
+### 4. Falcon Coach Agent — Customer AI Coach
+Provides **personalized recommendations directly to customers**, improving product
+adoption and engagement. A conversational, customer-facing layer that nudges each user
+toward the features and habits that keep them successful — turning generic "we miss you"
+outreach into tailored, individual coaching.
 
-It then generates a plain-language **retention plan** (powered by the Gemini API)
-explaining the projected outcome. This is the "prove the ROI before you spend the
-effort" moment — retention as a decision, not a guess.
+### 5. Falcon Strategist Agent — Explainable AI with Next Best Actions
+The core brain. It doesn't just predict churn — it **explains the reasons and recommends
+actionable retention strategies**.
 
-### 5. Onboarding Agent
-Retention starts on day one. This agent guides brand-new signups through a guided
-onboarding flow (welcome → package → SIM → preferences), stepping in with contextual
-help the moment a customer hesitates or gets stuck — so new customers reach value fast
-and start their lifecycle healthy instead of at-risk.
+- An **XGBoost** classifier scores every customer on a **0–100 health score** and a
+  **churn probability**, sorting them into risk tiers. Health score is a transparent
+  composite: **usage 30%, feature adoption 20%, payment behavior 20%, feedback 15%,
+  support history 15%**, and the model achieves **0.921 AUC** on a 7,043-customer
+  holdout.
+- Every score is paired with **Explainable AI (SHAP)** — the top reasons *why* this
+  customer is at risk, ranked by contribution. No black boxes.
+- It then recommends the single most effective **Next Best Action** — reading each
+  customer's health band **and** their top churn driver to turn "this customer is at
+  risk" into "call them about their billing issue today."
+- A **What-If retention simulator** lets a CSM model changes to the real levers — usage,
+  engagement, support experience — re-run the live model, and see the projected churn,
+  health, and **revenue saved** before committing:
+
+  > `(baseline churn − simulated churn) × monthly charges × 12`
+
+  It then generates a plain-language **retention plan** (powered by the Gemini API) —
+  retention as a decision, not a guess.
 
 > **Plus — the Copilot.** A conversational layer over the platform lets the CSM ask
 > natural-language questions ("who are my top at-risk enterprise accounts?") and get
